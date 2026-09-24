@@ -1,0 +1,65 @@
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router';
+import { ArrowLeft } from 'lucide-react';
+import NasVisual from '../components/NasVisual.jsx';
+import EnquiryForm from '../components/EnquiryForm.jsx';
+import Reveal from '../components/Reveal.jsx';
+import { api, formatInr } from '../lib/api.js';
+import { brandName } from '../data/site.js';
+import NotFound from './NotFound.jsx';
+
+export default function ProductDetail() {
+  const { slug } = useParams();
+  const [state, setState] = useState({ product: null, error: null });
+
+  useEffect(() => {
+    setState({ product: null, error: null });
+    api.product(slug).then((product) => setState({ product, error: null })).catch((error) => setState({ product: null, error }));
+  }, [slug]);
+
+  if (state.error) return <NotFound />;
+  const p = state.product;
+  if (!p) return <div className="mx-auto h-[70vh] max-w-7xl px-4 pt-40"><div className="glass h-full animate-pulse rounded-[2rem]" /></div>;
+
+  const specs = [
+    ['Brand', brandName(p.brand)], ['Drive bays', p.bays], ['Processor', p.cpu], ['Memory', p.memory],
+    ['Networking', p.network], ['Max raw capacity', p.max_raw_tb ? `${p.max_raw_tb} TB` : '–'], ['Best for', p.segment],
+  ];
+
+  return (
+    <>
+      <title>{`${p.model} | NASTOWN`}</title>
+      <section className="mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 md:pt-40">
+        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted hover:text-white"><ArrowLeft className="size-4" /> All products</Link>
+        <div className="mt-8 grid gap-10 lg:grid-cols-2">
+          <Reveal className="glass liquid grid place-items-center rounded-[2rem] p-10">
+            <NasVisual bays={p.bays} className="w-full max-w-md" />
+          </Reveal>
+          <Reveal delay={120}>
+            <p className="eyebrow">{brandName(p.brand)} · {p.bays}-bay</p>
+            <h1 className="text-gradient mt-4 text-3xl font-semibold sm:text-4xl">{p.model}</h1>
+            <p className="mt-5 text-base text-muted">{p.summary}</p>
+            <p className="mt-8 text-2xl font-semibold">{formatInr(p.price_inr)}</p>
+            <p className="mt-1 text-xs text-subtle">Indicative price, diskless. Final quote includes drives and setup options.</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to={`/tools/configurator?model=${p.slug}`} className="btn btn-primary">Configure this NAS</Link>
+              {p.rentable && <Link to="/rent" className="btn btn-glass">Rent this NAS</Link>}
+              <a href="#enquire" className="btn btn-glass">Ask an Expert</a>
+            </div>
+            <dl className="glass mt-10 divide-y divide-white/10 rounded-3xl px-6">
+              {specs.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-6 py-3.5 text-sm">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="text-right capitalize">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </Reveal>
+        </div>
+        <div id="enquire" className="mx-auto mt-24 max-w-3xl scroll-mt-28">
+          <EnquiryForm type="contact" title={`Ask about the ${p.model}`} payload={{ product: p.slug }} />
+        </div>
+      </section>
+    </>
+  );
+}
