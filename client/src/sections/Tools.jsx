@@ -6,10 +6,10 @@ import SectionHeading from '../components/SectionHeading.jsx';
 export default function Tools() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-28 sm:px-6">
-      <SectionHeading eyebrow="NAS tools" title="Build Your NAS. Your Way." />
+      <SectionHeading eyebrow="NAS tools" title="Build Your NAS. *Your Way.*" />
       <div className="mt-14 grid gap-5 lg:grid-cols-[1fr_1.35fr]">
         <Reveal>
-          <div className="glass liquid flex h-full flex-col rounded-[2rem] p-8 sm:p-10">
+          <div className="tilt glass liquid flex h-full flex-col rounded-[2rem] p-8 sm:p-10">
             <Calculator className="size-7 text-accent" />
             <h3 className="mt-8 text-2xl font-semibold leading-tight">How Much Storage Do You Really Need?</h3>
             <p className="mt-4 text-muted">Get an estimate based on your files, backup needs and future growth.</p>
@@ -19,7 +19,7 @@ export default function Tools() {
           </div>
         </Reveal>
         <Reveal delay={120}>
-          <div className="glass liquid flex h-full flex-col rounded-[2rem] p-8 sm:p-10">
+          <div className="tilt glass liquid flex h-full flex-col rounded-[2rem] p-8 sm:p-10">
             <SlidersHorizontal className="size-7 text-accent" />
             <h3 className="mt-8 text-2xl font-semibold leading-tight">Build Your NAS.</h3>
             <p className="mt-4 max-w-md text-muted">
@@ -35,7 +35,7 @@ export default function Tools() {
               ))}
             </div>
             <div className="mt-auto pt-10">
-              <Link to="/tools/configurator" className="btn btn-primary">Start Configuring <ArrowRight className="size-4" /></Link>
+              <Link to="/tools/configurator" className="magnetic btn btn-primary">Start Configuring <ArrowRight className="size-4" /></Link>
             </div>
           </div>
         </Reveal>

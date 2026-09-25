@@ -3,6 +3,7 @@ import {
   Camera, Clapperboard, Sparkles, Briefcase, Home, Cctv, Building2,
   Wrench, ArrowRightLeft, Stethoscope, ArrowUpCircle, Layers, ShieldCheck, Headset, Truck, LifeBuoy,
   Cloud, HardDriveDownload, Share2, Globe, Tv, Users, Lock,
+  HardDrive, Boxes, BadgeCheck, CalendarClock, SlidersHorizontal, BookOpen, Info,
 } from 'lucide-react';
 
 export const solutions = [
@@ -197,20 +198,20 @@ export const faqs = [
 ];
 
 export const nav = [
-  { label: 'Products', to: '/products' },
-  { label: 'Solutions', to: '/solutions/photographers', children: solutions.map((s) => ({ label: `NAS for ${s.name}`, to: `/solutions/${s.slug}` })) },
-  { label: 'Brands', to: '/brands/synology', children: brands.map((b) => ({ label: b.name, to: `/brands/${b.slug}` })) },
-  { label: 'Rent a NAS', to: '/rent' },
-  { label: 'Services', to: '/services/installation', children: services.map((s) => ({ label: s.name, to: `/services/${s.slug}` })) },
+  { label: 'Products', icon: HardDrive, to: '/products' },
+  { label: 'Solutions', icon: Boxes, to: '/solutions/photographers', children: solutions.map((s) => ({ label: `NAS for ${s.name}`, to: `/solutions/${s.slug}` })) },
+  { label: 'Brands', icon: BadgeCheck, to: '/brands/synology', children: brands.map((b) => ({ label: b.name, to: `/brands/${b.slug}` })) },
+  { label: 'Rent a NAS', icon: CalendarClock, to: '/rent' },
+  { label: 'Services', icon: Wrench, to: '/services/installation', children: services.map((s) => ({ label: s.name, to: `/services/${s.slug}` })) },
   {
-    label: 'Tools', to: '/tools/configurator', children: [
+    label: 'Tools', icon: SlidersHorizontal, to: '/tools/configurator', children: [
       { label: 'NAS ROI Calculator', to: '/tools/calculator' },
       { label: 'NAS Configurator', to: '/tools/configurator' },
       { label: 'NAS Finder', to: '/finder' },
     ],
   },
-  { label: 'Resources', to: '/resources/guides', children: resources.map((r) => ({ label: r.name, to: `/resources/${r.slug}` })) },
-  { label: 'About', to: '/about' },
+  { label: 'Resources', icon: BookOpen, to: '/resources/guides', children: resources.map((r) => ({ label: r.name, to: `/resources/${r.slug}` })) },
+  { label: 'About', icon: Info, to: '/about' },
 ];
 
 export const brandName = (slug) =>

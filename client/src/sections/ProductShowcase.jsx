@@ -8,7 +8,7 @@ export default function ProductShowcase() {
   const { data, error, loading } = useProducts({ featured: true });
   return (
     <section className="mx-auto max-w-7xl px-4 py-28 sm:px-6">
-      <SectionHeading eyebrow="Featured systems" title="Meet the NAS.">
+      <SectionHeading eyebrow="Featured systems" title="Meet the *NAS.*">
         Carefully selected NAS systems from leading brands.
       </SectionHeading>
       <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

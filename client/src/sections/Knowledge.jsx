@@ -12,13 +12,13 @@ const pillars = [
 export default function Knowledge() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-28 sm:px-6">
-      <SectionHeading eyebrow="The NAS Library" title="Learn. Compare. Build.">
+      <SectionHeading eyebrow="The NAS Library" title="Learn. Compare. *Build.*">
         Everything you need to understand, choose and get more from your storage.
       </SectionHeading>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
         {pillars.map(({ icon: Icon, title, body, to }, i) => (
           <Reveal key={title} delay={i * 80}>
-            <Link to={to} className="glass liquid liquid-lift group flex h-full flex-col rounded-[2rem] p-8">
+            <Link to={to} className="tilt glass liquid group flex h-full flex-col rounded-[2rem] p-8">
               <span className="font-mono text-sm text-subtle">0{i + 1}</span>
               <Icon className="mt-10 size-8 text-accent" />
               <h3 className="mt-6 text-2xl font-semibold">{title}</h3>

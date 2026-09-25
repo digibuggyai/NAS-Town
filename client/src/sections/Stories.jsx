@@ -13,11 +13,11 @@ const slots = [
 export default function Stories() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-28 sm:px-6">
-      <SectionHeading eyebrow="Built for real work" title="Real People. Real Workflows." />
+      <SectionHeading eyebrow="Built for real work" title="Real People. *Real Workflows.*" />
       <div className="mt-14 grid gap-5 lg:grid-cols-3">
         {slots.map(({ icon: Icon, kind, title, body }, i) => (
           <Reveal key={title} delay={i * 80}>
-            <article className="glass liquid flex h-full flex-col rounded-[2rem] p-8">
+            <article className="tilt glass liquid flex h-full flex-col rounded-[2rem] p-8">
               <div className="flex items-center justify-between">
                 <span className="eyebrow !text-[0.65rem]">{kind}</span>
                 <span className="rounded-full bg-white/5 px-2.5 py-1 text-[0.7rem] text-subtle ring-1 ring-white/10">Coming soon</span>

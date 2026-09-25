@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { ArrowRight, CalendarClock, Clapperboard, MoveRight, Server } from 'lucide-react';
 import NasVisual from '../components/NasVisual.jsx';
 import Reveal from '../components/Reveal.jsx';
+import SplitHeading from '../components/SplitHeading.jsx';
 
 const uses = [
   { icon: Clapperboard, label: 'Short-term projects' },
@@ -17,7 +18,7 @@ export default function Rental() {
         <div className="glass liquid grid items-center gap-10 overflow-hidden rounded-[2.5rem] p-8 sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:p-16">
           <div>
             <p className="eyebrow mb-5">Rent a NAS</p>
-            <h2 className="text-gradient text-3xl leading-[1.08] font-semibold sm:text-4xl">Need Storage for Now, Not Forever?</h2>
+            <SplitHeading text="Need Storage for Now, *Not Forever?*" className="text-3xl sm:text-4xl" />
             <p className="mt-6 text-base leading-relaxed text-muted">
               Rent a NAS for short-term projects, data migrations, events and temporary storage requirements without a large upfront investment.
             </p>
@@ -28,7 +29,7 @@ export default function Rental() {
                 </li>
               ))}
             </ul>
-            <Link to="/rent" className="btn btn-primary mt-10">Explore NAS Rentals <ArrowRight className="size-4" /></Link>
+            <Link to="/rent" className="magnetic btn btn-primary mt-10">Explore NAS Rentals <ArrowRight className="size-4" /></Link>
           </div>
           <div className="relative">
             <div className="absolute inset-10 rounded-full bg-accent-2/20 blur-3xl" />

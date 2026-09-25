@@ -33,7 +33,7 @@ export default function About() {
       <section id="contact" className="mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 py-16 pb-28 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
         <Reveal>
           <p className="eyebrow mb-5">Contact</p>
-          <h2 className="text-gradient text-3xl font-semibold sm:text-4xl">Let's talk storage.</h2>
+          <h2 className="heading text-3xl sm:text-4xl">Let's talk storage.</h2>
           <p className="mt-5 text-base text-muted">Have a question or need a custom recommendation? Get in touch with our team.</p>
         </Reveal>
         <EnquiryForm type="contact" />

@@ -8,7 +8,7 @@ export default function Services() {
   return (
     <section className="relative bg-gradient-to-b from-transparent via-ink-2/80 to-transparent py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading eyebrow="NAS care & support" title="We Stay After the Sale.">
+        <SectionHeading eyebrow="NAS care & support" title="We Stay *After the Sale.*">
           Your NAS is not a one-time purchase. It is part of your data infrastructure. From installation and migration to
           repair, upgrades and maintenance, NASTOWN helps keep your storage running smoothly.
         </SectionHeading>

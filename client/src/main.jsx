@@ -2,7 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import App from './App.jsx';
+import { initMotion } from './lib/motion.js';
 import './index.css';
+
+initMotion();
 
 // Liquid hover: feed the cursor position to whichever glass panel or button is under it.
 document.addEventListener(

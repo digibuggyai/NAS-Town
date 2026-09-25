@@ -5,7 +5,7 @@ import { brandName } from '../data/site.js';
 
 export default function ProductCard({ product: p }) {
   return (
-    <article className="glass liquid liquid-lift flex flex-col rounded-3xl p-5">
+    <article className="tilt glass liquid flex flex-col rounded-3xl p-5">
       <Link to={`/products/${p.slug}`} className="block rounded-2xl bg-white/[0.02] px-6 pt-6 pb-2">
         <NasVisual bays={p.bays} className="mx-auto h-40 w-auto" />
       </Link>

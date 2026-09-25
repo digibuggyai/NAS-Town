@@ -39,7 +39,7 @@ export default function Rent() {
 
       <section id="rent-form" className="mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
         <Reveal>
-          <h2 className="text-gradient text-3xl font-semibold">Request a rental</h2>
+          <h2 className="heading text-3xl">Request a rental</h2>
           <p className="mt-4 text-muted">Tell us about your project and we'll suggest the right system and terms.</p>
           {data?.length > 0 && (
             <div className="mt-8">

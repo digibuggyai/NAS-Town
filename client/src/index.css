@@ -6,6 +6,7 @@
    ------------------------------------------------------------------ */
 @theme {
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --color-ink: #000000;          /* page background */
@@ -38,17 +39,24 @@
 }
 
 @layer base {
-  html { background: var(--color-ink); color-scheme: dark; scroll-behavior: smooth; }
+  html { background: var(--color-ink); color-scheme: dark; }
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-stopped { overflow: clip; }
   /* No body background: it would paint over the fixed ambient-light layer (-z-10). html supplies the black. */
   body {
     color: var(--color-fg);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    font-feature-settings: "ss01", "ss02", "cv11";
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
   ::selection { background: rgb(125 211 252 / 0.3); }
   :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 10px; }
-  h1, h2, h3 { letter-spacing: -0.03em; text-wrap: balance; }
+  h1, h2, h3 { letter-spacing: -0.035em; text-wrap: balance; font-weight: 500; }
+  @media (min-width: 640px) { body { font-size: 16px; } }
   p { text-wrap: pretty; }
 }
 
@@ -97,7 +105,7 @@
     pointer-events: none;
     z-index: -1;
   }
-  .liquid { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease, box-shadow 0.5s ease; }
+  .liquid { transition: border-color 0.4s ease, box-shadow 0.5s ease; will-change: transform; }
   .liquid:hover::after { opacity: 1; }
   .liquid:hover {
     border-color: rgb(255 255 255 / 0.18);
@@ -107,8 +115,7 @@
       0 30px 80px -24px rgb(0 0 0 / 0.95),
       0 0 0 1px rgb(255 255 255 / 0.03);
   }
-  .liquid-lift:hover { transform: translateY(-4px); }
-
+  
   /* Buttons */
   .btn {
     position: relative;
@@ -124,9 +131,10 @@
     white-space: nowrap;
     overflow: hidden;
     isolation: isolate;
-    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s ease, box-shadow 0.35s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.35s ease, color 0.3s ease;
   }
-  .btn:active { transform: scale(0.97); }
+  .btn svg { transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .btn:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
   .btn-primary {
     background: #fff;
     color: #000;
@@ -162,12 +170,47 @@
   .btn-glass:hover::after { opacity: 1; }
   .btn-glass:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
 
+  /* Section label: small accent dot + quiet caps. */
   .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.2em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--color-muted);
+    color: rgb(255 255 255 / 0.55);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 10px var(--color-accent);
+  }
+
+  /* Display headings: tight sans with a serif-italic accent word. */
+  .heading {
+    font-weight: 500;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    color: #fff;
+  }
+  .accent {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    padding-right: 0.06em;
+    color: rgb(255 255 255 / 0.72);
+  }
+  /* Masked lines from SplitText: leave room for descenders. */
+  .split-line { padding-bottom: 0.08em; margin-bottom: -0.08em; }
+
+  .marquee-fade {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
   }
 
   /* Pill used for selectable options (finder, configurator, filters). */
@@ -208,13 +251,8 @@
     color: transparent;
   }
 
-  /* Scroll reveal */
-  .reveal { opacity: 0; transform: translateY(24px); filter: blur(6px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.9s ease; }
-  .reveal.in { opacity: 1; transform: none; filter: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .reveal { opacity: 1; transform: none; filter: none; }
-  html { scroll-behavior: auto; }
 }
