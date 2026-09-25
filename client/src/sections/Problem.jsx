@@ -5,6 +5,7 @@ import NasVisual from '../components/NasVisual.jsx';
 import Reveal from '../components/Reveal.jsx';
 import SplitHeading from '../components/SplitHeading.jsx';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
+import { problem } from '../data/home.js';
 
 const sources = [
   { label: 'Photos', icon: Image, where: 'Phone, SD cards' },
@@ -38,19 +39,17 @@ export default function Problem() {
     <section className="mx-auto max-w-7xl px-4 py-28 sm:px-6">
       <div className="grid items-center gap-16 lg:grid-cols-[1fr_1.15fr]">
         <div>
-          <Reveal y={12}><p className="eyebrow mb-5">The problem</p></Reveal>
-          <SplitHeading
-            text="Your Data Is Growing. *Is It in the Right Place?*"
-            className="text-3xl sm:text-4xl lg:text-5xl"
-          />
+          <Reveal y={12}><p className="eyebrow mb-5">{problem.eyebrow}</p></Reveal>
+          <SplitHeading text={problem.title} className="text-3xl sm:text-4xl lg:text-5xl" />
           <Reveal delay={150} y={20}>
-            <p className="mt-6 text-base leading-relaxed text-muted">
-              Photos, videos, projects, business files and backups are often scattered across laptops, external drives,
-              cloud accounts and office systems. It is time to bring everything together with a NAS.
-            </p>
-            <Link to="/resources/guides" className="group mt-8 inline-flex items-center gap-2 text-white">
+            <div className="mt-6 space-y-3 text-base leading-relaxed text-muted">
+              {problem.body.map((p, i) => (
+                <p key={p} className={i === problem.body.length - 1 ? 'text-white/90' : ''}>{p}</p>
+              ))}
+            </div>
+            <Link to="/#what-is-nas" className="group mt-8 inline-flex items-center gap-2 text-white">
               <span className="bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-left-bottom bg-no-repeat pb-0.5 transition-[background-size] duration-500 group-hover:bg-[length:100%_1px]">
-                See How NAS Simplifies Your Digital Life
+                {problem.cta}
               </span>
               <ArrowRight className="size-4 transition-transform duration-500 group-hover:translate-x-1" />
             </Link>

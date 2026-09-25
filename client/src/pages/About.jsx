@@ -1,3 +1,4 @@
+import { digibuggy } from '../data/site.js';
 import { Headset, ShieldCheck, Wrench } from 'lucide-react';
 import PageHero from '../components/PageHero.jsx';
 import EnquiryForm from '../components/EnquiryForm.jsx';
@@ -35,6 +36,16 @@ export default function About() {
           <p className="eyebrow mb-5">Contact</p>
           <h2 className="heading text-3xl sm:text-4xl">Let's talk storage.</h2>
           <p className="mt-5 text-base text-muted">Have a question or need a custom recommendation? Get in touch with our team.</p>
+          <div className="glass mt-8 rounded-3xl p-6">
+            <a href={digibuggy.site} target="_blank" rel="noopener" className="inline-block">
+              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-5 w-auto" />
+            </a>
+            <p className="mt-3 text-sm text-muted">NASTOWN is backed by Digibuggy, custom PC and storage builders in Nehru Place, New Delhi.</p>
+            <dl className="mt-5 grid gap-2 text-sm">
+              <div className="flex gap-3"><dt className="w-20 text-subtle">Email</dt><dd><a href={`mailto:${digibuggy.email}`} className="hover:text-accent">{digibuggy.email}</a></dd></div>
+              <div className="flex gap-3"><dt className="w-20 text-subtle">WhatsApp</dt><dd><a href={digibuggy.socials[0].href} target="_blank" rel="noopener" className="hover:text-accent">{digibuggy.whatsapp}</a></dd></div>
+            </dl>
+          </div>
         </Reveal>
         <EnquiryForm type="contact" />
       </section>

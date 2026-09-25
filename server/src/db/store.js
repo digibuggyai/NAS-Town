@@ -87,6 +87,10 @@ export async function init() {
     );
     console.log(`[db] seeded ${seed.models.length} models, ${seed.drives.length} drives`);
   }
+  // Fill fields added after first release, without touching anything edited in the admin panel.
+  for (const m of catalogue.models) {
+    if (m.bestFor) await pool.query('UPDATE nas_models SET best_for = $1 WHERE model = $2 AND best_for IS NULL', [m.bestFor, m.model]);
+  }
 }
 
 async function insertRow(key, data) {

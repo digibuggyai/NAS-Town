@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { ChevronDown, Headset, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
 import { nav } from '../data/site.js';
 import { gsap, lockScroll, reducedMotion, ScrollTrigger, useGSAP } from '../lib/motion.js';
 
 export function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2 text-[0.8rem] font-semibold tracking-[0.18em]" aria-label="NASTOWN home">
-      <span className="relative grid size-6 place-items-center rounded-md bg-white/10 ring-1 ring-white/20">
-        <span className="size-1.5 rounded-full bg-accent shadow-[0_0_12px_var(--color-accent)]" />
-      </span>
+      <img src="/digibuggy-bee.png" alt="" width="128" height="128" className="size-6 drop-shadow-[0_0_8px_rgb(125_211_252/0.35)]" />
       NASTOWN
     </Link>
   );
@@ -110,8 +108,8 @@ export default function Navbar() {
             <Link to="/finder" className="magnetic btn btn-primary !px-4 !py-2 !text-[0.8rem]">Find My NAS</Link>
           </Pill>
 
-          {/* 4. Menu + support */}
-          <Pill scrolled={scrolled} className="gap-1 px-1.5">
+          {/* Menu button: only below xl, where the link pill is hidden and this is the only way to navigate */}
+          <Pill scrolled={scrolled} className="px-1.5 xl:hidden">
             <button
               onClick={() => setOpen((o) => !o)}
               className="grid size-9 place-items-center rounded-full text-white/80 transition-colors hover:bg-white/[0.08] hover:text-white"
@@ -120,23 +118,15 @@ export default function Navbar() {
             >
               {open ? <X className="size-4" /> : <Menu className="size-4" />}
             </button>
-            <span className="h-5 w-px bg-white/10" aria-hidden />
-            <Link
-              to="/about#contact"
-              aria-label="Support"
-              className="grid size-9 place-items-center rounded-full bg-white/[0.08] text-white/80 ring-1 ring-white/10 transition-colors hover:bg-white/15 hover:text-white"
-            >
-              <Headset className="size-4" />
-            </Link>
           </Pill>
         </div>
       </div>
 
-      {/* Full menu: a drawer on mobile, a right-aligned panel on desktop */}
+      {/* Full menu for screens below xl: a drawer on phones, a right-aligned panel on tablets */}
       {open && (
         <>
-          <button aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 -z-10 cursor-default bg-black/40 backdrop-blur-[2px]" />
-          <div ref={drawer} className="glass fixed inset-x-3 top-[4.25rem] max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-3xl !bg-black/80 p-4 sm:right-5 sm:left-auto sm:w-96">
+          <button aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 -z-10 cursor-default xl:hidden bg-black/40 backdrop-blur-[2px]" />
+          <div ref={drawer} className="glass fixed inset-x-3 top-[4.25rem] max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-3xl !bg-black/80 p-4 sm:right-5 sm:left-auto sm:w-96 xl:hidden">
             {nav.map(({ label, to, icon: Icon, children }) => (
               <details key={label} className="group border-b border-line last:border-0">
                 <summary className="flex cursor-pointer list-none items-center gap-3 px-2 py-3 text-[0.95rem]">

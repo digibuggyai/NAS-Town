@@ -9,19 +9,20 @@ import NasVisual from './NasVisual.jsx';
 const steps = [
   {
     key: 'storing', title: 'What are you storing?',
-    options: [['photos', 'Photos'], ['videos', 'Videos'], ['business', 'Business'], ['backup', 'Backup'], ['surveillance', 'Surveillance']],
+    options: [['photos', 'Photos'], ['videos', 'Videos'], ['business', 'Business Files'], ['backup', 'Backups'], ['surveillance', 'Surveillance']],
   },
   {
-    key: 'capacity', title: 'How much do you need?',
-    options: [['10tb', '10 TB'], ['20tb', '20 TB'], ['50tb', '50 TB'], ['100tb', '100 TB+']],
+    key: 'capacity', title: 'How much storage do you need?',
+    options: [['10tb', 'Up to 10 TB'], ['20tb', '10–20 TB'], ['50tb', '20–50 TB'], ['50plus', '50 TB+']],
   },
   {
-    key: 'work_style', title: 'How do you want to work?',
+    key: 'work_style', title: 'How will you use it?',
     options: [['home', 'Home'], ['creator', 'Creator'], ['business', 'Business'], ['enterprise', 'Enterprise']],
   },
 ];
 
-const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '100tb': 100 };
+// Each band is sized to its upper end; 50 TB+ starts at 60 TB and the configurator can go higher.
+const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '50plus': 60 };
 
 /** Answers → the three best-value complete builds from the live price list. */
 function recommend(P, { storing, capacity, work_style }) {

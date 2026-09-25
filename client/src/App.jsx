@@ -5,6 +5,8 @@ import Home from './pages/Home.jsx';
 import Products from './pages/Products.jsx';
 import ProductDetail from './pages/ProductDetail.jsx';
 import Solution from './pages/Solution.jsx';
+import SolutionsIndex from './pages/SolutionsIndex.jsx';
+import ServicesIndex from './pages/ServicesIndex.jsx';
 import Brand from './pages/Brand.jsx';
 import Rent from './pages/Rent.jsx';
 import Service from './pages/Service.jsx';
@@ -27,9 +29,11 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />
         <Route path="products/:slug" element={<ProductDetail />} />
+        <Route path="solutions" element={<SolutionsIndex />} />
         <Route path="solutions/:slug" element={<Solution />} />
         <Route path="brands/:slug" element={<Brand />} />
         <Route path="rent" element={<Rent />} />
+        <Route path="services" element={<ServicesIndex />} />
         <Route path="services/:slug" element={<Service />} />
         <Route path="tools/calculator" element={<Calculator />} />
         <Route path="tools/configurator" element={<Configurator />} />

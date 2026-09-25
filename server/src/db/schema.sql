@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS nas_models (
   warranty             TEXT,
   specs_url            TEXT,
   summary              TEXT,
+  best_for             TEXT,
   featured             BOOLEAN NOT NULL DEFAULT FALSE,
   rentable             BOOLEAN NOT NULL DEFAULT FALSE,
   quote_price          INTEGER NOT NULL,
@@ -131,6 +132,9 @@ CREATE TABLE IF NOT EXISTS finder_submissions (
   recommended   TEXT[] NOT NULL DEFAULT '{}',
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Columns added after first release (safe on existing databases).
+ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries (type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_change_log_created ON nas_change_log (created_at DESC);

@@ -44,6 +44,7 @@ const publicModel = (m) => ({
   warranty: m.warranty,
   specsUrl: m.specsUrl,
   summary: m.summary,
+  bestFor: m.bestFor,
   featured: Boolean(m.featured),
   rentable: Boolean(m.rentable),
   quote: m.quotePrice,
@@ -154,5 +155,6 @@ export function toProduct(m) {
     featured: m.featured,
     rentable: m.rentable,
     summary: m.summary,
+    best_for: m.bestFor,
   };
 }

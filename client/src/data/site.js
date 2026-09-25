@@ -3,7 +3,7 @@ import {
   Camera, Clapperboard, Sparkles, Briefcase, Home, Cctv, Building2,
   Wrench, ArrowRightLeft, Stethoscope, ArrowUpCircle, Layers, ShieldCheck, Headset, Truck, LifeBuoy,
   Cloud, HardDriveDownload, Share2, Globe, Tv, Users, Lock,
-  HardDrive, Boxes, BadgeCheck, CalendarClock, SlidersHorizontal, BookOpen, Info,
+  HardDrive, Boxes, BadgeCheck, CalendarClock, SlidersHorizontal, BookOpen,
 } from 'lucide-react';
 
 export const solutions = [
@@ -70,12 +70,6 @@ export const brands = [
     tagline: 'More power under the hood.',
     h1: 'QNAP NAS: Performance-Driven Storage Solutions',
     intro: 'QNAP systems are built for users who want more power under the hood, from multimedia and virtualization to heavy-duty enterprise workloads. Explore the lineup and let our team handle the setup.',
-  },
-  {
-    slug: 'ugreen', name: 'UGREEN', filter: 'ugreen',
-    tagline: 'Modern hardware, fast networking.',
-    h1: 'UGREEN NASync: Modern NAS Hardware',
-    intro: 'UGREEN NASync systems pair modern processors with fast built-in networking. Explore the range and let our team handle the setup.',
   },
   {
     slug: 'other', name: 'Other Brands', filter: 'asustor',
@@ -170,7 +164,7 @@ export const resources = [
     slug: 'reviews', name: 'Reviews',
     h1: 'Honest NAS Reviews, Based on Real Use',
     intro: "We test and review NAS systems the way you'll actually use them, for performance, reliability, and value, so you can buy with confidence.",
-    upcoming: ['Synology DS224+ review', 'QNAP TS-464 review', 'UGREEN DXP4800 Plus review', 'Synology DS923+ review'],
+    upcoming: ['Synology DS925+ review', 'QNAP TS-464-8G review', 'Synology DS225+ review', 'QNAP TS-433-4G review'],
   },
   {
     slug: 'how-to', name: 'How-To',
@@ -197,22 +191,45 @@ export const faqs = [
   { q: 'How much does support cost?', a: 'Remote support starts from ₹2,000 + tax and on-site support starts from ₹5,000 + tax. AMC plans are quoted based on your setup.' },
 ];
 
+// Product shortcuts by size, used by the navbar and footer.
+export const productLinks = [
+  { label: 'All NAS Products', to: '/products' },
+  { label: '2-Bay NAS', to: '/products?bays=2' },
+  { label: '4-Bay NAS', to: '/products?bays=4' },
+  { label: '6/8-Bay NAS', to: '/products?bays=6-8' },
+  { label: 'Rackmount NAS', to: '/products?type=rackmount' },
+];
+
 export const nav = [
-  { label: 'Products', icon: HardDrive, to: '/products' },
-  { label: 'Solutions', icon: Boxes, to: '/solutions/photographers', children: solutions.map((s) => ({ label: `NAS for ${s.name}`, to: `/solutions/${s.slug}` })) },
+  { label: 'NAS Products', icon: HardDrive, to: '/products', children: productLinks },
+  { label: 'Solutions', icon: Boxes, to: '/solutions', children: solutions.map((s) => ({ label: `NAS for ${s.name}`, to: `/solutions/${s.slug}` })) },
   { label: 'Brands', icon: BadgeCheck, to: '/brands/synology', children: brands.map((b) => ({ label: b.name, to: `/brands/${b.slug}` })) },
   { label: 'Rent a NAS', icon: CalendarClock, to: '/rent' },
-  { label: 'Services', icon: Wrench, to: '/services/installation', children: services.map((s) => ({ label: s.name, to: `/services/${s.slug}` })) },
+  { label: 'Services', icon: Wrench, to: '/services', children: services.map((s) => ({ label: s.name, to: `/services/${s.slug}` })) },
   {
-    label: 'Tools', icon: SlidersHorizontal, to: '/tools/configurator', children: [
+    label: 'NAS Tools', icon: SlidersHorizontal, to: '/tools/configurator', children: [
       { label: 'NAS ROI Calculator', to: '/tools/calculator' },
       { label: 'NAS Configurator', to: '/tools/configurator' },
       { label: 'NAS Finder', to: '/finder' },
     ],
   },
   { label: 'Resources', icon: BookOpen, to: '/resources/guides', children: resources.map((r) => ({ label: r.name, to: `/resources/${r.slug}` })) },
-  { label: 'About', icon: Info, to: '/about' },
 ];
 
 export const brandName = (slug) =>
-  ({ synology: 'Synology', qnap: 'QNAP', ugreen: 'UGREEN', asustor: 'Asustor' })[slug] ?? slug;
+  ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
+
+// Parent company. Links taken from digibuggy.com (checked 25 Sep 2026).
+export const digibuggy = {
+  site: 'https://digibuggy.com/',
+  email: 'sales@digibuggy.com',
+  whatsapp: '+91 93114 47394',
+  socials: [
+    { label: 'WhatsApp', href: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
+    { label: 'Instagram', href: 'https://www.instagram.com/digibuggy/' },
+    { label: 'YouTube', href: 'https://www.youtube.com/@digibuggy' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/digibuggy' },
+    { label: 'Facebook', href: 'https://www.facebook.com/digibuggy' },
+    { label: 'X', href: 'https://twitter.com/digibuggy' },
+  ],
+};
