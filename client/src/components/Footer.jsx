@@ -64,6 +64,7 @@ export default function Footer() {
             <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white">Terms</Link>
             <Link to="/sitemap" className="hover:text-white">Sitemap</Link>
+            <Link to="/admin" rel="nofollow" className="hover:text-white">Admin</Link>
           </div>
         </div>
       </div>
