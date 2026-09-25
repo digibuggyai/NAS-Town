@@ -42,7 +42,7 @@ export default function Products() {
           {list.map((p) => <ProductCard key={p.slug} product={p} />)}
           {data && list.length === 0 && <p className="col-span-full py-16 text-center text-muted">No systems match those filters yet.</p>}
         </div>
-        <p className="mt-6 text-xs text-subtle">Prices are indicative and may vary. Drives are sold separately unless stated.</p>
+        <p className="mt-6 text-xs text-subtle">Diskless unit prices, GST inclusive. Add drives, installation and AMC in the configurator for a complete quote.</p>
       </section>
       <FinalCta />
     </>

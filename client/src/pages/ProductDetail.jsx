@@ -22,9 +22,18 @@ export default function ProductDetail() {
   if (!p) return <div className="mx-auto h-[70vh] max-w-7xl px-4 pt-40"><div className="glass h-full animate-pulse rounded-[2rem]" /></div>;
 
   const specs = [
-    ['Brand', brandName(p.brand)], ['Drive bays', p.bays], ['Processor', p.cpu], ['Memory', p.memory],
-    ['Networking', p.network], ['Max raw capacity', p.max_raw_tb ? `${p.max_raw_tb} TB` : '–'], ['Best for', p.segment],
-  ];
+    ['Brand', brandName(p.brand)],
+    ['Drive bays', p.bays_with_expansion ? `${p.bays} (${p.bays_with_expansion} with expansion)` : p.bays],
+    ['RAID levels', p.raid?.map((r) => r.replace('RAID', '')).join(' / ')],
+    ['Processor', p.cpu],
+    ['Memory', p.memory],
+    ['M.2 slots', p.m2_slots || 'None'],
+    ['Networking', p.network],
+    ['Network upgrade', p.networkUpgrade],
+    ['Largest drive', p.max_drive_tb ? `${p.max_drive_tb} TB per bay` : null],
+    ['Max raw capacity', p.max_raw_tb ? `${p.max_raw_tb} TB` : null],
+    ['Warranty', p.warranty],
+  ].filter(([, v]) => v != null && v !== '');
 
   return (
     <>
@@ -40,7 +49,7 @@ export default function ProductDetail() {
             <h1 className="heading mt-4 text-3xl sm:text-4xl">{p.model}</h1>
             <p className="mt-5 text-base text-muted">{p.summary}</p>
             <p className="mt-8 text-2xl font-semibold">{formatInr(p.price_inr)}</p>
-            <p className="mt-1 text-xs text-subtle">Indicative price, diskless. Final quote includes drives and setup options.</p>
+            <p className="mt-1 text-xs text-subtle">Diskless unit price, GST inclusive. Build it with drives in the configurator for a complete quote.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to={`/tools/configurator?model=${p.slug}`} className="btn btn-primary">Configure this NAS</Link>
               {p.rentable && <Link to="/rent" className="btn btn-glass">Rent this NAS</Link>}
@@ -50,7 +59,7 @@ export default function ProductDetail() {
               {specs.map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-6 py-3.5 text-sm">
                   <dt className="text-muted">{k}</dt>
-                  <dd className="text-right capitalize">{v}</dd>
+                  <dd className="text-right">{v}</dd>
                 </div>
               ))}
             </dl>

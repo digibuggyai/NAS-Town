@@ -5,3 +5,6 @@ client/dist/
 !.env.example
 *.log
 .DS_Store
+
+# Internal floor prices: never commit
+server/src/db/floors.local.json

@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
@@ -15,9 +16,13 @@ import About from './pages/About.jsx';
 import SitemapPage from './pages/SitemapPage.jsx';
 import NotFound from './pages/NotFound.jsx';
 
+// Staff area: loaded only when visited, never linked from the public site.
+const AdminApp = lazy(() => import('./pages/admin/AdminApp.jsx'));
+
 export default function App() {
   return (
     <Routes>
+      <Route path="admin/*" element={<Suspense fallback={null}><AdminApp /></Suspense>} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />

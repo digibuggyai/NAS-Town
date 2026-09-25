@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
-import { useProducts } from '../lib/hooks.js';
 import { formatInr } from '../lib/api.js';
-import { defaultRaid, raidLevels } from '../lib/raid.js';
+import { usePricing } from '../lib/nas/usePricing.js';
+import { RAID_INFO, buildableSizes, suggestBuilds } from '../lib/nas/logic.js';
 
 const videoPresets = [
   ['1080p H.264', 15],
@@ -12,8 +12,6 @@ const videoPresets = [
   ['4K H.264', 90],
   ['4K ProRes 422', 330],
 ];
-const driveSizes = [4, 8, 12, 16, 20];
-const bayOptions = [2, 4, 5, 8];
 
 function Slider({ label, value, onChange, min, max, step = 1, suffix = '' }) {
   return (
@@ -50,9 +48,8 @@ export default function Calculator() {
   const [years, setYears] = useState(3);
   // ROI assumptions, editable by the visitor.
   const [cloudPerTb, setCloudPerTb] = useState(350);
-  const [drivePerTb, setDrivePerTb] = useState(1800);
 
-  const { data: products } = useProducts();
+  const { pricing: P, error: pricingError } = usePricing('public');
 
   const r = useMemo(() => {
     const yearlyTb = (photosPerYear * photoMb) / 1e6 + (videoHours * videoPresets[videoPreset][1]) / 1000;
@@ -60,25 +57,20 @@ export default function Calculator() {
     const base = existingTb + backupTb + yearlyTb * years;
     const needTb = Math.ceil(base * 1.2 * 10) / 10; // 20% headroom for versions and snapshots
 
-    // Smallest bay count and drive size that covers the need with the default RAID level.
+    // Cheapest real RAID 5 build from the live price list that covers the need.
     let plan = null;
-    for (const bays of bayOptions) {
-      for (const size of driveSizes) {
-        const raid = defaultRaid(bays);
-        const usable = raidLevels[raid].usable(bays, size);
-        if (usable >= needTb) { plan = { bays, size, raid, usable, raw: bays * size }; break; }
-      }
-      if (plan) break;
+    if (P) {
+      const catalogue = { raid: 'RAID5', models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
+      const target = buildableSizes(catalogue).find((s) => s >= needTb);
+      if (target) plan = suggestBuilds({ targetTB: target, ...catalogue })[0] ?? null;
     }
-
-    const nas = plan && products?.filter((p) => p.bays >= plan.bays && p.price_inr).sort((a, b) => a.price_inr - b.price_inr)[0];
-    const nasCost = plan ? (nas?.price_inr ?? 0) + plan.raw * drivePerTb : null;
+    const nasCost = plan ? plan.totalQuote : null;
     const cloudMonthly = needTb * cloudPerTb;
     const cloudTotal = cloudMonthly * 12 * years;
     const breakEvenMonths = nasCost && cloudMonthly ? Math.ceil(nasCost / cloudMonthly) : null;
 
-    return { yearlyTb, needTb, plan, nas, nasCost, cloudMonthly, cloudTotal, breakEvenMonths };
-  }, [existingTb, photosPerYear, photoMb, videoHours, videoPreset, devices, deviceGb, years, cloudPerTb, drivePerTb, products]);
+    return { yearlyTb, needTb, plan, nasCost, cloudMonthly, cloudTotal, breakEvenMonths };
+  }, [existingTb, photosPerYear, photoMb, videoHours, videoPreset, devices, deviceGb, years, cloudPerTb, P]);
 
   return (
     <>
@@ -115,8 +107,8 @@ export default function Calculator() {
           <h2 className="mt-10 text-xl font-medium">Cost assumptions</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <NumberField label="Cloud storage, per TB / month" value={cloudPerTb} onChange={setCloudPerTb} prefix="₹" />
-            <NumberField label="NAS hard drive, per TB" value={drivePerTb} onChange={setDrivePerTb} prefix="₹" />
           </div>
+          <p className="mt-3 text-xs text-subtle">NAS and drive prices come from our current price list, GST inclusive.</p>
         </Reveal>
 
         <div className="lg:sticky lg:top-28 lg:self-start">
@@ -128,10 +120,10 @@ export default function Calculator() {
             {r.plan ? (
               <div className="mt-8 grid grid-cols-2 gap-3">
                 {[
-                  ['Suggested', `${r.plan.bays}-bay NAS`],
-                  ['Drives', `${r.plan.bays} × ${r.plan.size} TB`],
-                  ['Protection', raidLevels[r.plan.raid].label],
-                  ['Usable', `≈ ${r.plan.usable} TB`],
+                  ['Suggested', `${r.plan.units > 1 ? `${r.plan.units} × ` : ''}${r.plan.model.brand} ${r.plan.model.model}`],
+                  ['Drives', `${r.plan.drivesPerUnit * r.plan.units} × ${r.plan.driveCap} TB ${r.plan.driveLine}`],
+                  ['Protection', RAID_INFO[r.plan.raid].title],
+                  ['Usable', `${r.plan.totalUsable} TB`],
                 ].map(([k, v]) => (
                   <div key={k} className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
                     <p className="text-xs text-subtle">{k}</p>
@@ -141,7 +133,7 @@ export default function Calculator() {
               </div>
             ) : (
               <p className="mt-8 rounded-2xl bg-white/[0.04] p-4 text-sm ring-1 ring-white/10">
-                That's beyond a single 8-bay system. Talk to us about expansion units or enterprise storage.
+                {pricingError ? 'Pricing is unavailable right now. Please try again shortly.' : P ? 'That is beyond what we quote online. Talk to us about expansion units or enterprise storage.' : 'Loading prices…'}
               </p>
             )}
 
@@ -149,7 +141,7 @@ export default function Calculator() {
               <div className="mt-8 border-t border-line pt-6">
                 <p className="eyebrow mb-4">NAS vs cloud over {years} {years > 1 ? 'years' : 'year'}</p>
                 <div className="grid gap-2 text-sm">
-                  <div className="flex justify-between"><span className="text-muted">NAS + drives (one-time)</span><span>{formatInr(r.nasCost)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted">NAS + drives (one-time, GST incl.)</span><span>{formatInr(r.nasCost)}</span></div>
                   <div className="flex justify-between"><span className="text-muted">Cloud ({formatInr(r.cloudMonthly)}/mo)</span><span>{formatInr(r.cloudTotal)}</span></div>
                 </div>
                 {r.breakEvenMonths && (
@@ -157,11 +149,11 @@ export default function Calculator() {
                     The NAS pays for itself in about <span className="font-semibold">{r.breakEvenMonths} months</span>.
                   </p>
                 )}
-                <p className="mt-2 text-xs text-subtle">Estimate only. Based on {r.nas ? r.nas.model : 'an indicative NAS price'} and your assumptions above.</p>
+                <p className="mt-2 text-xs text-subtle">Estimate only. Hardware from our current price list; the cloud price is your assumption.</p>
               </div>
             )}
             <div className="mt-8 grid gap-2 sm:grid-cols-2">
-              <Link to="/tools/configurator" className="btn btn-primary">Build This NAS</Link>
+              <Link to={r.plan ? `/tools/configurator?model=${r.plan.model.slug}&target=${r.plan.totalUsable}&raid=RAID5` : '/tools/configurator'} className="btn btn-primary">Build This NAS</Link>
               <Link to="/about#contact" className="btn btn-glass">Talk to an Expert</Link>
             </div>
           </Reveal>
