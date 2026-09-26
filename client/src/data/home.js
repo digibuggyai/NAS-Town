@@ -1,11 +1,11 @@
-// Homepage copy (optimised content). Edit words here; layout lives in src/sections/.
+// Homepage copy. Headings are the approved ones; body copy is tightened so each
+// section says one thing once. Edit words here; layout lives in src/sections/.
 
 export const hero = {
   eyebrow: 'Store · Protect · Share · Grow',
   title: 'Your Data Deserves a *Home.*',
   body: [
-    'Find, configure and manage the right NAS storage solution for the way you work, create and store.',
-    'From personal files and photo libraries to business data, backups and surveillance, find a NAS built around your needs.',
+    'Find, configure and manage the right NAS for the way you work, create and store, from family photos and personal files to business data, backups and surveillance.',
   ],
 };
 
@@ -13,9 +13,7 @@ export const problem = {
   eyebrow: 'The problem',
   title: 'Your Data Is Growing.',
   body: [
-    'Photos, videos, projects, business files and backups are everywhere.',
-    'External hard drives fill up. Files get scattered across devices. Cloud storage costs keep increasing.',
-    'As your data grows, managing it becomes harder.',
+    'Photos, videos, projects and backups end up everywhere. Drives fill up, files scatter across devices, and cloud bills keep climbing.',
     'A NAS gives you one central place to store, protect and access your data.',
   ],
   cta: 'Why NAS?',
@@ -26,40 +24,28 @@ export const whatIsNas = {
   title: 'More Than Storage.',
   body: [
     'A NAS (Network Attached Storage) is a dedicated storage device connected to your network, giving you one central place for your files, backups, media and important data.',
-    'Instead of keeping your data across multiple hard drives, computers and cloud accounts, a NAS brings everything together in one accessible storage system.',
   ],
   points: [
-    { key: 'store', title: 'Store', body: 'Keep your files, photos, videos and projects in one place.' },
-    { key: 'protect', title: 'Protect', body: 'Create backups and protect important data with redundancy.' },
-    { key: 'share', title: 'Share', body: 'Share files and folders across devices, users and teams.' },
-    { key: 'access', title: 'Access', body: 'Access your data from your home, office or remotely.' },
+    { key: 'store', title: 'Store', body: 'Files, photos, videos and projects in one place.' },
+    { key: 'protect', title: 'Protect', body: 'Backups and redundancy, so one failed drive loses nothing.' },
+    { key: 'share', title: 'Share', body: 'Folders across devices, users and teams.' },
+    { key: 'access', title: 'Access', body: 'From home, the office or anywhere remotely.' },
   ],
   cta: 'Learn About NAS',
-};
-
-export const finder = {
-  eyebrow: 'Find your NAS',
-  title: 'Not Sure Which NAS You Need?',
-  body: [
-    "Choosing a NAS doesn't have to be complicated.",
-    "Tell us what you're storing, how much storage you need and how you plan to use your NAS. We'll help you find the right NAS configuration for your workflow.",
-  ],
 };
 
 export const solutions = {
   eyebrow: 'NAS solutions',
   title: 'NAS for the Way You Work.',
-  body: [
-    'The right NAS depends on what you do with your data.',
-    'Explore NAS solutions designed around your workflow, storage requirements and everyday needs.',
-  ],
+  body: ['The right NAS depends on what you do with your data.'],
+  // `setup` is a typical starting configuration: a concrete answer, not a promise.
   cards: [
-    { slug: 'photographers', title: 'NAS for Photographers', body: 'Store, organise, back up and access your growing photo library, RAW files and client projects.', cta: 'Explore Photography NAS' },
-    { slug: 'videographers', title: 'NAS for Videographers', body: 'Centralise large video files, project assets and archives with storage built for demanding video workflows.', cta: 'Explore Video NAS' },
-    { slug: 'creators', title: 'NAS for Creators', body: 'Keep your creative projects, media assets, backups and working files organised in one central storage system.', cta: 'Explore Creator NAS' },
-    { slug: 'business', title: 'NAS for Business', body: 'Centralise company files, manage user access, protect business data and simplify team collaboration.', cta: 'Explore Business NAS' },
-    { slug: 'home', title: 'NAS for Home', body: 'Create your own private cloud for family photos, videos, backups, documents and media.', cta: 'Explore Home NAS' },
-    { slug: 'surveillance', title: 'NAS for Surveillance', body: 'Store and manage surveillance footage with reliable storage designed for continuous recording.', cta: 'Explore Surveillance NAS' },
+    { slug: 'photographers', image: '/images/solutions/photographers.webp', alt: 'Hands holding a camera at golden hour', title: 'Photographers', body: 'RAW files, client projects and a photo library that keeps growing.', setup: '4-bay · RAID 5 · 2.5GbE', cta: 'Explore Photography NAS' },
+    { slug: 'videographers', image: '/images/solutions/videographers.webp', alt: 'Video editor working on a timeline at his desk', title: 'Videographers', body: 'Large footage, project assets and archives, fast enough to edit from.', setup: '4–8 bay · RAID 5 · 2.5–10GbE', cta: 'Explore Video NAS' },
+    { slug: 'creators', image: '/images/solutions/creators.webp', alt: 'Camera and microphone set up for recording', title: 'Creators', body: 'Media, working files and backups in one organised system.', setup: '4-bay · RAID 5 · NVMe cache', cta: 'Explore Creator NAS' },
+    { slug: 'business', image: '/images/solutions/business.webp', alt: 'A team working together on laptops', title: 'Business', body: 'Company files with user access, backups and team collaboration.', setup: '4–8 bay · RAID 5/6 · ECC memory', cta: 'Explore Business NAS' },
+    { slug: 'home', image: '/images/solutions/home.webp', alt: 'A family relaxing together at home', title: 'Home', body: 'A private cloud for family photos, videos, backups and documents.', setup: '2-bay · RAID 1 mirror', cta: 'Explore Home NAS' },
+    { slug: 'surveillance', image: '/images/solutions/surveillance.webp', alt: 'Security camera mounted on a wall', title: 'Surveillance', body: 'Continuous recording from many cameras, kept safe and searchable.', setup: '4-bay+ · RAID 5 · 24/7 drives', cta: 'Explore Surveillance NAS' },
   ],
   cta: 'Explore All NAS Solutions',
 };
@@ -67,22 +53,20 @@ export const solutions = {
 export const featured = {
   eyebrow: 'Featured NAS',
   title: 'Meet Your NAS.',
-  body: 'Explore carefully selected NAS systems from leading brands, built for different storage needs, workflows and budgets.',
+  body: 'Selected systems from leading brands. Prices are for the unit, GST inclusive.',
   cta: 'View All NAS Products',
 };
 
 export const why = {
   eyebrow: 'Why NASTOWN',
   title: "We Don't Just Sell NAS.",
-  body: [
-    'Choosing a NAS is only the first step.',
-    'NASTOWN helps you choose the right system, configure it for your requirements, set it up and keep it running.',
-  ],
+  body: ['Choosing a NAS is only the first step. We help you pick it, set it up and keep it running.'],
+  // `fact` is a concrete, checkable detail for each promise.
   points: [
-    { key: 'guidance', title: 'Expert Guidance', body: 'Get help choosing a NAS based on your storage requirements, workflow and budget.' },
-    { key: 'install', title: 'Installation & Migration', body: 'Get your NAS installed, configured and your existing data migrated properly.' },
-    { key: 'brands', title: 'Multiple Brands', body: 'Explore NAS solutions from leading brands and choose the platform that fits your requirements.' },
-    { key: 'support', title: 'Long-Term Support', body: "From upgrades and troubleshooting to maintenance and support, we're here beyond the purchase." },
+    { key: 'guidance', title: 'Expert Guidance', body: 'Help choosing a NAS for your storage, workflow and budget.', fact: 'On WhatsApp or at our Nehru Place showroom' },
+    { key: 'install', title: 'Installation & Migration', body: 'Installed, configured, and your existing data moved across properly.', fact: 'Installation · RAID setup · Data migration' },
+    { key: 'brands', title: 'Multiple Brands', body: 'Compare platforms and choose the one that fits.', fact: 'Synology · QNAP' },
+    { key: 'support', title: 'Long-Term Support', body: 'Upgrades, troubleshooting and maintenance, long after the purchase.', fact: 'Remote from ₹2,000 + tax · On-site from ₹5,000 + tax' },
   ],
   cta: 'Explore Our Services',
 };
@@ -90,8 +74,5 @@ export const why = {
 export const finalCta = {
   eyebrow: 'Ready to get started?',
   title: 'Ready to Build Your Storage?',
-  body: [
-    "Tell us what you're storing, how you work and what you need from your storage.",
-    "We'll help you find the right NAS solution.",
-  ],
+  body: ["Tell us what you're storing and how you work. We'll help you find the right NAS."],
 };

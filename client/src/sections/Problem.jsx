@@ -17,7 +17,7 @@ export default function Problem() {
 
   return (
     <section className="theme-dark">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 sm:px-6 md:py-28 lg:grid-cols-[1fr_1fr] lg:gap-20">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[1fr_1fr] lg:gap-20">
         <Reveal>
           <p className="eyebrow mb-4">{problem.eyebrow}</p>
           <h2 className="h-section">{problem.title}</h2>

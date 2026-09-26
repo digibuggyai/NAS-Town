@@ -10,7 +10,7 @@ export default function ProductShowcase() {
   const { data, error, loading } = useProducts({ featured: true });
   return (
     <section className="bg-surface">
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHeading eyebrow={featured.eyebrow} title={featured.title}><p>{featured.body}</p></SectionHeading>
           <Link to="/products" className="link inline-flex items-center gap-2 text-[0.95rem]">

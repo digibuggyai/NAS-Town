@@ -14,6 +14,13 @@ const facts = [
   ['Showroom', digibuggy.addressShort],
 ];
 
+// Callouts for Fig. 1, positioned against the drawing's geometry (see NasVisual: 4 sleds, LEDs at 68% height).
+const annotations = [
+  { label: 'Drive bays', note: 'From 2 to 8 drives in one box', top: '19%', lineTop: '29%', from: '21%', to: '31.5%', side: 'left' },
+  { label: 'Status LEDs', note: 'A glance tells you each drive is healthy', top: '56%', lineTop: '63%', from: '21%', to: '35%', side: 'left' },
+  { label: 'RAID', note: 'One drive can fail. Nothing is lost.', top: '39%', lineTop: '46.5%', from: '68.5%', to: '79%', side: 'right' },
+];
+
 export default function Hero() {
   const root = useRef(null);
 
@@ -27,8 +34,8 @@ export default function Hero() {
   }, { scope: root });
 
   return (
-    <section ref={root} className="mx-auto max-w-7xl px-4 pt-28 pb-16 sm:px-6 md:pt-36 lg:pb-24">
-      <div className="grid items-end gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+    <section ref={root} className="mx-auto max-w-7xl px-4 pt-28 pb-14 sm:px-6 md:pt-32 lg:pb-20">
+      <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
         <div>
           <p className="hero-fade eyebrow">{hero.eyebrow}</p>
           <SplitHeading as="h1" immediate delay={0.1} text={hero.title} className="display mt-5" />
@@ -42,8 +49,20 @@ export default function Hero() {
         </div>
 
         <figure className="hero-figure">
-          <div className="plate px-8 pt-10 pb-4 sm:px-12">
-            <NasVisual bays={4} live className="mx-auto w-full max-w-sm" />
+          {/* Annotated like a manual diagram. Positions are % of the plate; the NAS is centred at 58% width. */}
+          <div className="plate relative aspect-[16/11]">
+            <NasVisual bays={4} live className="absolute top-1/2 left-1/2 w-[58%] -translate-x-1/2 -translate-y-1/2" />
+            {annotations.map(({ label, note, top, lineTop, from, to, side }) => (
+              <div key={label} aria-hidden className="hidden sm:block">
+                <div className="absolute h-px bg-line-strong" style={{ top: lineTop, left: from, width: `calc(${to} - ${from})` }}>
+                  <span className={`absolute top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-fg ${side === 'left' ? 'right-0 translate-x-1/2' : 'left-0 -translate-x-1/2'}`} />
+                </div>
+                <div className={`absolute w-[19%] ${side === 'left' ? 'left-[3%]' : 'right-[3%] text-right'}`} style={{ top }}>
+                  <p className="mono text-[0.68rem] tracking-wide text-fg uppercase">{label}</p>
+                  <p className="mt-0.5 text-[0.72rem] leading-snug text-muted">{note}</p>
+                </div>
+              </div>
+            ))}
           </div>
           <figcaption className="mt-3 flex justify-between gap-4 text-xs text-subtle">
             <span className="mono whitespace-nowrap">Fig. 1</span>

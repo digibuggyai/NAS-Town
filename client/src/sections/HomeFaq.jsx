@@ -3,16 +3,19 @@ import { Plus } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { faqs } from '../data/site.js';
 
+// The five questions buyers ask first; the rest live on the FAQ page.
+const top = faqs.slice(0, 5);
+
 // FAQPage structured data so the questions can appear directly in search results.
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+  mainEntity: top.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
 };
 
 export default function HomeFaq() {
   return (
-    <section id="faq" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 md:py-28">
+    <section id="faq" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 sm:px-6 md:py-24">
       <script type="application/ld+json">{JSON.stringify(schema)}</script>
       <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
         <Reveal>
@@ -24,7 +27,7 @@ export default function HomeFaq() {
           </p>
         </Reveal>
         <Reveal as="div" delay={100} className="rule-list border-y border-line">
-          {faqs.map(({ q, a }) => (
+          {top.map(({ q, a }) => (
             <details key={q} className="group">
               <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[1.05rem]">
                 {q}

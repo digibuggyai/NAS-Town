@@ -4,10 +4,11 @@ import Reveal from '../components/Reveal.jsx';
 import SectionHeading from '../components/SectionHeading.jsx';
 import { solutions } from '../data/home.js';
 
-// An index, not a card grid: six options read faster as rows you can scan down.
+// A hairline grid, like a spec table: six options you can compare at a glance,
+// each with the setup people usually start from.
 export default function Solutions() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <SectionHeading eyebrow={solutions.eyebrow} title={solutions.title}>
           {solutions.body.map((p) => <p key={p}>{p}</p>)}
@@ -17,20 +18,32 @@ export default function Solutions() {
         </Link>
       </div>
 
-      <Reveal as="ul" delay={100} className="rule-list mt-12 border-y border-line">
-        {solutions.cards.map(({ slug, title, body, cta }, i) => (
-          <li key={slug}>
-            <Link
-              to={`/solutions/${slug}`}
-              className="group grid gap-x-8 gap-y-1 py-6 transition-colors hover:bg-surface sm:grid-cols-[3rem_1fr_1.5fr_auto] sm:items-baseline sm:px-3"
-            >
-              <span className="mono hidden text-xs text-subtle sm:block">0{i + 1}</span>
-              <h3 className="text-xl sm:text-2xl">{title}</h3>
-              <p className="max-w-lg text-[0.95rem] text-muted">{body}</p>
-              <span className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted transition-colors group-hover:text-fg sm:mt-0">
-                <span className="sm:sr-only">{cta}</span>
-                <ArrowUpRight className="size-5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </span>
+      <Reveal as="ul" delay={80} className="mt-10 grid border-t border-line sm:grid-cols-2 lg:grid-cols-3">
+        {solutions.cards.map(({ slug, title, body, setup, cta, image, alt }) => (
+          <li key={slug} className="border-b border-line sm:odd:border-r lg:border-r lg:[&:nth-child(3n)]:border-r-0">
+            <Link to={`/solutions/${slug}`} aria-label={cta} className="group flex h-full flex-col py-5 transition-colors hover:bg-surface sm:p-6">
+              {/* Photos are toned slightly toward the palette; full colour returns on hover. */}
+              <div className="mb-5 aspect-[16/9] overflow-hidden rounded-md bg-surface sm:aspect-[4/3]">
+                <img
+                  src={image}
+                  alt={alt}
+                  width="800"
+                  height="600"
+                  loading="lazy"
+                  decoding="async"
+                  className="size-full object-cover saturate-[.8] transition duration-500 ease-out group-hover:scale-[1.03] group-hover:saturate-100"
+                />
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-xl">
+                  <span className="text-subtle">NAS for </span>{title}
+                </h3>
+                <ArrowUpRight className="mt-1 size-5 shrink-0 text-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-fg" />
+              </div>
+              <p className="mt-2 text-[0.95rem] text-muted">{body}</p>
+              <p className="mono mt-auto pt-5 text-xs">
+                <span className="text-subtle">Typical setup  </span>{setup}
+              </p>
             </Link>
           </li>
         ))}

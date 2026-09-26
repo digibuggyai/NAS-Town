@@ -8,7 +8,7 @@ export default function WhatIsNas() {
   const [term, rest] = definition.split(/ is (.+)/s); // "A NAS (Network Attached Storage)" / "a dedicated…"
 
   return (
-    <section id="what-is-nas" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 md:py-28">
+    <section id="what-is-nas" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-16 sm:px-6 md:py-24">
       <div className="grid gap-8 lg:grid-cols-[1fr_2fr] lg:gap-16">
         <Reveal>
           <p className="eyebrow mb-4">{whatIsNas.eyebrow}</p>
@@ -19,14 +19,14 @@ export default function WhatIsNas() {
           <p className="text-xl leading-relaxed sm:text-[1.375rem]">
             <span className="font-semibold">{term}</span> is {rest}
           </p>
-          <p className="mt-5 text-muted">{second}</p>
+          {second && <p className="mt-5 text-muted">{second}</p>}
           <Link to="/resources/guides" className="link mt-6 inline-flex items-center gap-2 text-[0.95rem]">
             {whatIsNas.cta} <ArrowRight className="size-4" />
           </Link>
         </Reveal>
       </div>
 
-      <Reveal as="ol" delay={150} className="mt-16 grid border-t border-line sm:grid-cols-2 lg:grid-cols-4">
+      <Reveal as="ol" delay={150} className="mt-12 grid border-t border-line sm:grid-cols-2 lg:grid-cols-4">
         {whatIsNas.points.map(({ key, title, body }, i) => (
           <li
             key={key}
