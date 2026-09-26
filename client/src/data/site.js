@@ -224,6 +224,11 @@ export const digibuggy = {
   site: 'https://digibuggy.com/',
   email: 'sales@digibuggy.com',
   whatsapp: '+91 93114 47394',
+  whatsappHref: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.',
+  // From digibuggy.com/contact-us (checked 26 Sep 2026).
+  address: '207, Second Floor, Mansarovar Building, 90 Nehru Place, New Delhi 110019',
+  addressShort: 'Nehru Place, New Delhi',
+  mapsHref: 'https://www.google.com/maps/search/?api=1&query=Digibuggy+Mansarovar+Building+90+Nehru+Place+New+Delhi',
   socials: [
     { label: 'WhatsApp', href: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
     { label: 'Instagram', href: 'https://www.instagram.com/digibuggy/' },

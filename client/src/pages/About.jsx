@@ -22,7 +22,7 @@ export default function About() {
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         <div className="grid gap-5 md:grid-cols-3">
           {values.map(({ icon: Icon, title, body }, i) => (
-            <Reveal key={title} delay={i * 80} className="glass liquid rounded-[2rem] p-8">
+            <Reveal key={title} delay={i * 80} className="glass rounded-xl p-8">
               <Icon className="size-7 text-accent" />
               <h2 className="mt-8 text-xl font-medium">{title}</h2>
               <p className="mt-3 text-muted">{body}</p>
@@ -36,7 +36,7 @@ export default function About() {
           <p className="eyebrow mb-5">Contact</p>
           <h2 className="heading text-3xl sm:text-4xl">Let's talk storage.</h2>
           <p className="mt-5 text-base text-muted">Have a question or need a custom recommendation? Get in touch with our team.</p>
-          <div className="glass mt-8 rounded-3xl p-6">
+          <div className="glass mt-8 rounded-xl p-6">
             <a href={digibuggy.site} target="_blank" rel="noopener" className="inline-block">
               <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-5 w-auto" />
             </a>

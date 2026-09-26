@@ -62,17 +62,17 @@ export default function Finder() {
             <h3 className="mt-3 text-2xl font-medium tracking-tight">We'd start with these.</h3>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => { setAnswers({}); setResult(null); }} className="btn btn-glass"><RotateCcw className="size-4" /> Start over</button>
+            <button onClick={() => { setAnswers({}); setResult(null); }} className="btn btn-secondary"><RotateCcw className="size-4" /> Start over</button>
             <Link to="/about#contact" className="btn btn-primary">Talk to an Expert</Link>
           </div>
         </div>
         {result.builds.length === 0 ? (
-          <p className="glass rounded-3xl p-8 text-muted">Nothing on our list reaches that size in one setup. Our team can plan a larger deployment for you.</p>
+          <p className="glass rounded-xl p-8 text-muted">Nothing on our list reaches that size in one setup. Our team can plan a larger deployment for you.</p>
         ) : (
           <div className="grid gap-5 md:grid-cols-3">
             {result.builds.map((b, i) => (
-              <article key={b.model.id} className="tilt glass liquid flex flex-col rounded-3xl p-5">
-                <div className="rounded-2xl bg-white/[0.02] px-6 pt-5 pb-1">
+              <article key={b.model.id} className="glass flex flex-col rounded-xl p-5">
+                <div className="rounded-lg bg-surface px-6 pt-5 pb-1">
                   <NasVisual bays={b.model.bays} className="mx-auto h-32 w-auto" />
                 </div>
                 <div className="mt-4 flex items-center justify-between">
@@ -87,7 +87,7 @@ export default function Finder() {
                 <p className="mt-auto pt-4 text-xl font-medium">{inr(b.totalQuote)}</p>
                 <p className="text-xs text-subtle">Hardware, GST inclusive</p>
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <Link to={`/products/${b.model.slug}`} className="btn btn-glass !px-3 !py-2.5 !text-sm">Details</Link>
+                  <Link to={`/products/${b.model.slug}`} className="btn btn-secondary !px-3 !py-2.5 !text-sm">Details</Link>
                   <Link to={`/tools/configurator?model=${b.model.slug}&target=${result.targetTB}&raid=${b.raid}`} className="btn btn-primary !px-3 !py-2.5 !text-sm">Configure</Link>
                 </div>
               </article>
@@ -99,7 +99,7 @@ export default function Finder() {
   }
 
   return (
-    <div className="glass rounded-[2rem] p-6 sm:p-10">
+    <div className="glass rounded-xl p-6 sm:p-10">
       <ol className="grid gap-8 lg:grid-cols-3 lg:gap-6">
         {steps.map((step, i) => {
           const active = i === 0 || answers[steps[i - 1].key];
@@ -131,7 +131,7 @@ export default function Finder() {
         <p className="text-sm text-muted">
           {pricingError ? 'Pricing is unavailable right now. Please try again shortly.' : complete ? 'All set. Let’s find your NAS.' : `${steps.filter((s) => answers[s.key]).length} of 3 answered`}
         </p>
-        <button onClick={submit} disabled={!complete || !pricing} className="magnetic btn btn-primary disabled:opacity-40">
+        <button onClick={submit} disabled={!complete || !pricing} className="btn btn-primary disabled:opacity-40">
           Find My NAS <ArrowRight className="size-4" />
         </button>
       </div>

@@ -20,10 +20,10 @@ export default function Service() {
         title={s.h1}
         intro={s.intro}
         aside={
-          <div className="glass liquid rounded-[2rem] p-8">
+          <div className="glass rounded-xl p-8">
             <div className="flex items-center justify-between">
               <Icon className="size-8 text-accent" />
-              {s.price && <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-black">{s.price}</span>}
+              {s.price && <span className="rounded-full bg-fg px-3 py-1.5 text-xs font-medium text-bg">{s.price}</span>}
             </div>
             <p className="eyebrow mt-8 mb-4">What's included</p>
             <ul className="grid gap-4">

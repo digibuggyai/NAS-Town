@@ -20,7 +20,7 @@ export default function Rent() {
         eyebrow="Rent a NAS"
         title="Not Ready to Buy? Rent a NAS Instead"
         intro="Need storage for a short-term project, or want to test a setup before committing? Rent a NAS from NASTOWN on flexible terms: full performance, no large upfront investment, and support included."
-        aside={<div className="glass liquid rounded-[2rem] p-10"><NasVisual bays={4} className="w-full" /></div>}
+        aside={<div className="glass rounded-xl p-10"><NasVisual bays={4} className="w-full" /></div>}
       >
         <a href="#rent-form" className="btn btn-primary">Request a Rental</a>
       </PageHero>
@@ -28,7 +28,7 @@ export default function Rent() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="grid gap-4 md:grid-cols-4">
           {steps.map(([t, b], i) => (
-            <Reveal key={t} delay={i * 70} className="glass liquid rounded-3xl p-6">
+            <Reveal key={t} delay={i * 70} className="glass rounded-xl p-6">
               <span className="font-mono text-sm text-accent">0{i + 1}</span>
               <h3 className="mt-6 text-xl font-medium">{t}</h3>
               <p className="mt-2 text-sm text-muted">{b}</p>
@@ -46,7 +46,7 @@ export default function Rent() {
               <p className="eyebrow mb-3">Available to rent</p>
               <ul className="grid gap-2">
                 {data.map((p) => (
-                  <li key={p.slug} className="glass flex items-center justify-between rounded-2xl px-4 py-3 text-sm">
+                  <li key={p.slug} className="glass flex items-center justify-between rounded-lg px-4 py-3 text-sm">
                     <span>{p.model}</span><span className="text-muted">{p.bays}-bay</span>
                   </li>
                 ))}

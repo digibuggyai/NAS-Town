@@ -24,7 +24,7 @@ export default function Solution() {
         title={s.h1}
         intro={s.intro}
         aside={
-          <div className="glass liquid rounded-[2rem] p-8">
+          <div className="glass rounded-xl p-8">
             <Icon className="size-8 text-accent" />
             <ul className="mt-6 grid gap-4">
               {s.points.map((pt) => (
@@ -35,7 +35,7 @@ export default function Solution() {
         }
       >
         <Link to="/finder" className="btn btn-primary">Find My NAS</Link>
-        <Link to="/tools/configurator" className="btn btn-glass">Build My NAS</Link>
+        <Link to="/tools/configurator" className="btn btn-secondary">Build My NAS</Link>
       </PageHero>
 
       {picks.length > 0 && (

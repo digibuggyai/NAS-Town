@@ -11,7 +11,7 @@ export const hero = {
 
 export const problem = {
   eyebrow: 'The problem',
-  title: 'Your Data Is *Growing.*',
+  title: 'Your Data Is Growing.',
   body: [
     'Photos, videos, projects, business files and backups are everywhere.',
     'External hard drives fill up. Files get scattered across devices. Cloud storage costs keep increasing.',
@@ -23,7 +23,7 @@ export const problem = {
 
 export const whatIsNas = {
   eyebrow: 'What is NAS?',
-  title: 'More Than *Storage.*',
+  title: 'More Than Storage.',
   body: [
     'A NAS (Network Attached Storage) is a dedicated storage device connected to your network, giving you one central place for your files, backups, media and important data.',
     'Instead of keeping your data across multiple hard drives, computers and cloud accounts, a NAS brings everything together in one accessible storage system.',
@@ -39,7 +39,7 @@ export const whatIsNas = {
 
 export const finder = {
   eyebrow: 'Find your NAS',
-  title: 'Not Sure Which *NAS You Need?*',
+  title: 'Not Sure Which NAS You Need?',
   body: [
     "Choosing a NAS doesn't have to be complicated.",
     "Tell us what you're storing, how much storage you need and how you plan to use your NAS. We'll help you find the right NAS configuration for your workflow.",
@@ -48,7 +48,7 @@ export const finder = {
 
 export const solutions = {
   eyebrow: 'NAS solutions',
-  title: 'NAS for the *Way You Work.*',
+  title: 'NAS for the Way You Work.',
   body: [
     'The right NAS depends on what you do with your data.',
     'Explore NAS solutions designed around your workflow, storage requirements and everyday needs.',
@@ -66,14 +66,14 @@ export const solutions = {
 
 export const featured = {
   eyebrow: 'Featured NAS',
-  title: 'Meet Your *NAS.*',
+  title: 'Meet Your NAS.',
   body: 'Explore carefully selected NAS systems from leading brands, built for different storage needs, workflows and budgets.',
   cta: 'View All NAS Products',
 };
 
 export const why = {
   eyebrow: 'Why NASTOWN',
-  title: "We Don't Just Sell *NAS.*",
+  title: "We Don't Just Sell NAS.",
   body: [
     'Choosing a NAS is only the first step.',
     'NASTOWN helps you choose the right system, configure it for your requirements, set it up and keep it running.',
@@ -89,7 +89,7 @@ export const why = {
 
 export const finalCta = {
   eyebrow: 'Ready to get started?',
-  title: 'Ready to Build *Your Storage?*',
+  title: 'Ready to Build Your Storage?',
   body: [
     "Tell us what you're storing, how you work and what you need from your storage.",
     "We'll help you find the right NAS solution.",

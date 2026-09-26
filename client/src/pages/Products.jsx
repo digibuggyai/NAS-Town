@@ -41,7 +41,7 @@ export default function Products() {
         intro="From compact 2-bay home NAS units to high-throughput rackmount systems for enterprise workloads, our product range covers every storage need. Compare RAID support, drive bays, RAM, and network speeds to find a system that fits your workflow, whether that's media editing, business backups, or 24/7 surveillance recording."
       />
       <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
-        <div className="glass flex flex-col gap-4 rounded-3xl p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="glass flex flex-col gap-4 rounded-xl p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Size">
             {SIZES.map(([k, label]) => (
               <button key={k} className="chip" aria-pressed={!rackmount && bays === k} onClick={() => setFilter('bays', k)}>{label}</button>
@@ -57,7 +57,7 @@ export default function Products() {
         </div>
 
         {rackmount ? (
-          <div className="glass mt-8 rounded-3xl p-8 text-center">
+          <div className="glass mt-8 rounded-xl p-8 text-center">
             <h2 className="text-xl font-medium">Rackmount NAS, on request</h2>
             <p className="mx-auto mt-2 max-w-md text-muted">
               Rackmount systems are specified for each deployment. Tell us your capacity, rack space and workload and we'll quote the right unit.

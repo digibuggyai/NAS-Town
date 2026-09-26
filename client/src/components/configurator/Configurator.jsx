@@ -31,17 +31,17 @@ export default function Configurator({ source = 'public', params }) {
   if (loading) {
     return (
       <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-        <div className="grid gap-4">{[0, 1, 2].map((i) => <div key={i} className="glass h-40 animate-pulse rounded-[1.75rem]" />)}</div>
-        <div className="glass h-96 animate-pulse rounded-[1.75rem]" />
+        <div className="grid gap-4">{[0, 1, 2].map((i) => <div key={i} className="glass h-40 animate-pulse rounded-xl" />)}</div>
+        <div className="glass h-96 animate-pulse rounded-xl" />
       </div>
     );
   }
   if (error || !pricing) {
     return (
-      <div className="glass mx-auto max-w-lg rounded-[1.75rem] p-8 text-center">
-        <AlertTriangle className="mx-auto size-8 text-amber-200" />
+      <div className="glass mx-auto max-w-lg rounded-xl p-8 text-center">
+        <AlertTriangle className="mx-auto size-8 text-warning" />
         <h2 className="mt-4 text-xl font-medium">Pricing is unavailable right now</h2>
-        <p className="mt-2 text-sm text-muted">{error?.status === 401 || error?.status === 403 ? 'Please sign in again.' : "We don't quote from old price lists. Try again in a moment, or talk to our team."}</p>
+        <p className="mt-2 text-sm text-muted">{error?.status === 401 || error?.status === 403 ? 'Please sign in again.' :"We don't quote from old price lists. Try again in a moment, or talk to our team."}</p>
         <button onClick={reload} className="btn btn-primary mt-6"><RotateCcw className="size-4" /> Try again</button>
       </div>
     );
@@ -97,9 +97,9 @@ function ConfiguratorLoaded({ P, sales, params }) {
           title="How much storage?"
           hint={a.storageMode === 'capacity' ? 'Usable space after RAID protection.' : 'The budget covers the whole quote, including installation and AMC if ticked.'}
           aside={
-            <div className="flex rounded-full bg-white/[0.05] p-1 text-xs ring-1 ring-white/10">
+            <div className="flex rounded-full bg-surface p-1 text-xs ring-1 ring-line">
               {[['capacity', 'By capacity'], ['budget', 'By budget']].map(([mode, label]) => (
-                <button key={mode} onClick={() => set({ storageMode: mode })} className={`rounded-full px-3 py-1.5 transition-colors ${a.storageMode === mode ? 'bg-white text-black' : 'text-white/70 hover:text-white'}`}>
+                <button key={mode} onClick={() => set({ storageMode: mode })} className={`rounded-full px-3 py-1.5 transition-colors ${a.storageMode === mode ? 'bg-fg text-bg' : 'text-muted hover:text-fg'}`}>
                   {label}
                 </button>
               ))}
@@ -123,7 +123,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
                 </select>
               </div>
               {d.movedFrom != null && (
-                <p className="mt-3 text-sm text-amber-100/80">
+                <p className="mt-3 text-sm text-warning">
                   Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives at {RAID_INFO[d.raid].title}.
                 </p>
               )}
@@ -171,10 +171,10 @@ function ConfiguratorLoaded({ P, sales, params }) {
             ))}
           </div>
           {a.storageMode === 'budget' && a.raidAuto && !d.error && (
-            <p className="mt-3 text-sm text-muted">We chose <span className="text-white">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ' with protection.' : '.'}</p>
+            <p className="mt-3 text-sm text-muted">We chose <span className="text-fg">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ' with protection.' : '.'}</p>
           )}
           {d.raid === 'RAID0' && !d.error && (
-            <p className="mt-3 flex items-start gap-2 text-sm text-amber-100/90"><AlertTriangle className="mt-0.5 size-4 shrink-0" /> RAID 0 has no redundancy: one failed drive loses all data.</p>
+            <p className="mt-3 flex items-start gap-2 text-sm text-warning"><AlertTriangle className="mt-0.5 size-4 shrink-0" /> RAID 0 has no redundancy: one failed drive loses all data.</p>
           )}
         </Step>
 
@@ -200,8 +200,8 @@ function ConfiguratorLoaded({ P, sales, params }) {
         </Step>
 
         {d.error ? (
-          <div className="glass flex items-start gap-3 rounded-[1.75rem] p-6 text-sm">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-200" />
+          <div className="glass flex items-start gap-3 rounded-xl p-6 text-sm">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
             <p>{d.error}</p>
           </div>
         ) : (
@@ -212,7 +212,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
               title="Recommended unit"
               hint="Best value first. Each option is the cheapest way that unit reaches your storage."
               aside={d.options.length > 1 && (
-                <button onClick={() => setCompare((c) => !c)} className="text-xs text-white/60 underline-offset-4 hover:text-white hover:underline">
+                <button onClick={() => setCompare((c) => !c)} className="text-xs text-muted underline-offset-4 hover:text-fg hover:underline">
                   {compare ? 'Hide comparison' : 'Compare'}
                 </button>
               )}
@@ -228,9 +228,9 @@ function ConfiguratorLoaded({ P, sales, params }) {
                         onClick={() => set({ modelId: b.model.id, autoPick: false })}
                         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), set({ modelId: b.model.id, autoPick: false }))}
                         aria-pressed={selected}
-                        className={`flex cursor-pointer items-center gap-3 rounded-2xl p-3.5 ring-1 transition-colors ${selected ? 'bg-white/[0.08] ring-white/40' : 'ring-white/10 hover:bg-white/[0.04]'}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-lg p-3.5 ring-1 transition-colors ${selected ? 'bg-surface ring-line' : 'ring-line hover:bg-surface'}`}
                       >
-                        <span className={`grid size-5 shrink-0 place-items-center rounded-full ring-1 ${selected ? 'bg-white text-black ring-white' : 'ring-white/25'}`}>
+                        <span className={`grid size-5 shrink-0 place-items-center rounded-full ring-1 ${selected ? 'bg-fg text-bg ring-fg' : 'ring-line'}`}>
                           {selected && <Check className="size-3" strokeWidth={3} />}
                         </span>
                         <div className="min-w-0 flex-1">
@@ -250,12 +250,12 @@ function ConfiguratorLoaded({ P, sales, params }) {
                 })}
               </ul>
               {!d.autoPick && (
-                <button onClick={() => set({ autoPick: true, modelId: null })} className="mt-3 inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white">
+                <button onClick={() => set({ autoPick: true, modelId: null })} className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg">
                   <RotateCcw className="size-3" /> Back to the recommendation
                 </button>
               )}
               {compare && (
-                <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-white/10">
+                <div className="mt-4 overflow-x-auto rounded-lg ring-1 ring-line">
                   <table className="w-full text-left text-xs">
                     <thead>
                       <tr className="border-b border-line">
@@ -295,7 +295,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
                     </Choice>
                   ))}
                 </div>
-                <div className="mt-5 rounded-2xl bg-white/[0.03] p-4 ring-1 ring-white/10">
+                <div className="mt-5 rounded-lg bg-surface p-4 ring-1 ring-line">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm">
                       <span className="font-medium">{build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine}</span>
@@ -342,16 +342,16 @@ function ConfiguratorLoaded({ P, sales, params }) {
 
       {/* Estimate: sticky on desktop */}
       <div className="lg:sticky lg:top-24 lg:self-start">
-        <div ref={panelRef} className="glass liquid rounded-[1.75rem] p-6">
+        <div ref={panelRef} className="glass rounded-xl p-6">
           <div className="flex items-center justify-between">
             <p className="eyebrow">{sales ? 'Internal estimate' : 'Your estimate'}</p>
-            {sales && <span className="rounded-full bg-amber-300/15 px-2.5 py-1 text-[0.65rem] text-amber-200">Floors visible</span>}
+            {sales && <span className="rounded-full bg-warning/10 px-2.5 py-1 text-[0.65rem] text-warning">Floors visible</span>}
           </div>
           {build && price ? (
             <>
               <h3 className="mt-4 text-xl font-medium tracking-tight">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</h3>
               <p className="mt-1 text-sm text-muted">
-                {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="text-white">{build.totalUsable} TB usable</span>
+                {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="text-fg">{build.totalUsable} TB usable</span>
               </p>
               <table className="mt-5 w-full text-sm">
                 {hasFloor && (
@@ -361,13 +361,13 @@ function ConfiguratorLoaded({ P, sales, params }) {
                 )}
                 <tbody>
                   {lines.map((l) => (
-                    <tr key={l.key} className={l.total ? 'border-t border-white/20 text-base font-medium' : l.subtotal ? 'border-t border-line' : ''}>
+                    <tr key={l.key} className={l.total ? 'border-t border-line text-base font-medium' : l.subtotal ? 'border-t border-line' : ''}>
                       <td className="py-2 pr-3">
-                        <span className={l.subtotal || l.total ? '' : 'text-white/80'}>{l.label}</span>
+                        <span className={l.subtotal || l.total ? '' : 'text-fg'}>{l.label}</span>
                         {l.basis && <span className="block text-xs text-subtle">{l.basis}</span>}
                       </td>
                       <td className="py-2 text-right whitespace-nowrap">{inr(l.quote)}</td>
-                      {hasFloor && <td className="py-2 pl-3 text-right whitespace-nowrap text-amber-200/80">{inr(l.floor)}</td>}
+                      {hasFloor && <td className="py-2 pl-3 text-right whitespace-nowrap text-warning">{inr(l.floor)}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -376,17 +376,17 @@ function ConfiguratorLoaded({ P, sales, params }) {
                 {inr(price.perTB)} per usable TB · all prices GST inclusive
               </p>
               {hasFloor && (
-                <p className="mt-3 rounded-xl bg-amber-300/10 px-3 py-2 text-sm text-amber-100">
+                <p className="mt-3 rounded-xl bg-warning/10 px-3 py-2 text-sm text-warning">
                   Room to negotiate: <span className="font-medium">{inr(room)}</span> ({((room / price.total) * 100).toFixed(1)}%)
                 </p>
               )}
               {sales && !price.floor && (
-                <p className="mt-3 text-xs text-amber-100/80">No floor on record for this unit or drive, so no floor is shown.</p>
+                <p className="mt-3 text-xs text-warning">No floor on record for this unit or drive, so no floor is shown.</p>
               )}
               {sales ? (
                 <CopySummary text={leadSummary(build, price, a, d)} />
               ) : (
-                <button onClick={() => { setQuoteOpen(true); requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })); }} className="magnetic btn btn-primary mt-5 w-full">
+                <button onClick={() => { setQuoteOpen(true); requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })); }} className="btn btn-primary mt-5 w-full">
                   Request this quote
                 </button>
               )}
@@ -418,7 +418,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
 
       {/* Mobile bar when the estimate is off screen */}
       {build && price && !panelVisible && (
-        <div className="glass fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-3 rounded-full !bg-black/70 py-2 pr-2 pl-5 lg:hidden">
+        <div className="glass fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-3 rounded-full py-2 pr-2 pl-5 lg:hidden">
           <div className="min-w-0 text-sm">
             <p className="truncate font-medium">{build.model.model} · {build.totalUsable} TB</p>
             <p className="text-xs text-muted">{inr(price.total)} GST incl.</p>
@@ -455,7 +455,7 @@ function CopySummary({ text }) {
         try { await navigator.clipboard.writeText(text); setState('done'); } catch { setState('fail'); }
         setTimeout(() => setState('idle'), 2000);
       }}
-      className="btn btn-glass mt-5 w-full"
+      className="btn btn-secondary mt-5 w-full"
     >
       {state === 'done' ? <Check className="size-4" /> : state === 'fail' ? <Loader2 className="size-4" /> : <Copy className="size-4" />}
       {state === 'done' ? 'Copied' : state === 'fail' ? 'Copy failed' : 'Copy summary for the customer'}

@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
-import { ChevronDown } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
-import SectionHeading from '../components/SectionHeading.jsx';
 import { faqs } from '../data/site.js';
 
 // FAQPage structured data so the questions can appear directly in search results.
@@ -13,26 +12,29 @@ const schema = {
 
 export default function HomeFaq() {
   return (
-    <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 py-28 sm:px-6">
+    <section id="faq" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 md:py-28">
       <script type="application/ld+json">{JSON.stringify(schema)}</script>
-      <SectionHeading eyebrow="FAQs" title="Frequently Asked *Questions*" />
-      <div className="mt-12 grid gap-3">
-        {faqs.map(({ q, a }, i) => (
-          <Reveal key={q} delay={i * 40} y={16}>
-            <details className="glass liquid group rounded-2xl">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-medium">
+      <div className="grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
+        <Reveal>
+          <p className="eyebrow mb-4">FAQs</p>
+          <h2 className="h-section">Frequently Asked Questions</h2>
+          <p className="mt-5 text-muted">
+            Not covered here? <Link to="/about#contact" className="link">Ask us directly</Link>, or read the{' '}
+            <Link to="/resources/faq" className="link">full FAQ</Link>.
+          </p>
+        </Reveal>
+        <Reveal as="div" delay={100} className="rule-list border-y border-line">
+          {faqs.map(({ q, a }) => (
+            <details key={q} className="group">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[1.05rem]">
                 {q}
-                <ChevronDown className="size-5 shrink-0 text-white/60 transition-transform duration-300 group-open:rotate-180" />
+                <Plus className="mt-1 size-5 shrink-0 text-subtle transition-transform duration-200 group-open:rotate-45" />
               </summary>
-              <p className="px-5 pb-5 leading-relaxed text-muted">{a}</p>
+              <p className="measure pb-6 text-muted">{a}</p>
             </details>
-          </Reveal>
-        ))}
+          ))}
+        </Reveal>
       </div>
-      <p className="mt-10 text-center text-sm text-muted">
-        More questions? <Link to="/resources/faq" className="text-white underline-offset-4 hover:underline">See all FAQs</Link> or{' '}
-        <Link to="/about#contact" className="text-white underline-offset-4 hover:underline">talk to our team</Link>.
-      </p>
     </section>
   );
 }

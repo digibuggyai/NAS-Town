@@ -3,7 +3,7 @@ import { Info, X } from 'lucide-react';
 
 export function Step({ n, title, hint, children, aside }) {
   return (
-    <section className="glass rounded-[1.75rem] p-5 sm:p-7">
+    <section className="glass rounded-xl p-5 sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-baseline gap-3">
           <span className="font-mono text-xs text-accent">{String(n).padStart(2, '0')}</span>
@@ -28,19 +28,19 @@ export function Choice({ active, disabled, onClick, children, sub, title }) {
       aria-pressed={active}
       aria-disabled={disabled || undefined}
       title={title}
-      className={`chip flex flex-col items-start !rounded-2xl !px-3.5 !py-2 text-left ${disabled && !active ? 'opacity-35 hover:!bg-white/[0.04]' : ''}`}
+      className={`chip flex flex-col items-start !rounded-md !px-3.5 !py-2 text-left ${disabled && !active ? 'opacity-35 hover:!bg-surface' : ''}`}
     >
       <span>{children}</span>
-      {sub && <span className={`text-[0.7rem] ${active ? 'text-black/60' : 'text-white/45'}`}>{sub}</span>}
+      {sub && <span className={`text-[0.7rem] ${active ? 'text-bg/60' : 'text-subtle'}`}>{sub}</span>}
     </button>
   );
 }
 
 export function Toggle({ checked, onChange, label, sub }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-2xl p-3 ring-1 ring-white/10 transition-colors hover:bg-white/[0.03]">
-      <span className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? 'bg-white' : 'bg-white/15'}`}>
-        <span className={`absolute top-0.5 size-4 rounded-full transition-all ${checked ? 'left-4.5 bg-black' : 'left-0.5 bg-white/70'}`} />
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg p-3 ring-1 ring-line transition-colors hover:bg-surface">
+      <span className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition-colors ${checked ? 'bg-fg' : 'bg-line-strong'}`}>
+        <span className={`absolute top-0.5 size-4 rounded-full transition-all ${checked ? 'left-4.5 bg-bg' : 'left-0.5 bg-raised'}`} />
       </span>
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span>
@@ -53,7 +53,7 @@ export function Toggle({ checked, onChange, label, sub }) {
 
 export function InfoButton({ onClick, label }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} className="grid size-7 shrink-0 place-items-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white">
+    <button type="button" onClick={onClick} aria-label={label} className="grid size-7 shrink-0 place-items-center rounded-full text-subtle transition-colors hover:bg-surface hover:text-fg">
       <Info className="size-4" />
     </button>
   );
@@ -73,11 +73,11 @@ export function Dialog({ open, onClose, title, children }) {
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-auto w-[min(92vw,34rem)] rounded-[1.75rem] border border-white/10 bg-[#0b0c0f]/95 p-0 text-white shadow-2xl backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+      className="m-auto w-[min(92vw,34rem)] rounded-xl border border-line bg-raised p-0 text-fg shadow-2xl backdrop:bg-fg/40 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
         <h3 className="font-medium">{title}</h3>
-        <button onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-white/10"><X className="size-4" /></button>
+        <button onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-surface"><X className="size-4" /></button>
       </div>
       <div className="max-h-[70vh] overflow-y-auto px-6 py-4">{children}</div>
     </dialog>
@@ -86,7 +86,7 @@ export function Dialog({ open, onClose, title, children }) {
 
 export function SpecTable({ rows }) {
   return (
-    <dl className="divide-y divide-white/10 text-sm">
+    <dl className="divide-y divide-line text-sm">
       {rows.map(([k, v]) => (
         <div key={k} className="flex justify-between gap-6 py-2.5">
           <dt className="text-muted">{k}</dt>

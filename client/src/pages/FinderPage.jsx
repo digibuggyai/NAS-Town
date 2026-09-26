@@ -10,7 +10,7 @@ export default function FinderPage() {
         title="Not Sure Which NAS You Need?"
         intro="Answer a few simple questions and we will recommend the right NAS for your needs."
       />
-      <section className="mx-auto max-w-6xl px-4 pb-28 sm:px-6">
+      <section className="mx-auto max-w-7xl px-4 pb-28 sm:px-6">
         <Finder />
       </section>
     </>

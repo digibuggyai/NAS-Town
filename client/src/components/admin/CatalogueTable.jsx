@@ -42,7 +42,7 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
   }
 
   async function remove(row) {
-    if (!confirm(`Delete this item permanently? Use "In configurator" to hide it instead.`)) return;
+    if (!confirm(`Delete this item permanently? Use"In configurator" to hide it instead.`)) return;
     try {
       await api.deleteItem(collection, row.id);
       onChanged();
@@ -83,12 +83,12 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
         <p className="text-sm text-muted">{rows.length} items{hasActive ? ` · ${rows.filter((r) => r.active).length} in the configurator` : ''}</p>
         <button onClick={() => { setError(''); setEditing({}); }} className="btn btn-primary !px-4 !py-2 !text-xs"><Plus className="size-3.5" /> Add</button>
       </div>
-      <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+      <div className="overflow-x-auto rounded-lg ring-1 ring-line">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/[0.03] text-xs text-muted">
+          <thead className="bg-surface text-xs text-muted">
             <tr>
               {cols.map((k) => (
-                <th key={k} className={`px-4 py-3 font-normal whitespace-nowrap ${k === 'minPrice' ? 'text-amber-200/80' : ''}`}>{label(k)}</th>
+                <th key={k} className={`px-4 py-3 font-normal whitespace-nowrap ${k === 'minPrice' ? 'text-warning' : ''}`}>{label(k)}</th>
               ))}
               {hasActive && <th className="px-4 py-3 font-normal whitespace-nowrap">In configurator</th>}
               <th className="px-4 py-3" />
@@ -98,18 +98,18 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
             {rows.map((r) => (
               <tr key={r.id} className={`border-t border-line ${hasActive && !r.active ? 'opacity-50' : ''}`}>
                 {cols.map((k) => (
-                  <td key={k} className={`px-4 py-2.5 whitespace-nowrap ${k === 'minPrice' ? 'text-amber-200/80' : ''}`}>{cell(k, r[k])}</td>
+                  <td key={k} className={`px-4 py-2.5 whitespace-nowrap ${k === 'minPrice' ? 'text-warning' : ''}`}>{cell(k, r[k])}</td>
                 ))}
                 {hasActive && (
                   <td className="px-4 py-2.5">
-                    <button onClick={() => toggleActive(r)} role="switch" aria-checked={r.active} aria-label="In configurator" className={`relative h-5 w-9 rounded-full transition-colors ${r.active ? 'bg-white' : 'bg-white/15'}`}>
-                      <span className={`absolute top-0.5 size-4 rounded-full transition-all ${r.active ? 'left-4.5 bg-black' : 'left-0.5 bg-white/70'}`} />
+                    <button onClick={() => toggleActive(r)} role="switch" aria-checked={r.active} aria-label="In configurator" className={`relative h-5 w-9 rounded-full transition-colors ${r.active ? 'bg-fg' : 'bg-line-strong'}`}>
+                      <span className={`absolute top-0.5 size-4 rounded-full transition-all ${r.active ? 'left-4.5 bg-bg' : 'left-0.5 bg-raised'}`} />
                     </button>
                   </td>
                 )}
                 <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                  <button onClick={() => { setError(''); setEditing(r); }} aria-label="Edit" className="rounded-full p-2 text-white/60 hover:bg-white/10 hover:text-white"><Pencil className="size-3.5" /></button>
-                  <button onClick={() => remove(r)} aria-label="Delete" className="rounded-full p-2 text-white/40 hover:bg-red-500/15 hover:text-red-300"><Trash2 className="size-3.5" /></button>
+                  <button onClick={() => { setError(''); setEditing(r); }} aria-label="Edit" className="rounded-full p-2 text-muted hover:bg-surface hover:text-fg"><Pencil className="size-3.5" /></button>
+                  <button onClick={() => remove(r)} aria-label="Delete" className="rounded-full p-2 text-subtle hover:bg-error/10 hover:text-error"><Trash2 className="size-3.5" /></button>
                 </td>
               </tr>
             ))}
@@ -129,7 +129,7 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
                     <div className="flex flex-wrap gap-3 text-sm">
                       {RAID_LEVELS.map((r) => (
                         <label key={r} className="flex items-center gap-1.5">
-                          <input type="checkbox" name="raid" value={r} defaultChecked={editing.raid?.includes(r)} className="accent-white" /> {r.replace('RAID', 'RAID ')}
+                          <input type="checkbox" name="raid" value={r} defaultChecked={editing.raid?.includes(r)} className="accent-fg" /> {r.replace('RAID', 'RAID ')}
                         </label>
                       ))}
                     </div>
@@ -139,14 +139,14 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
               if (type === 'bool') {
                 return (
                   <label key={k} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name={k} defaultChecked={Boolean(editing[k])} className="accent-white" /> {label(k)}
+                    <input type="checkbox" name={k} defaultChecked={Boolean(editing[k])} className="accent-fg" /> {label(k)}
                   </label>
                 );
               }
               const wide = ['summary', 'specsUrl', 'extras', 'bestFor', 'network', 'networkUpgrade'].includes(k);
               return (
                 <label key={k} className={wide ? 'sm:col-span-2' : ''}>
-                  <span className={`mb-1 block text-xs ${k === 'minPrice' ? 'text-amber-200/80' : 'text-muted'}`}>
+                  <span className={`mb-1 block text-xs ${k === 'minPrice' ? 'text-warning' : 'text-muted'}`}>
                     {label(k)}{required ? ' *' : ''}{k === 'minPrice' ? ' (internal, never shown publicly)' : ''}
                   </span>
                   <input
@@ -161,9 +161,9 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
                 </label>
               );
             })}
-            {error && <p role="alert" className="text-sm text-red-300 sm:col-span-2">{error}</p>}
+            {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
             <div className="flex justify-end gap-2 sm:col-span-2">
-              <button type="button" onClick={() => setEditing(null)} className="btn btn-glass !py-2">Cancel</button>
+              <button type="button" onClick={() => setEditing(null)} className="btn btn-secondary !py-2">Cancel</button>
               <button disabled={busy} className="btn btn-primary !py-2">{busy ? 'Saving…' : 'Save'}</button>
             </div>
           </form>
@@ -194,7 +194,7 @@ export function SettingsForm({ settings, onChanged }) {
     <form onSubmit={save} className="grid max-w-xl gap-3 sm:grid-cols-2">
       {fields.map(([k, text, floor]) => (
         <label key={k}>
-          <span className={`mb-1 block text-xs ${floor ? 'text-amber-200/80' : 'text-muted'}`}>{text}</span>
+          <span className={`mb-1 block text-xs ${floor ? 'text-warning' : 'text-muted'}`}>{text}</span>
           <input name={k} type="number" step="any" min={0} defaultValue={settings[k] ?? ''} className="field !py-2 text-sm" />
         </label>
       ))}

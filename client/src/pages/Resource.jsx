@@ -27,7 +27,7 @@ export default function Resource() {
         <section className="mx-auto max-w-3xl px-4 pb-28 sm:px-6">
           <div className="grid gap-3">
             {faqs.map(({ q, a }) => (
-              <details key={q} className="glass liquid group rounded-2xl">
+              <details key={q} className="glass group rounded-lg">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-medium">
                   {q}
                   <ChevronDown className="size-5 shrink-0 transition-transform group-open:rotate-180" />
@@ -37,7 +37,7 @@ export default function Resource() {
             ))}
           </div>
           <p className="mt-10 text-center text-muted">
-            Still have a question? <Link to="/about#contact" className="text-white underline underline-offset-4">Talk to our team</Link>.
+            Still have a question? <Link to="/about#contact" className="text-fg underline underline-offset-4">Talk to our team</Link>.
           </p>
         </section>
       ) : (
@@ -45,10 +45,10 @@ export default function Resource() {
           <div className="grid gap-5 sm:grid-cols-2">
             {r.upcoming.map((title, i) => (
               <Reveal key={title} delay={(i % 2) * 80}>
-                <article className="glass liquid flex h-full flex-col rounded-[2rem] p-8">
+                <article className="glass flex h-full flex-col rounded-xl p-8">
                   <div className="flex items-center justify-between">
                     <span className="eyebrow !text-[0.65rem]">{r.name}</span>
-                    <span className="rounded-full bg-white/5 px-2.5 py-1 text-[0.7rem] text-subtle ring-1 ring-white/10">Coming soon</span>
+                    <span className="rounded-full bg-surface px-2.5 py-1 text-[0.7rem] text-subtle ring-1 ring-line">Coming soon</span>
                   </div>
                   <h2 className="mt-10 text-xl font-medium">{title}</h2>
                 </article>

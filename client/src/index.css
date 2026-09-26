@@ -1,256 +1,197 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   Design tokens. The palette is provisional: change the values here
-   and the whole site follows.
+   NASTOWN design system
+   Personality: precise · grounded · warm · quietly technical · trustworthy.
+   Think "well-made hardware spec sheet": warm paper, charcoal ink, hairline
+   rules, and one green accent that behaves like a status LED (it means
+   "recommended / selected / OK", never decoration).
+
+   Colours are semantic. A `.theme-dark` wrapper swaps the same tokens for
+   charcoal sections, so components work on either without changes.
    ------------------------------------------------------------------ */
 @theme {
-  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-ink: #000000;          /* page background */
-  --color-ink-2: #07080a;        /* raised section background */
-  --color-fg: #ffffff;           /* primary text */
-  --color-muted: #a1a1aa;        /* secondary text */
-  --color-subtle: #71717a;       /* tertiary text */
-  --color-line: rgb(255 255 255 / 0.1);
-  --color-accent: #7dd3fc;       /* ice blue: LEDs, focus, highlights */
-  --color-accent-2: #a5b4fc;     /* periwinkle: secondary glow */
-  --color-accent-3: #5eead4;     /* teal: tertiary glow */
+  --color-bg: #f4f1ec;          /* paper */
+  --color-surface: #ebe7e0;     /* tonal band, figure plates */
+  --color-raised: #fbfaf7;      /* inputs, menus, dialogs */
+  --color-fg: #1b1b19;          /* ink */
+  --color-muted: #55524c;       /* secondary text, 7:1 on paper */
+  --color-subtle: #6e6a63;      /* labels, meta, 4.7:1 on paper */
+  --color-line: #dad5cc;        /* hairlines */
+  --color-line-strong: #bdb7ac; /* control borders */
+  --color-accent: #186b44;      /* text-safe LED green */
+  --color-led: #2bb673;         /* the actual lit LED */
+  --color-warning: #9a5209;
+  --color-error: #b42318;
 
-  --animate-drift: drift 28s ease-in-out infinite alternate;
-  --animate-blink: blink 2.4s ease-in-out infinite;
-  --animate-flow: flow 2.2s linear infinite;
-  --animate-spin-slow: spin 60s linear infinite;
+  --radius-control: 8px;
 
-  @keyframes drift {
-    0%   { transform: translate3d(0, 0, 0) scale(1); }
-    50%  { transform: translate3d(6vw, -4vh, 0) scale(1.15); }
-    100% { transform: translate3d(-4vw, 6vh, 0) scale(0.95); }
-  }
+  --animate-blink: blink 2.8s ease-in-out infinite;
   @keyframes blink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
-  }
-  @keyframes flow {
-    to { stroke-dashoffset: -40; }
+    50% { opacity: 0.45; }
   }
 }
 
 @layer base {
-  html { background: var(--color-ink); color-scheme: dark; }
-  html.lenis, html.lenis body { height: auto; }
-  .lenis.lenis-stopped { overflow: clip; }
-  /* No body background: it would paint over the fixed ambient-light layer (-z-10). html supplies the black. */
+  html { background: var(--color-bg); color-scheme: light; -webkit-text-size-adjust: 100%; }
   body {
+    background: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.6;
-    font-feature-settings: "ss01", "ss02", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  ::selection { background: rgb(125 211 252 / 0.3); }
-  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 10px; }
-  h1, h2, h3 { letter-spacing: -0.035em; text-wrap: balance; font-weight: 500; }
-  @media (min-width: 640px) { body { font-size: 16px; } }
+  ::selection { background: color-mix(in srgb, var(--color-led) 30%, transparent); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+  h1, h2, h3, h4 { text-wrap: balance; font-weight: 500; letter-spacing: -0.025em; }
   p { text-wrap: pretty; }
+  summary::-webkit-details-marker { display: none; }
 }
 
 @layer components {
-  /* Liquid glass panel. --mx / --my are set by the pointer tracker in main.jsx. */
-  .glass {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    background:
-      linear-gradient(160deg, rgb(255 255 255 / 0.085), rgb(255 255 255 / 0.02) 45%, rgb(255 255 255 / 0.045));
-    backdrop-filter: blur(22px) saturate(170%);
-    -webkit-backdrop-filter: blur(22px) saturate(170%);
-    border: 1px solid rgb(255 255 255 / 0.09);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.16),
-      inset 0 -1px 0 rgb(255 255 255 / 0.04),
-      inset 0 0 24px rgb(255 255 255 / 0.02),
-      0 24px 64px -24px rgb(0 0 0 / 0.9);
-  }
-  /* Refraction rim: a gradient border that catches light at the top-left. */
-  .glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(140deg, rgb(255 255 255 / 0.35), rgb(255 255 255 / 0) 35%, rgb(255 255 255 / 0) 65%, rgb(255 255 255 / 0.14));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    z-index: 1;
-  }
-  /* Liquid hover: a soft light blob that follows the cursor. */
-  .liquid::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    background:
-      radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.11), transparent 45%),
-      radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgb(125 211 252 / 0.10), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-    z-index: -1;
-  }
-  .liquid { transition: border-color 0.4s ease, box-shadow 0.5s ease; will-change: transform; }
-  .liquid:hover::after { opacity: 1; }
-  .liquid:hover {
-    border-color: rgb(255 255 255 / 0.18);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.22),
-      inset 0 0 32px rgb(255 255 255 / 0.04),
-      0 30px 80px -24px rgb(0 0 0 / 0.95),
-      0 0 0 1px rgb(255 255 255 / 0.03);
-  }
-  
-  /* Buttons */
-  .btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.7rem 1.2rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    isolation: isolate;
-    transition: background-color 0.3s ease, box-shadow 0.35s ease, color 0.3s ease;
-  }
-  .btn svg { transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
-  .btn:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
-  .btn-primary {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.4), 0 10px 40px -10px rgb(255 255 255 / 0.45);
-  }
-  .btn-primary::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(140px circle at var(--mx, 50%) var(--my, 50%), rgb(125 211 252 / 0.55), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: -1;
-  }
-  .btn-primary:hover::after { opacity: 1; }
-  .btn-primary:hover { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6), 0 14px 50px -8px rgb(125 211 252 / 0.55); }
-  .btn-glass {
-    color: #fff;
-    background: rgb(255 255 255 / 0.06);
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 0 0 1px rgb(255 255 255 / 0.1);
-  }
-  .btn-glass::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.22), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: -1;
-  }
-  .btn-glass:hover::after { opacity: 1; }
-  .btn-glass:hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(255 255 255 / 0.2); }
-
-  /* Section label: small accent dot + quiet caps. */
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: rgb(255 255 255 / 0.55);
-  }
-  .eyebrow::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    border-radius: 999px;
-    background: var(--color-accent);
-    box-shadow: 0 0 10px var(--color-accent);
+  /* Charcoal sections: same tokens, inverted. */
+  .theme-dark {
+    --color-bg: #1b1b19;
+    --color-surface: #242421;
+    --color-raised: #2a2a27;
+    --color-fg: #eeebe5;
+    --color-muted: #b3aea5;
+    --color-subtle: #9a958c;
+    --color-line: #353430;
+    --color-line-strong: #4a4843;
+    --color-accent: #5fd39a;
+    --color-warning: #e3a44f;
+    --color-error: #f08a7e;
+    color-scheme: dark;
+    background: var(--color-bg);
+    color: var(--color-fg);
   }
 
-  /* Display headings: tight sans with a serif-italic accent word. */
-  .heading {
+  /* Page-level type. Headings are confident but not shouting. */
+  .display {
     font-weight: 500;
-    line-height: 1.04;
+    font-size: clamp(2.6rem, 6.2vw, 5rem);
+    line-height: 0.98;
     letter-spacing: -0.04em;
-    color: #fff;
   }
+  .h-section {
+    font-weight: 500;
+    font-size: clamp(1.9rem, 3.4vw, 2.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+  .heading { font-weight: 500; line-height: 1.08; letter-spacing: -0.03em; }
   .accent {
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 400;
     letter-spacing: -0.01em;
-    padding-right: 0.06em;
-    color: rgb(255 255 255 / 0.72);
   }
-  /* Masked lines from SplitText: leave room for descenders. */
+  .lede { font-size: 1.125rem; line-height: 1.55; color: var(--color-muted); max-width: 38rem; }
+  .measure { max-width: 62ch; }
+
+  /* Small technical label: section markers, spec keys, meta. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-subtle);
+  }
+  .mono { font-family: var(--font-mono); font-feature-settings: "zero" 0; }
+
+  /* Rule-separated list, used instead of card grids. */
+  .rule-list > * + * { border-top: 1px solid var(--color-line); }
+
+  /* Split-text masked lines: leave room for descenders. */
   .split-line { padding-bottom: 0.08em; margin-bottom: -0.08em; }
 
-  .marquee-fade {
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.65rem 1.15rem;
+    border-radius: var(--radius-control);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.1;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
   }
+  .btn:active { transform: translateY(1px); }
+  .btn svg { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .btn:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
+  .btn-primary { background: var(--color-fg); color: var(--color-bg); border: 1px solid var(--color-fg); }
+  .btn-primary:hover { background: color-mix(in srgb, var(--color-fg) 86%, var(--color-bg)); }
+  .btn-secondary { background: transparent; color: var(--color-fg); border: 1px solid var(--color-line-strong); }
+  .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-fg); }
 
-  /* Pill used for selectable options (finder, configurator, filters). */
+  /* Text link with a drawn underline. */
+  .link {
+    color: var(--color-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-line-strong);
+    text-underline-offset: 0.22em;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color 0.2s ease;
+  }
+  .link:hover { text-decoration-color: currentColor; }
+
+  /* Selectable option (finder, configurator, filters). */
   .chip {
-    border-radius: 999px;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.82rem;
-    color: rgb(255 255 255 / 0.8);
-    background: rgb(255 255 255 / 0.04);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
-    transition: all 0.3s ease;
+    border-radius: 6px;
+    padding: 0.5rem 0.85rem;
+    min-height: 40px;
+    font-size: 0.875rem;
+    color: var(--color-fg);
+    background: var(--color-raised);
+    border: 1px solid var(--color-line);
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
-  .chip:hover { background: rgb(255 255 255 / 0.08); color: #fff; }
-  .chip[aria-pressed="true"] {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 0 0 1px #fff, 0 8px 30px -8px rgb(125 211 252 / 0.6);
-  }
+  .chip:hover { border-color: var(--color-line-strong); }
+  .chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 
   .field {
     width: 100%;
-    border-radius: 14px;
-    padding: 0.8rem 1rem;
-    font-size: 0.95rem;
-    color: #fff;
-    background: rgb(255 255 255 / 0.04);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
-    transition: box-shadow 0.3s ease, background 0.3s ease;
+    border-radius: 6px;
+    padding: 0.7rem 0.85rem;
+    min-height: 44px;
+    font-size: 1rem;
+    color: var(--color-fg);
+    background: var(--color-raised);
+    border: 1px solid var(--color-line-strong);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .field::placeholder { color: rgb(255 255 255 / 0.35); }
-  .field:focus { outline: none; background: rgb(255 255 255 / 0.07); box-shadow: inset 0 0 0 1px rgb(125 211 252 / 0.6), 0 0 0 4px rgb(125 211 252 / 0.1); }
-  select.field option { background: #0b0c0f; }
+  .field::placeholder { color: var(--color-subtle); }
+  .field:focus { outline: none; border-color: var(--color-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 25%, transparent); }
 
-  .text-gradient {
-    background: linear-gradient(180deg, #fff 30%, rgb(255 255 255 / 0.55));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  /* A quiet bordered panel, for tools and forms (not for marketing content). */
+  .panel {
+    background: var(--color-raised);
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
   }
+  /* Legacy name kept so older markup renders as a plain panel. */
+  .glass { background: var(--color-raised); border: 1px solid var(--color-line); }
 
+  /* Figure plate behind product drawings: like a catalogue photo backdrop. */
+  .plate { background: var(--color-surface); border-radius: 6px; }
+
+  /* Status LED dot. */
+  .led { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--color-led); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 18%, transparent); }
 }
 
 @media (prefers-reduced-motion: reduce) {

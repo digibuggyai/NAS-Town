@@ -5,11 +5,11 @@ import { finder } from '../data/home.js';
 
 export default function FinderSection() {
   return (
-    <section id="finder" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-28 sm:px-6">
+    <section id="finder" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-20 sm:px-6 md:py-28">
       <SectionHeading eyebrow={finder.eyebrow} title={finder.title}>
-        {finder.body.map((p) => <span key={p} className="block [&+&]:mt-2">{p}</span>)}
+        {finder.body.map((p) => <p key={p}>{p}</p>)}
       </SectionHeading>
-      <Reveal className="mt-14">
+      <Reveal className="mt-12">
         <Finder />
       </Reveal>
     </section>

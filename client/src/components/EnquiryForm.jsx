@@ -26,7 +26,7 @@ export default function EnquiryForm({ type = 'contact', payload = {}, extra, sub
 
   if (status === 'sent') {
     return (
-      <div className={`glass rounded-3xl p-8 text-center ${className}`}>
+      <div className={`glass rounded-xl p-8 text-center ${className}`}>
         <CheckCircle2 className="mx-auto size-10 text-accent" />
         <h3 className="mt-4 text-xl font-semibold">Thanks, we've got it.</h3>
         <p className="mt-2 text-muted">Our team will get back to you shortly.</p>
@@ -35,7 +35,7 @@ export default function EnquiryForm({ type = 'contact', payload = {}, extra, sub
   }
 
   return (
-    <form onSubmit={onSubmit} className={`glass rounded-3xl p-6 sm:p-8 ${className}`}>
+    <form onSubmit={onSubmit} className={`glass rounded-xl p-6 sm:p-8 ${className}`}>
       {title && <h3 className="mb-6 text-xl font-semibold">{title}</h3>}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="sm:col-span-2">
@@ -56,7 +56,7 @@ export default function EnquiryForm({ type = 'contact', payload = {}, extra, sub
           <textarea name="message" rows={4} className="field resize-none" placeholder="Tell us what you want to store, your setup, or the problem you're facing." />
         </label>
       </div>
-      {error && <p role="alert" className="mt-4 text-sm text-red-300">{error}</p>}
+      {error && <p role="alert" className="mt-4 text-sm text-error">{error}</p>}
       <button disabled={status === 'sending'} className="btn btn-primary mt-6 w-full sm:w-auto">
         {status === 'sending' && <Loader2 className="size-4 animate-spin" />}
         {submitLabel}

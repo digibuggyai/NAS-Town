@@ -20,7 +20,7 @@ function Slider({ label, value, onChange, min, max, step = 1, suffix = '' }) {
         <span className="text-muted">{label}</span>
         <span className="font-mono">{value.toLocaleString('en-IN')}{suffix}</span>
       </div>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-3 w-full accent-white" />
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-3 w-full accent-fg" />
     </label>
   );
 }
@@ -81,7 +81,7 @@ export default function Calculator() {
         intro="Guessing your storage needs usually means buying too little, or paying for too much. Use our NAS Calculator to get a clear estimate based on your files, backup needs, and future growth."
       />
       <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-24 sm:px-6 lg:grid-cols-[1.2fr_1fr]">
-        <Reveal className="glass rounded-[2rem] p-6 sm:p-8">
+        <Reveal className="glass rounded-xl p-6 sm:p-8">
           <h2 className="text-xl font-medium">Your data</h2>
           <div className="mt-6 grid gap-7">
             <Slider label="Data you already have" value={existingTb} onChange={setExistingTb} min={0} max={100} suffix=" TB" />
@@ -112,7 +112,7 @@ export default function Calculator() {
         </Reveal>
 
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <Reveal delay={100} className="glass liquid rounded-[2rem] p-6 sm:p-8">
+          <Reveal delay={100} className="glass rounded-xl p-6 sm:p-8">
             <p className="eyebrow">You need about</p>
             <p className="mt-3 text-5xl font-semibold tracking-tight">{r.needTb.toLocaleString('en-IN')} <span className="text-2xl text-muted">TB</span></p>
             <p className="mt-2 text-sm text-muted">Includes {years} {years > 1 ? 'years' : 'year'} of growth (≈ {r.yearlyTb.toFixed(1)} TB/yr) and 20% headroom for snapshots.</p>
@@ -125,14 +125,14 @@ export default function Calculator() {
                   ['Protection', RAID_INFO[r.plan.raid].title],
                   ['Usable', `${r.plan.totalUsable} TB`],
                 ].map(([k, v]) => (
-                  <div key={k} className="rounded-2xl bg-white/[0.04] p-4 ring-1 ring-white/10">
+                  <div key={k} className="rounded-lg bg-surface p-4 ring-1 ring-line">
                     <p className="text-xs text-subtle">{k}</p>
                     <p className="mt-1 font-medium">{v}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="mt-8 rounded-2xl bg-white/[0.04] p-4 text-sm ring-1 ring-white/10">
+              <p className="mt-8 rounded-lg bg-surface p-4 text-sm ring-1 ring-line">
                 {pricingError ? 'Pricing is unavailable right now. Please try again shortly.' : P ? 'That is beyond what we quote online. Talk to us about expansion units or enterprise storage.' : 'Loading prices…'}
               </p>
             )}
@@ -154,7 +154,7 @@ export default function Calculator() {
             )}
             <div className="mt-8 grid gap-2 sm:grid-cols-2">
               <Link to={r.plan ? `/tools/configurator?model=${r.plan.model.slug}&target=${r.plan.totalUsable}&raid=RAID5` : '/tools/configurator'} className="btn btn-primary">Build This NAS</Link>
-              <Link to="/about#contact" className="btn btn-glass">Talk to an Expert</Link>
+              <Link to="/about#contact" className="btn btn-secondary">Talk to an Expert</Link>
             </div>
           </Reveal>
         </div>

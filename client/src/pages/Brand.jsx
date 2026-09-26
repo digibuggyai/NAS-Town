@@ -17,7 +17,7 @@ export default function Brand() {
       <title>{`${b.name} NAS | NASTOWN`}</title>
       <PageHero eyebrow={`Brands · ${b.name}`} title={b.h1} intro={b.intro}>
         <Link to="/services/installation" className="btn btn-primary">Get It Installed</Link>
-        <Link to="/finder" className="btn btn-glass">Find My NAS</Link>
+        <Link to="/finder" className="btn btn-secondary">Find My NAS</Link>
       </PageHero>
       <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
         <div className="mb-8 flex flex-wrap gap-2">

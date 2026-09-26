@@ -19,7 +19,7 @@ export default function ProductDetail() {
 
   if (state.error) return <NotFound />;
   const p = state.product;
-  if (!p) return <div className="mx-auto h-[70vh] max-w-7xl px-4 pt-40"><div className="glass h-full animate-pulse rounded-[2rem]" /></div>;
+  if (!p) return <div className="mx-auto h-[70vh] max-w-7xl px-4 pt-40"><div className="glass h-full animate-pulse rounded-xl" /></div>;
 
   const specs = [
     ['Brand', brandName(p.brand)],
@@ -39,9 +39,9 @@ export default function ProductDetail() {
     <>
       <title>{`${p.model} | NASTOWN`}</title>
       <section className="mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 md:pt-40">
-        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted hover:text-white"><ArrowLeft className="size-4" /> All products</Link>
+        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg"><ArrowLeft className="size-4" /> All products</Link>
         <div className="mt-8 grid gap-10 lg:grid-cols-2">
-          <Reveal className="glass liquid grid place-items-center rounded-[2rem] p-10">
+          <Reveal className="glass grid place-items-center rounded-xl p-10">
             <NasVisual bays={p.bays} className="w-full max-w-md" />
           </Reveal>
           <Reveal delay={120}>
@@ -52,10 +52,10 @@ export default function ProductDetail() {
             <p className="mt-1 text-xs text-subtle">Diskless unit price, GST inclusive. Build it with drives in the configurator for a complete quote.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to={`/tools/configurator?model=${p.slug}`} className="btn btn-primary">Configure this NAS</Link>
-              {p.rentable && <Link to="/rent" className="btn btn-glass">Rent this NAS</Link>}
-              <a href="#enquire" className="btn btn-glass">Ask an Expert</a>
+              {p.rentable && <Link to="/rent" className="btn btn-secondary">Rent this NAS</Link>}
+              <a href="#enquire" className="btn btn-secondary">Ask an Expert</a>
             </div>
-            <dl className="glass mt-10 divide-y divide-white/10 rounded-3xl px-6">
+            <dl className="glass mt-10 divide-y divide-line rounded-xl px-6">
               {specs.map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-6 py-3.5 text-sm">
                   <dt className="text-muted">{k}</dt>

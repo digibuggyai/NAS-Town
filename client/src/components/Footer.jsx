@@ -7,7 +7,7 @@ import { digibuggy, productLinks, solutions } from '../data/site.js';
 const glyph = (children) =>
   function Glyph({ className }) {
     return (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
         {children}
       </svg>
     );
@@ -39,51 +39,74 @@ const columns = [
 
 export default function Footer() {
   return (
-    <footer className="px-3 pb-3 sm:px-5 sm:pb-5">
-      <div className="glass mx-auto max-w-7xl rounded-[2rem] px-6 py-12 sm:px-10">
-        <div className="flex flex-col justify-between gap-8 border-b border-line pb-10 md:flex-row md:items-end">
+    <footer className="theme-dark">
+      <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6">
+        <div className="grid gap-12 border-b border-line pb-12 lg:grid-cols-[1.1fr_2fr]">
+          {/* Who we are and how to reach a person */}
           <div>
-            <Logo />
-            <p className="mt-5 text-xl font-medium leading-snug text-white/90">Smart Storage for Every Need.</p>
-            <a href={digibuggy.site} target="_blank" rel="noopener" className="group mt-4 inline-flex items-center gap-2.5 text-xs text-muted">
+            <Logo onDark />
+            <p className="mt-5 text-xl leading-snug">Smart Storage for Every Need.</p>
+            <dl className="mt-8 grid gap-3 text-sm">
+              <div>
+                <dt className="eyebrow">Showroom</dt>
+                <dd className="mt-1 max-w-xs text-muted">
+                  <a href={digibuggy.mapsHref} target="_blank" rel="noopener" className="hover:text-fg">{digibuggy.address}</a>
+                </dd>
+              </div>
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
+                <div>
+                  <dt className="eyebrow">WhatsApp</dt>
+                  <dd className="mt-1"><a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link">{digibuggy.whatsapp}</a></dd>
+                </div>
+                <div>
+                  <dt className="eyebrow">Email</dt>
+                  <dd className="mt-1"><a href={`mailto:${digibuggy.email}`} className="link">{digibuggy.email}</a></dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+            {columns.map(([title, items]) => (
+              <div key={title}>
+                <p className="eyebrow">{title}</p>
+                <ul className="mt-4 grid gap-2">
+                  {items.map(([label, to]) => (
+                    <li key={label}>
+                      <Link to={to} className="text-sm text-muted transition-colors hover:text-fg">{label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex flex-col gap-6 pt-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+            <a href={digibuggy.site} target="_blank" rel="noopener" className="group inline-flex items-center gap-2.5 text-xs text-subtle">
               A company of
               <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
             </a>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {digibuggy.socials.map(({ label, href }) => {
-              const Icon = ICONS[label];
-              return (
-                <a key={label} href={href} target="_blank" rel="noopener" aria-label={`Digibuggy on ${label}`} title={label} className="magnetic btn btn-glass !p-2.5">
-                  <Icon className="size-4" />
-                </a>
-              );
-            })}
-          </div>
-        </div>
-
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-10 pt-10 sm:grid-cols-3 lg:grid-cols-6">
-          {columns.map(([title, items]) => (
-            <div key={title}>
-              <p className="text-xs font-medium tracking-wide text-white uppercase">{title}</p>
-              <ul className="mt-4 grid gap-2.5">
-                {items.map(([label, to]) => (
+            <ul className="flex gap-1">
+              {digibuggy.socials.map(({ label, href }) => {
+                const Icon = ICONS[label];
+                return (
                   <li key={label}>
-                    <Link to={to} className="text-sm text-white/55 transition-colors hover:text-white">{label}</Link>
+                    <a href={href} target="_blank" rel="noopener" aria-label={`Digibuggy on ${label}`} title={label} className="grid size-10 place-items-center rounded-md text-muted transition-colors hover:bg-surface hover:text-fg">
+                      <Icon className="size-[18px]" />
+                    </a>
                   </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
-
-        <div className="mt-12 flex flex-col gap-4 border-t border-line pt-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} NASTOWN. All rights reserved.</p>
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link to="/privacy" className="hover:text-white">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white">Terms &amp; Conditions</Link>
-            <Link to="/sitemap" className="hover:text-white">Sitemap</Link>
-            <Link to="/admin" rel="nofollow" className="hover:text-white">Admin</Link>
+                );
+              })}
+            </ul>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-subtle">
+            <span>© {new Date().getFullYear()} NASTOWN. All rights reserved.</span>
+            <Link to="/privacy" className="hover:text-fg">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-fg">Terms &amp; Conditions</Link>
+            <Link to="/sitemap" className="hover:text-fg">Sitemap</Link>
+            <Link to="/admin" rel="nofollow" className="hover:text-fg">Admin</Link>
           </div>
         </div>
       </div>
