@@ -1,7 +1,6 @@
 import Hero from '../sections/Hero.jsx';
 import Problem from '../sections/Problem.jsx';
 import WhatIsNas from '../sections/WhatIsNas.jsx';
-import FinderSection from '../sections/FinderSection.jsx';
 import Solutions from '../sections/Solutions.jsx';
 import ProductShowcase from '../sections/ProductShowcase.jsx';
 import WhyNastown from '../sections/WhyNastown.jsx';
@@ -15,7 +14,6 @@ export default function Home() {
       <Hero />
       <Problem />
       <WhatIsNas />
-      <FinderSection />
       <Solutions />
       <ProductShowcase />
       <WhyNastown />

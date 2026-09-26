@@ -37,15 +37,6 @@ export const whatIsNas = {
   cta: 'Learn About NAS',
 };
 
-export const finder = {
-  eyebrow: 'Find your NAS',
-  title: 'Not Sure Which *NAS You Need?*',
-  body: [
-    "Choosing a NAS doesn't have to be complicated.",
-    "Tell us what you're storing, how much storage you need and how you plan to use your NAS. We'll help you find the right NAS configuration for your workflow.",
-  ],
-};
-
 export const solutions = {
   eyebrow: 'NAS solutions',
   title: 'NAS for the *Way You Work.*',
