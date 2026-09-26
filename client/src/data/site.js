@@ -229,6 +229,15 @@ export const digibuggy = {
   address: '207, Second Floor, Mansarovar Building, 90 Nehru Place, New Delhi 110019',
   addressShort: 'Nehru Place, New Delhi',
   mapsHref: 'https://www.google.com/maps/search/?api=1&query=Digibuggy+Mansarovar+Building+90+Nehru+Place+New+Delhi',
+  // Google rating and reviews exactly as published on digibuggy.com (checked 26 Sep 2026).
+  google: {
+    rating: 4.9,
+    count: 148,
+    href: 'https://share.google/DLsmkqcfxVAllwhSe',
+    // NAS reviews only, copied word for word from Google. Each: { name, text, context: 'NAS customer' }.
+    // Empty until real NAS reviews are added; the section then shows just the rating.
+    reviews: [],
+  },
   socials: [
     { label: 'WhatsApp', href: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
     { label: 'Instagram', href: 'https://www.instagram.com/digibuggy/' },

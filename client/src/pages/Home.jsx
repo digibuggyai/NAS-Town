@@ -4,6 +4,8 @@ import WhatIsNas from '../sections/WhatIsNas.jsx';
 import Solutions from '../sections/Solutions.jsx';
 import ProductShowcase from '../sections/ProductShowcase.jsx';
 import WhyNastown from '../sections/WhyNastown.jsx';
+import BrandsBand from '../sections/BrandsBand.jsx';
+import Reviews from '../sections/Reviews.jsx';
 import HomeFaq from '../sections/HomeFaq.jsx';
 
 export default function Home() {
@@ -15,7 +17,9 @@ export default function Home() {
       <WhatIsNas />
       <Solutions />
       <ProductShowcase />
+      <BrandsBand />
       <WhyNastown />
+      <Reviews />
       <HomeFaq />
     </>
   );
