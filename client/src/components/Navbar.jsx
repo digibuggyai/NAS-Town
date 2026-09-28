@@ -93,8 +93,7 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
-      {/* Below xl: a full-height sheet, designed for thumbs rather than a shrunken desktop menu. */}
+      
       {open && (
         <div id="mobile-menu" className="h-[calc(100svh-4rem)] overflow-y-auto border-t border-line bg-bg px-4 pb-10 sm:px-6 xl:hidden">
           <ul className="rule-list">
