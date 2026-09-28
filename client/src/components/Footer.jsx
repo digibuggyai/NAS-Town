@@ -40,40 +40,40 @@ const columns = [
 export default function Footer() {
   return (
     <footer className="theme-dark">
-      <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6">
-        <div className="grid gap-12 border-b border-line pb-12 lg:grid-cols-[1.1fr_2fr]">
+      <div className="mx-auto max-w-7xl px-4 pt-12 pb-6 sm:px-6">
+        <div className="grid gap-10 border-b border-line pb-10 lg:grid-cols-[minmax(0,15rem)_1fr] lg:gap-12">
           {/* Who we are and how to reach a person */}
           <div>
             <Logo onDark />
-            <p className="mt-5 text-xl leading-snug">Smart Storage for Every Need.</p>
-            <dl className="mt-8 grid gap-3 text-sm">
+            <p className="mt-3 text-[0.95rem] leading-snug text-fg">Smart Storage for Every Need.</p>
+            <dl className="mt-5 grid gap-2.5 text-[0.8125rem]">
               <div>
-                <dt className="eyebrow">Showroom</dt>
-                <dd className="mt-1 max-w-xs text-muted">
+                <dt className="eyebrow !text-[0.68rem]">Showroom</dt>
+                <dd className="mt-0.5 text-muted">
                   <a href={digibuggy.mapsHref} target="_blank" rel="noopener" className="hover:text-fg">{digibuggy.address}</a>
                 </dd>
               </div>
-              <div className="flex flex-wrap gap-x-8 gap-y-3">
+              <div className="flex flex-wrap gap-x-6 gap-y-2.5">
                 <div>
-                  <dt className="eyebrow">WhatsApp</dt>
-                  <dd className="mt-1"><a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link">{digibuggy.whatsapp}</a></dd>
+                  <dt className="eyebrow !text-[0.68rem]">WhatsApp</dt>
+                  <dd className="mt-0.5"><a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link">{digibuggy.whatsapp}</a></dd>
                 </div>
                 <div>
-                  <dt className="eyebrow">Email</dt>
-                  <dd className="mt-1"><a href={`mailto:${digibuggy.email}`} className="link">{digibuggy.email}</a></dd>
+                  <dt className="eyebrow !text-[0.68rem]">Email</dt>
+                  <dd className="mt-0.5"><a href={`mailto:${digibuggy.email}`} className="link">{digibuggy.email}</a></dd>
                 </div>
               </div>
             </dl>
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-[repeat(6,auto)] lg:justify-between lg:gap-x-6">
             {columns.map(([title, items]) => (
               <div key={title}>
-                <p className="font-display text-lg font-semibold text-fg">{title}</p>
-                <ul className="mt-4 grid gap-2">
+                <p className="font-display text-sm font-semibold text-fg">{title}</p>
+                <ul className="mt-3 grid gap-1.5">
                   {items.map(([label, to]) => (
                     <li key={label}>
-                      <Link to={to} className="text-sm text-muted transition-colors hover:text-fg">{label}</Link>
+                      <Link to={to} className="whitespace-nowrap text-[0.8125rem] leading-snug text-muted transition-colors hover:text-fg">{label}</Link>
                     </li>
                   ))}
                 </ul>
@@ -82,7 +82,7 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="flex flex-col gap-6 pt-8 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 pt-5 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
             <a href={digibuggy.site} target="_blank" rel="noopener" className="group inline-flex items-center gap-2.5 text-xs text-subtle">
               A company of
@@ -93,8 +93,8 @@ export default function Footer() {
                 const Icon = ICONS[label];
                 return (
                   <li key={label}>
-                    <a href={href} target="_blank" rel="noopener" aria-label={`Digibuggy on ${label}`} title={label} className="grid size-10 place-items-center rounded-md text-muted transition-colors hover:bg-surface hover:text-fg">
-                      <Icon className="size-[18px]" />
+                    <a href={href} target="_blank" rel="noopener" aria-label={`Digibuggy on ${label}`} title={label} className="grid size-8 place-items-center rounded-md text-muted transition-colors hover:bg-surface hover:text-fg">
+                      <Icon className="size-4" />
                     </a>
                   </li>
                 );
