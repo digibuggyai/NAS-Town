@@ -81,10 +81,15 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="hidden items-center gap-1.5 whitespace-nowrap px-2 text-[0.875rem] text-muted transition-colors hover:text-fg 2xl:inline-flex">
+          {/* Primary action: talk to a person on WhatsApp (WhatsApp's own green, so it's instantly recognisable). */}
+          <a
+            href={digibuggy.whatsappHref}
+            target="_blank"
+            rel="noopener"
+            className="btn hidden !min-h-10 !py-2 !text-[0.875rem] border border-[#1fb855] bg-[#25d366] text-white shadow-[0_6px_18px_-8px_rgb(37_211_102/0.7)] hover:bg-[#1fb855] sm:inline-flex"
+          >
             <MessageCircle className="size-4" /> WhatsApp us
           </a>
-          <Link to="/finder" className="btn btn-primary hidden !min-h-10 !py-2 !text-[0.875rem] sm:inline-flex">Find My NAS</Link>
           <button
             onClick={() => setOpen((o) => !o)}
             className="grid size-11 place-items-center rounded-md text-fg transition-colors hover:bg-surface xl:hidden"
@@ -121,8 +126,7 @@ export default function Navbar() {
             ))}
           </ul>
           <div className="mt-6 grid gap-2">
-            <Link to="/finder" className="btn btn-primary">Find My NAS</Link>
-            <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="btn btn-secondary"><MessageCircle className="size-4" /> WhatsApp {digibuggy.whatsapp}</a>
+            <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="btn border border-[#1fb855] bg-[#25d366] text-white hover:bg-[#1fb855]"><MessageCircle className="size-4" /> WhatsApp {digibuggy.whatsapp}</a>
           </div>
           <p className="mt-6 text-sm text-subtle">Showroom: {digibuggy.addressShort}</p>
         </div>
