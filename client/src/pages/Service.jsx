@@ -37,11 +37,7 @@ export default function Service() {
         <a href="#book" className="btn btn-primary">Book {s.name}</a>
       </PageHero>
 
-      <section id="book" className="mx-auto max-w-3xl scroll-mt-28 px-4 py-16 sm:px-6">
-        <EnquiryForm type="service" title={`Book ${s.name}`} payload={{ service: s.slug }} submitLabel="Request Service" />
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+      <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
         <Reveal>
           <p className="eyebrow mb-5">All services</p>
           <div className="flex flex-wrap gap-2">
@@ -50,6 +46,10 @@ export default function Service() {
             ))}
           </div>
         </Reveal>
+      </section>
+
+      <section id="book" className="mx-auto max-w-3xl scroll-mt-28 px-4 pt-14 pb-24 sm:px-6">
+        <EnquiryForm type="service" title={`Book ${s.name}`} payload={{ service: s.slug }} submitLabel="Request Service" />
       </section>
     </>
   );
