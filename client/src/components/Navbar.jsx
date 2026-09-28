@@ -39,21 +39,24 @@ export default function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[transform,background-color,border-color] duration-300 ${
-        hidden && !open ? '-translate-y-full' : ''
-      } ${scrolled || open ? 'border-b border-line bg-bg/92 backdrop-blur-md' : 'border-b border-transparent'}`}
+      className={`fixed inset-x-0 top-0 z-50 px-3 pt-3 transition-transform duration-300 sm:px-5 ${hidden && !open ? '-translate-y-[120%]' : ''}`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
-        <Logo />
+      {/* Capsule: a floating rounded-full bar that gains a stronger shadow once the page scrolls. */}
+      <div
+        className={`theme-dark !bg-[#0b3d2e]/95 mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-[#145c46] pr-2 pl-5 backdrop-blur-md transition-shadow duration-300 ${
+          scrolled || open ? 'shadow-[0_10px_30px_-12px_rgb(11_61_46/0.3)]' : 'shadow-[0_4px_16px_-10px_rgb(11_61_46/0.2)]'
+        }`}
+      >
+        <Logo onDark />
 
         <nav aria-label="Main" className="hidden xl:block">
-          <ul className="flex items-center gap-1">
+          <ul className="flex items-center">
             {nav.map(({ label, to, children }) => (
               <li key={label} className="group relative">
                 <NavLink
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1 rounded-md px-3 py-2 text-[0.9rem] transition-colors hover:text-fg ${isActive ? 'text-fg' : 'text-muted'}`
+                    `flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2 text-[0.875rem] transition-colors hover:bg-[#145c46] hover:text-fg ${isActive ? 'text-fg' : 'text-muted'}`
                   }
                 >
                   {label}
@@ -78,7 +81,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="hidden items-center gap-1.5 px-2 text-[0.875rem] text-muted transition-colors hover:text-fg lg:inline-flex">
+          <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="hidden items-center gap-1.5 whitespace-nowrap px-2 text-[0.875rem] text-muted transition-colors hover:text-fg 2xl:inline-flex">
             <MessageCircle className="size-4" /> WhatsApp us
           </a>
           <Link to="/finder" className="btn btn-primary hidden !min-h-10 !py-2 !text-[0.875rem] sm:inline-flex">Find My NAS</Link>
@@ -93,10 +96,9 @@ export default function Navbar() {
           </button>
         </div>
       </div>
-
-      {/* Below xl: a full-height sheet, designed for thumbs rather than a shrunken desktop menu. */}
+      
       {open && (
-        <div id="mobile-menu" className="h-[calc(100svh-4rem)] overflow-y-auto border-t border-line bg-bg px-4 pb-10 sm:px-6 xl:hidden">
+        <div id="mobile-menu" className="theme-dark !bg-[#0b3d2e] mx-auto mt-2 max-h-[calc(100svh-6rem)] max-w-7xl overflow-y-auto rounded-3xl border border-line bg-raised px-5 pb-8 shadow-[0_16px_40px_-16px_rgb(11_61_46/0.35)] xl:hidden">
           <ul className="rule-list">
             {nav.map(({ label, to, children }) => (
               <li key={label}>

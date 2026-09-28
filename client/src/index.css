@@ -1,34 +1,35 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   NASTOWN design system
-   Personality: precise · grounded · warm · quietly technical · trustworthy.
-   Think "well-made hardware spec sheet": warm paper, charcoal ink, hairline
-   rules, and one green accent that behaves like a status LED (it means
-   "recommended / selected / OK", never decoration).
+   NASTOWN design system. Structure and format from the MyFlopy features page
+   (Manrope headings, Inter body, large rounded photography, soft washes, pill
+   buttons); palette: greens #0B3D2E · #145C46 · #1E7A5D · #2E9D74 · #61B795 · #A7D6C0 · #EAF6F0.
 
-   Colours are semantic. A `.theme-dark` wrapper swaps the same tokens for
-   charcoal sections, so components work on either without changes.
+   Colours are semantic. A `.theme-dark` wrapper swaps the same tokens
+   (used by the footer), so components work on either without changes.
    ------------------------------------------------------------------ */
 @theme {
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif; /* numbers use tabular figures via .mono */
 
-  --color-bg: #f4f1ec;          /* paper */
-  --color-surface: #ebe7e0;     /* tonal band, figure plates */
-  --color-raised: #fbfaf7;      /* inputs, menus, dialogs */
-  --color-fg: #1b1b19;          /* ink */
-  --color-muted: #55524c;       /* secondary text, 7:1 on paper */
-  --color-subtle: #6e6a63;      /* labels, meta, 4.7:1 on paper */
-  --color-line: #dad5cc;        /* hairlines */
-  --color-line-strong: #bdb7ac; /* control borders */
-  --color-accent: #186b44;      /* text-safe LED green */
-  --color-led: #2bb673;         /* the actual lit LED */
-  --color-warning: #9a5209;
-  --color-error: #b42318;
-
-  --radius-control: 8px;
+  --color-bg: #eaf6f0;          /* Butter Yellow: the page */
+  --color-surface: #f5fbf8;     /* lighter bands, table headers, image plates */
+  --color-raised: #ffffff;      /* cards, inputs, menus */
+  --color-fg: #0b3d2e;          /* Dark Green: headings and strong text (11:1 on butter) */
+  --color-body: #145c46;        /* running text */
+  --color-muted: #185f49;       /* secondary text */
+  --color-subtle: #1e7a5d;      /* labels, meta (5:1 on butter) */
+  --color-line: #cfe8db;        /* 12% green into butter */
+  --color-line-strong: #a7d6c0; /* 25% green into butter */
+  --color-accent: #1e7a5d;      /* links, primary buttons, highlights */
+  --color-accent-strong: #145c46;
+  --color-accent-soft: #d3ecdf; /* highlighted column, selected tint */
+  --color-on-accent: #ffffff;   /* text on accent fills */
+  --color-led: #2e9d74;         /* status LEDs only */
+  --color-warning: #b45309;
+  --color-error: #dc2626;
+  --color-star: #1e7a5d;
 
   --animate-blink: blink 2.8s ease-in-out infinite;
   @keyframes blink {
@@ -41,133 +42,129 @@
   html { background: var(--color-bg); color-scheme: light; -webkit-text-size-adjust: 100%; }
   body {
     background: var(--color-bg);
-    color: var(--color-fg);
+    color: var(--color-body);
     font-family: var(--font-sans);
     font-size: 16px;
-    line-height: 1.6;
+    line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
-  ::selection { background: color-mix(in srgb, var(--color-led) 30%, transparent); }
-  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
-  h1, h2, h3, h4 { text-wrap: balance; font-weight: 500; letter-spacing: -0.025em; }
+  ::selection { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 6px; }
+  h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; color: var(--color-fg); letter-spacing: -0.02em; text-wrap: balance; }
   p { text-wrap: pretty; }
   summary::-webkit-details-marker { display: none; }
 }
 
 @layer components {
-  /* Charcoal sections: same tokens, inverted. */
+  /* Footer: Dark Green with a soft lighter-green glow rising from the bottom; butter text. */
   .theme-dark {
-    --color-bg: #1b1b19;
-    --color-surface: #242421;
-    --color-raised: #2a2a27;
-    --color-fg: #eeebe5;
-    --color-muted: #b3aea5;
-    --color-subtle: #9a958c;
-    --color-line: #353430;
-    --color-line-strong: #4a4843;
-    --color-accent: #5fd39a;
-    --color-warning: #e3a44f;
-    --color-error: #f08a7e;
+    --color-bg: #0b3d2e;
+    --color-surface: #114c3b;
+    --color-raised: #145c46;
+    --color-fg: #eaf6f0;
+    --color-body: #d5ede2;
+    --color-muted: #a7d6c0;
+    --color-subtle: #8fcaaf;
+    --color-line: #145c46;
+    --color-line-strong: #1e7a5d;
+    --color-accent: #a7d6c0;
+    --color-accent-strong: #eaf6f0;
+    --color-accent-soft: #145c46;
+    --color-on-accent: #0b3d2e;
     color-scheme: dark;
-    background: var(--color-bg);
+    background: radial-gradient(120% 60% at 50% 115%, #1e7a5d 0%, rgb(30 122 93 / 0.4) 35%, transparent 65%), #0b3d2e;
+    color: var(--color-body);
+  }
+
+  /* Type */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.25rem, 4.6vw, 3.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.03em;
     color: var(--color-fg);
   }
-
-  /* Page-level type. Headings are confident but not shouting. */
-  .display {
-    font-weight: 500;
-    font-size: clamp(2.6rem, 6.2vw, 5rem);
-    line-height: 0.98;
-    letter-spacing: -0.04em;
-  }
   .h-section {
-    font-weight: 500;
-    font-size: clamp(1.9rem, 3.4vw, 2.75rem);
-    line-height: 1.06;
-    letter-spacing: -0.03em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.7rem, 2.6vw, 2.25rem);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: var(--color-fg);
   }
-  .heading { font-weight: 500; line-height: 1.08; letter-spacing: -0.03em; }
-  .accent {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-  }
-  .lede { font-size: 1.125rem; line-height: 1.55; color: var(--color-muted); max-width: 38rem; }
+  .heading { font-family: var(--font-display); font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; color: var(--color-fg); }
+  /* Marked words in headings (`*word*`) take the brand blue. */
+  .accent { color: var(--color-accent); font-style: normal; }
+  .lede { font-size: 1.0625rem; line-height: 1.7; color: var(--color-body); max-width: 40rem; }
   .measure { max-width: 62ch; }
 
-  /* Small technical label: section markers, spec keys, meta. */
+  /* Small label above headings. */
   .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--color-subtle);
+    color: var(--color-accent);
   }
-  .mono { font-family: var(--font-mono); font-feature-settings: "zero" 0; }
+  .mono { font-variant-numeric: tabular-nums; }
 
-  /* Rule-separated list, used instead of card grids. */
   .rule-list > * + * { border-top: 1px solid var(--color-line); }
+  .split-line { padding-bottom: 0.1em; margin-bottom: -0.1em; }
 
-  /* Split-text masked lines: leave room for descenders. */
-  .split-line { padding-bottom: 0.08em; margin-bottom: -0.08em; }
-
-  /* Buttons */
+  /* Buttons: pills. */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     min-height: 44px;
-    padding: 0.65rem 1.15rem;
-    border-radius: var(--radius-control);
+    padding: 0.65rem 1.35rem;
+    border-radius: 999px;
     font-size: 0.9375rem;
     font-weight: 500;
     line-height: 1.1;
     white-space: nowrap;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   }
   .btn:active { transform: translateY(1px); }
   .btn svg { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
   .btn:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
   .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
-  .btn-primary { background: var(--color-fg); color: var(--color-bg); border: 1px solid var(--color-fg); }
-  .btn-primary:hover { background: color-mix(in srgb, var(--color-fg) 86%, var(--color-bg)); }
-  .btn-secondary { background: transparent; color: var(--color-fg); border: 1px solid var(--color-line-strong); }
-  .btn-secondary:hover { background: var(--color-surface); border-color: var(--color-fg); }
+  .btn-primary { background: var(--color-accent); color: var(--color-on-accent); border: 1px solid var(--color-accent); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--color-accent) 70%, transparent); }
+  .btn-primary:hover { background: var(--color-accent-strong); border-color: var(--color-accent-strong); }
+  .btn-secondary { background: var(--color-raised); color: var(--color-fg); border: 1px solid var(--color-line-strong); }
+  .btn-secondary:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
-  /* Text link with a drawn underline. */
+  /* Blue text link, used with a trailing chevron. */
   .link {
-    color: var(--color-fg);
-    text-decoration: underline;
-    text-decoration-color: var(--color-line-strong);
-    text-underline-offset: 0.22em;
-    text-decoration-thickness: 1px;
-    transition: text-decoration-color 0.2s ease;
+    color: var(--color-accent);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
   }
-  .link:hover { text-decoration-color: currentColor; }
+  .link:hover { color: var(--color-accent-strong); text-decoration: underline; text-underline-offset: 0.2em; }
 
-  /* Selectable option (finder, configurator, filters). */
+  /* Selectable option (configurator, filters). */
   .chip {
-    border-radius: 6px;
-    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
     min-height: 40px;
     font-size: 0.875rem;
     color: var(--color-fg);
     background: var(--color-raised);
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--color-line-strong);
     transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   }
-  .chip:hover { border-color: var(--color-line-strong); }
-  .chip[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .chip:hover { border-color: var(--color-accent); }
+  .chip[aria-pressed="true"] { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
 
   .field {
     width: 100%;
-    border-radius: 6px;
-    padding: 0.7rem 0.85rem;
+    border-radius: 12px;
+    padding: 0.7rem 0.9rem;
     min-height: 44px;
     font-size: 1rem;
     color: var(--color-fg);
@@ -176,21 +173,58 @@
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .field::placeholder { color: var(--color-subtle); }
-  .field:focus { outline: none; border-color: var(--color-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 25%, transparent); }
+  .field:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent); }
 
-  /* A quiet bordered panel, for tools and forms (not for marketing content). */
-  .panel {
+  /* White card with a soft shadow, for tools and forms. */
+  .panel, .glass {
     background: var(--color-raised);
     border: 1px solid var(--color-line);
-    border-radius: 10px;
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 12px 32px -18px rgb(15 23 42 / 0.18);
   }
-  /* Legacy name kept so older markup renders as a plain panel. */
-  .glass { background: var(--color-raised); border: 1px solid var(--color-line); }
 
-  /* Figure plate behind product drawings: like a catalogue photo backdrop. */
-  .plate { background: var(--color-surface); border-radius: 6px; }
+  /* Soft backdrop behind product drawings. */
+  .plate { background: var(--color-surface); border-radius: 20px; }
 
-  /* Status LED dot. */
+  /* Photo frame: rounded image with thin guide ticks at the corners. */
+  .frame { position: relative; padding: 12px; }
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    --t: var(--color-line-strong);
+    background:
+      linear-gradient(var(--t), var(--t)) 12px 0 / 1px 24px no-repeat,
+      linear-gradient(var(--t), var(--t)) 0 12px / 24px 1px no-repeat,
+      linear-gradient(var(--t), var(--t)) calc(100% - 12px) 0 / 1px 24px no-repeat,
+      linear-gradient(var(--t), var(--t)) 100% 12px / 24px 1px no-repeat,
+      linear-gradient(var(--t), var(--t)) 12px 100% / 1px 24px no-repeat,
+      linear-gradient(var(--t), var(--t)) 0 calc(100% - 12px) / 24px 1px no-repeat,
+      linear-gradient(var(--t), var(--t)) calc(100% - 12px) 100% / 1px 24px no-repeat,
+      linear-gradient(var(--t), var(--t)) 100% calc(100% - 12px) / 24px 1px no-repeat;
+  }
+
+  /* White card that overlaps a photo edge and carries a small diagram. */
+  .float-card {
+    background: var(--color-raised);
+    border-radius: 24px;
+    box-shadow: 0 2px 6px rgb(15 23 42 / 0.06), 0 24px 48px -20px rgb(15 23 42 / 0.28);
+  }
+
+  /* Soft wash from the palette's lighter greens, behind feature rows. */
+  .wash {
+    position: absolute;
+    pointer-events: none;
+    filter: blur(60px);
+    opacity: 0.55;
+    background:
+      radial-gradient(35% 45% at 30% 35%, #61b795 0%, transparent 70%),
+      radial-gradient(30% 40% at 70% 40%, #a7d6c0 0%, transparent 70%),
+      radial-gradient(30% 35% at 45% 75%, #cfe8db 0%, transparent 70%),
+      radial-gradient(25% 30% at 80% 75%, #2e9d74 0%, transparent 70%);
+  }
+
   .led { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--color-led); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 18%, transparent); }
 }
 

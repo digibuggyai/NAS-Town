@@ -4,6 +4,8 @@ import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { faqs, resources } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import PostCard from '../components/PostCard.jsx';
+import { posts } from '../data/blog.js';
 
 export default function Resource() {
   const { slug } = useParams();
@@ -23,7 +25,13 @@ export default function Resource() {
         </div>
       </section>
 
-      {r.slug === 'faq' ? (
+      {r.slug === 'blog' ? (
+        <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((p) => <PostCard key={p.slug} post={p} />)}
+          </div>
+        </section>
+      ) : r.slug === 'faq' ? (
         <section className="mx-auto max-w-3xl px-4 pb-28 sm:px-6">
           <div className="grid gap-3">
             {faqs.map(({ q, a }) => (

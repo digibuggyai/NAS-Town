@@ -4,8 +4,8 @@ import Reveal from '../components/Reveal.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 
-// The brands inside a NASTOWN build: the box and the drives. Logos are shown in one
-// muted tone so they read as a set; model counts come live from the catalogue.
+// The brands inside a NASTOWN build: the box and the drives. Logos are shown in
+// their own colours; model counts and drive sizes come live from the catalogue.
 const groups = [
   {
     label: 'NAS systems',
@@ -57,7 +57,7 @@ export default function BrandsBand() {
                         src={b.logo}
                         alt={b.name}
                         loading="lazy"
-                        className={`${b.h} w-auto max-w-full opacity-80 brightness-[0.25] contrast-125 grayscale transition duration-300 group-hover:opacity-100 group-hover:filter-none`}
+                        className={`${b.h} w-auto max-w-full transition duration-300 group-hover:scale-[1.03]`}
                       />
                     </div>
                     <p className="mono mt-4 text-xs text-muted">{b.line}</p>

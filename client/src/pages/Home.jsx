@@ -1,26 +1,26 @@
 import Hero from '../sections/Hero.jsx';
-import Problem from '../sections/Problem.jsx';
-import WhatIsNas from '../sections/WhatIsNas.jsx';
+import FeatureRows from '../sections/FeatureRows.jsx';
 import Solutions from '../sections/Solutions.jsx';
-import ProductShowcase from '../sections/ProductShowcase.jsx';
-import WhyNastown from '../sections/WhyNastown.jsx';
+import BlogSection from '../sections/BlogSection.jsx';
 import BrandsBand from '../sections/BrandsBand.jsx';
 import Reviews from '../sections/Reviews.jsx';
 import HomeFaq from '../sections/HomeFaq.jsx';
+import CtaBanner from '../sections/CtaBanner.jsx';
 
+// Structure follows the reference features page: hero photo, alternating feature
+// rows, the latest blog posts, then a closing banner before the footer.
 export default function Home() {
   return (
     <>
       <title>NAS Storage Solutions | NASTOWN</title>
       <Hero />
-      <Problem />
-      <WhatIsNas />
+      <FeatureRows />
       <Solutions />
-      <ProductShowcase />
+      <BlogSection />
       <BrandsBand />
-      <WhyNastown />
       <Reviews />
       <HomeFaq />
+      <CtaBanner />
     </>
   );
 }

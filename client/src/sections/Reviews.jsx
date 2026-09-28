@@ -3,7 +3,7 @@ import Reveal from '../components/Reveal.jsx';
 import { digibuggy } from '../data/site.js';
 
 const Stars = ({ size = 'size-4', label }) => (
-  <span className="flex gap-0.5 text-fg" aria-label={label}>
+  <span className="flex gap-0.5 text-star" aria-label={label}>
     {Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`${size} fill-current`} strokeWidth={0} />)}
   </span>
 );

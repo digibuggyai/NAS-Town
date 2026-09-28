@@ -69,7 +69,7 @@ export default function Footer() {
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
             {columns.map(([title, items]) => (
               <div key={title}>
-                <p className="eyebrow">{title}</p>
+                <p className="font-display text-lg font-semibold text-fg">{title}</p>
                 <ul className="mt-4 grid gap-2">
                   {items.map(([label, to]) => (
                     <li key={label}>

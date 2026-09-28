@@ -14,6 +14,7 @@ import Calculator from './pages/Calculator.jsx';
 import Configurator from './pages/Configurator.jsx';
 import FinderPage from './pages/FinderPage.jsx';
 import Resource from './pages/Resource.jsx';
+import BlogPost from './pages/BlogPost.jsx';
 import About from './pages/About.jsx';
 import SitemapPage from './pages/SitemapPage.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="tools/configurator" element={<Configurator />} />
         <Route path="finder" element={<FinderPage />} />
         <Route path="resources/:slug" element={<Resource />} />
+        <Route path="blog/:slug" element={<BlogPost />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Navigate to="/about#contact" replace />} />
         <Route path="sitemap" element={<SitemapPage />} />

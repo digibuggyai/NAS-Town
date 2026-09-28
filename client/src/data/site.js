@@ -176,7 +176,7 @@ export const resources = [
     slug: 'blog', name: 'Blog',
     h1: 'The NASTOWN Blog',
     intro: 'Storage tips, industry news, and practical insights to help you get more out of your NAS, updated regularly.',
-    upcoming: ['Why photographers are moving off external drives', 'Ransomware and your NAS', 'How much storage does 8K really need?', 'Renting vs buying storage for projects'],
+    // Published posts live in data/blog.js.
   },
   { slug: 'faq', name: 'FAQ', h1: 'Frequently Asked Questions', intro: 'Got questions about NAS storage, rentals, or our services? Find quick answers here, or reach out to our team directly.' },
 ];
