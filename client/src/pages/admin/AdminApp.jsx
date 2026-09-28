@@ -4,6 +4,7 @@ import { Download, Eye, EyeOff, Loader2, LogOut } from 'lucide-react';
 import { Logo } from '../../components/Navbar.jsx';
 import CatalogueTable, { SettingsForm } from '../../components/admin/CatalogueTable.jsx';
 import Configurator from '../../components/configurator/Configurator.jsx';
+import BlogManager from '../../components/admin/BlogManager.jsx';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/useAuth.js';
 
@@ -78,6 +79,7 @@ function Shell({ user, onLogout }) {
     ['Sales configurator', '/admin/configurator'],
     ['Leads', '/admin/leads'],
     admin && ['Change log', '/admin/log'],
+    admin && ['Blog', '/admin/blog'],
     admin && ['Users', '/admin/users'],
   ].filter(Boolean);
 
@@ -107,6 +109,7 @@ function Shell({ user, onLogout }) {
           <Route path="configurator" element={<SalesConfigurator />} />
           <Route path="leads" element={<Leads />} />
           {admin && <Route path="log" element={<ChangeLog />} />}
+          {admin && <Route path="blog" element={<BlogManager />} />}
           {admin && <Route path="users" element={<Users me={user} />} />}
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>

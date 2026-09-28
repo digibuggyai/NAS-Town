@@ -5,6 +5,7 @@ import fsp from 'node:fs/promises';
 import pg from 'pg';
 import { COLLECTIONS, SETTINGS_FIELDS, camel, snake } from './collections.js';
 import * as catalogue from './catalogue.js';
+import { blogSeed } from './blog-seed.js';
 
 const url = process.env.DATABASE_URL;
 const pool = url
@@ -42,7 +43,7 @@ function fromRow(fields, row) {
 
 /* ---------------- memory backend ---------------- */
 
-const mem = { models: [], drives: [], driveLines: [], upgrades: [], settings: null, changeLog: [], users: [], enquiries: [], finder: [], ids: {} };
+const mem = { models: [], drives: [], driveLines: [], upgrades: [], settings: null, changeLog: [], users: [], enquiries: [], finder: [], blog: [], blogImages: new Map(), ids: {} };
 const nextId = (k) => (mem.ids[k] = (mem.ids[k] ?? 0) + 1);
 
 /* ---------------- init + seed ---------------- */
@@ -70,6 +71,7 @@ export async function init() {
       mem[key] = seed[key].map((row) => ({ id: nextId(key), active: true, ...row }));
     }
     mem.settings = seed.settings;
+    for (const p of blogSeed) await createPost(p);
     return;
   }
 
@@ -86,6 +88,11 @@ export async function init() {
       [seed.settings.installQuote, seed.settings.installMin, seed.settings.amcQuotePercent, seed.settings.amcMinPercent],
     );
     console.log(`[db] seeded ${seed.models.length} models, ${seed.drives.length} drives`);
+  }
+  const blog = await pool.query('SELECT COUNT(*)::int AS n FROM blog_posts');
+  if (blog.rows[0].n === 0) {
+    for (const p of blogSeed) await createPost(p);
+    console.log(`[db] seeded ${blogSeed.length} blog posts`);
   }
   // Fill fields added after first release, without touching anything edited in the admin panel.
   for (const m of catalogue.models) {
@@ -293,4 +300,104 @@ export async function logFinder({ storing, capacity, work_style, recommended }) 
     'INSERT INTO finder_submissions (storing, capacity, work_style, recommended) VALUES ($1,$2,$3,$4)',
     [storing, capacity, work_style, recommended],
   );
+}
+
+/* ---------------- blog ---------------- */
+
+const POST_COLS = ['slug', 'title', 'excerpt', 'category', 'body', 'coverImage', 'coverAlt', 'published', 'publishedAt'];
+const postRow = (r) => r && ({
+  ...fromRow({}, r),
+  publishedAt: r.published_at instanceof Date ? r.published_at.toISOString().slice(0, 10) : r.published_at ?? r.publishedAt,
+});
+const today = () => new Date().toISOString().slice(0, 10);
+
+export async function listPosts({ publishedOnly = false, limit = 100 } = {}) {
+  const sortKey = (p) => `${p.publishedAt}|${String(p.id).padStart(8, '0')}`;
+  if (!pool) {
+    return mem.blog
+      .filter((p) => !publishedOnly || p.published)
+      .sort((a, b) => sortKey(b).localeCompare(sortKey(a)))
+      .slice(0, limit)
+      .map((p) => structuredClone(p));
+  }
+  const { rows } = await pool.query(
+    `SELECT * FROM blog_posts ${publishedOnly ? 'WHERE published' : ''} ORDER BY published_at DESC, id DESC LIMIT $1`,
+    [limit],
+  );
+  return rows.map(postRow);
+}
+
+export async function getPost({ id, slug }) {
+  if (!pool) return structuredClone(mem.blog.find((p) => (id != null ? p.id === id : p.slug === slug)) ?? null);
+  const { rows } = await pool.query(`SELECT * FROM blog_posts WHERE ${id != null ? 'id' : 'slug'} = $1`, [id ?? slug]);
+  return postRow(rows[0]) ?? null;
+}
+
+export async function createPost(data) {
+  const row = { published: true, publishedAt: today(), body: '', ...data };
+  if (!pool) {
+    const p = { id: nextId('blog'), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...row };
+    mem.blog.push(p);
+    return structuredClone(p);
+  }
+  const keys = POST_COLS.filter((k) => row[k] !== undefined);
+  const { rows } = await pool.query(
+    `INSERT INTO blog_posts (${keys.map(snake).join(',')}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(',')}) RETURNING *`,
+    keys.map((k) => row[k]),
+  );
+  return postRow(rows[0]);
+}
+
+export async function updatePost(id, data) {
+  const before = await getPost({ id });
+  if (!before) return null;
+  if (!pool) {
+    const p = mem.blog.find((x) => x.id === id);
+    Object.assign(p, data, { updatedAt: new Date().toISOString() });
+    return { before, after: structuredClone(p) };
+  }
+  const keys = POST_COLS.filter((k) => data[k] !== undefined);
+  if (!keys.length) return { before, after: before };
+  const { rows } = await pool.query(
+    `UPDATE blog_posts SET ${keys.map((k, i) => `${snake(k)} = $${i + 1}`).join(', ')}, updated_at = now() WHERE id = $${keys.length + 1} RETURNING *`,
+    [...keys.map((k) => data[k]), id],
+  );
+  return { before, after: postRow(rows[0]) };
+}
+
+export async function deletePost(id) {
+  const before = await getPost({ id });
+  if (!before) return null;
+  if (!pool) mem.blog = mem.blog.filter((p) => p.id !== id);
+  else await pool.query('DELETE FROM blog_posts WHERE id = $1', [id]);
+  await deleteUnusedImage(before.coverImage);
+  return before;
+}
+
+/* Cover images: stored as bytes; served at /api/blog/images/:id. */
+export async function saveImage(mime, data) {
+  if (!pool) {
+    const id = nextId('blogImages');
+    mem.blogImages.set(id, { mime, data });
+    return id;
+  }
+  const { rows } = await pool.query('INSERT INTO blog_images (mime, data) VALUES ($1, $2) RETURNING id', [mime, data]);
+  return rows[0].id;
+}
+
+export async function getImage(id) {
+  if (!pool) return mem.blogImages.get(id) ?? null;
+  const { rows } = await pool.query('SELECT mime, data FROM blog_images WHERE id = $1', [id]);
+  return rows[0] ?? null;
+}
+
+/** Remove an uploaded cover once no post points at it any more. */
+export async function deleteUnusedImage(url) {
+  const m = /^\/api\/blog\/images\/(\d+)$/.exec(url ?? '');
+  if (!m) return;
+  const id = Number(m[1]);
+  const inUse = (await listPosts()).some((p) => p.coverImage === url);
+  if (inUse) return;
+  if (!pool) mem.blogImages.delete(id);
+  else await pool.query('DELETE FROM blog_images WHERE id = $1', [id]);
 }

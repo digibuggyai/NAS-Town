@@ -49,6 +49,25 @@ export const api = {
   deleteUser: (id) => request(`/admin/users/${id}`, { auth: true, method: 'DELETE' }),
   enquiries: () => request('/admin/enquiries', { auth: true }),
 
+  blog: (params = {}) => request(`/blog?${new URLSearchParams(params)}`),
+  blogPost: (slug) => request(`/blog/${encodeURIComponent(slug)}`),
+  adminPosts: () => request('/admin/blog', { auth: true }),
+  createPost: (data) => request('/admin/blog', { auth: true, ...body('POST', data) }),
+  updatePost: (id, data) => request(`/admin/blog/${id}`, { auth: true, ...body('PATCH', data) }),
+  deletePost: (id) => request(`/admin/blog/${id}`, { auth: true, method: 'DELETE' }),
+
+  /** Uploads a cover image as raw bytes; returns { url }. */
+  async uploadBlogImage(file) {
+    const res = await fetch(`${BASE}/api/admin/blog/images`, {
+      method: 'POST',
+      headers: { 'Content-Type': file.type, Authorization: `Bearer ${getToken()}` },
+      body: file,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(data.error || 'Upload failed.', res.status);
+    return data;
+  },
+
   /** Downloads the internal price sheet (needs the auth header, so not a plain link). */
   async downloadPriceSheet() {
     const res = await fetch(`${BASE}/api/admin/price-sheet.csv`, { headers: { Authorization: `Bearer ${getToken()}` } });
@@ -62,6 +81,16 @@ export const api = {
     URL.revokeObjectURL(a.href);
   },
 };
+
+/** Uploaded images are served by the API, which may be on another host (Vercel + Railway). */
+export const mediaUrl = (u) => (u && u.startsWith('/api/') ? `${BASE}${u}` : u);
+
+export const formatPostDate = (iso) =>
+  iso ? new Date(`${String(iso).slice(0, 10)}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+/** Post body: blank line = paragraph; a line starting "## " = subheading. */
+export const bodyBlocks = (body = '') =>
+  String(body).split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
 
 export const formatInr = (n) =>
   n == null ? 'Price on request' : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);

@@ -138,3 +138,29 @@ ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries (type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_change_log_created ON nas_change_log (created_at DESC);
+
+-- Blog. Body is plain text: blank line = new paragraph, a line starting "## " = subheading.
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id            SERIAL PRIMARY KEY,
+  slug          TEXT UNIQUE NOT NULL,
+  title         TEXT NOT NULL,
+  excerpt       TEXT,
+  category      TEXT,
+  body          TEXT NOT NULL DEFAULT '',
+  cover_image   TEXT,
+  cover_alt     TEXT,
+  published     BOOLEAN NOT NULL DEFAULT TRUE,
+  published_at  DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Uploaded cover images live in the database so they survive redeploys.
+CREATE TABLE IF NOT EXISTS blog_images (
+  id          SERIAL PRIMARY KEY,
+  mime        TEXT NOT NULL,
+  data        BYTEA NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts (published, published_at DESC);

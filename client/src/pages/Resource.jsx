@@ -4,6 +4,7 @@ import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { faqs, resources } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import BlogList from '../components/BlogList.jsx';
 
 export default function Resource() {
   const { slug } = useParams();
@@ -23,7 +24,9 @@ export default function Resource() {
         </div>
       </section>
 
-      {r.slug === 'faq' ? (
+      {r.slug === 'blog' ? (
+        <BlogList />
+      ) : r.slug === 'faq' ? (
         <section className="mx-auto max-w-3xl px-4 pb-28 sm:px-6">
           <div className="grid gap-3">
             {faqs.map(({ q, a }) => (

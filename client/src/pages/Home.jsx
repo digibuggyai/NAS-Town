@@ -1,7 +1,7 @@
 import Hero from '../sections/Hero.jsx';
 import FeatureRows from '../sections/FeatureRows.jsx';
 import Solutions from '../sections/Solutions.jsx';
-import CompareTable from '../sections/CompareTable.jsx';
+import BlogSection from '../sections/BlogSection.jsx';
 import BrandsBand from '../sections/BrandsBand.jsx';
 import Reviews from '../sections/Reviews.jsx';
 import HomeFaq from '../sections/HomeFaq.jsx';
@@ -16,7 +16,7 @@ export default function Home() {
       <Hero />
       <FeatureRows />
       <Solutions />
-      <CompareTable />
+      <BlogSection />
       <BrandsBand />
       <Reviews />
       <HomeFaq />
