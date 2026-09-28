@@ -1,10 +1,10 @@
 import { Link, useParams } from 'react-router';
-import { ChevronDown } from 'lucide-react';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { faqs, resources } from '../data/site.js';
 import NotFound from './NotFound.jsx';
 import BlogList from '../components/BlogList.jsx';
+import Accordion from '../components/Accordion.jsx';
 
 export default function Resource() {
   const { slug } = useParams();
@@ -28,17 +28,13 @@ export default function Resource() {
         <BlogList />
       ) : r.slug === 'faq' ? (
         <section className="mx-auto max-w-3xl px-4 pb-28 sm:px-6">
-          <div className="grid gap-3">
-            {faqs.map(({ q, a }) => (
-              <details key={q} className="glass group rounded-lg">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base font-medium">
-                  {q}
-                  <ChevronDown className="size-5 shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <p className="px-5 pb-5 leading-relaxed text-muted">{a}</p>
-              </details>
-            ))}
-          </div>
+          <Accordion
+            items={faqs}
+            className="grid gap-3"
+            itemClass="glass rounded-lg"
+            summaryClass="p-5 text-base font-medium"
+            answerClass="px-5 pb-5 leading-relaxed text-muted"
+          />
           <p className="mt-10 text-center text-muted">
             Still have a question? <Link to="/about#contact" className="text-fg underline underline-offset-4">Talk to our team</Link>.
           </p>
@@ -50,8 +46,8 @@ export default function Resource() {
               <Reveal key={title} delay={(i % 2) * 80}>
                 <article className="glass flex h-full flex-col rounded-xl p-8">
                   <div className="flex items-center justify-between">
-                    <span className="eyebrow !text-[0.65rem]">{r.name}</span>
-                    <span className="rounded-full bg-surface px-2.5 py-1 text-[0.7rem] text-subtle ring-1 ring-line">Coming soon</span>
+                    <span className="eyebrow !text-xs">{r.name}</span>
+                    <span className="rounded-full bg-surface px-2.5 py-1 text-xs text-subtle ring-1 ring-line">Coming soon</span>
                   </div>
                   <h2 className="mt-10 text-xl font-medium">{title}</h2>
                 </article>

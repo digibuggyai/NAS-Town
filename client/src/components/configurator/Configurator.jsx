@@ -212,7 +212,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
               title="Recommended unit"
               hint="Best value first. Each option is the cheapest way that unit reaches your storage."
               aside={d.options.length > 1 && (
-                <button onClick={() => setCompare((c) => !c)} className="text-xs text-muted underline-offset-4 hover:text-fg hover:underline">
+                <button onClick={() => setCompare((c) => !c)} className="-my-2 px-2 py-2.5 text-sm text-muted underline-offset-4 hover:text-fg hover:underline">
                   {compare ? 'Hide comparison' : 'Compare'}
                 </button>
               )}
@@ -236,7 +236,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
                         <div className="min-w-0 flex-1">
                           <p className="flex flex-wrap items-center gap-2 font-medium">
                             {b.model.brand} {b.model.model}
-                            {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[0.65rem] text-accent">Best value</span>}
+                            {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">Best value</span>}
                           </p>
                           <p className="text-xs text-muted">
                             {b.units > 1 ? `${b.units} units · ` : ''}{b.model.bays}-bay · {b.drivesPerUnit * b.units} × {b.driveCap} TB {b.driveLine} · {b.totalUsable} TB usable
@@ -345,7 +345,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
         <div ref={panelRef} className="glass rounded-xl p-6">
           <div className="flex items-center justify-between">
             <p className="eyebrow">{sales ? 'Internal estimate' : 'Your estimate'}</p>
-            {sales && <span className="rounded-full bg-warning/10 px-2.5 py-1 text-[0.65rem] text-warning">Floors visible</span>}
+            {sales && <span className="rounded-full bg-warning/10 px-2.5 py-1 text-xs text-warning">Floors visible</span>}
           </div>
           {build && price ? (
             <>

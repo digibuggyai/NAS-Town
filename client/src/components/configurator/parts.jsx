@@ -31,7 +31,7 @@ export function Choice({ active, disabled, onClick, children, sub, title }) {
       className={`chip flex flex-col items-start !rounded-md !px-3.5 !py-2 text-left ${disabled && !active ? 'opacity-35 hover:!bg-surface' : ''}`}
     >
       <span>{children}</span>
-      {sub && <span className={`text-[0.7rem] ${active ? 'text-bg/60' : 'text-subtle'}`}>{sub}</span>}
+      {sub && <span className={`text-xs ${active ? 'text-bg/60' : 'text-subtle'}`}>{sub}</span>}
     </button>
   );
 }
@@ -53,7 +53,7 @@ export function Toggle({ checked, onChange, label, sub }) {
 
 export function InfoButton({ onClick, label }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} className="grid size-7 shrink-0 place-items-center rounded-full text-subtle transition-colors hover:bg-surface hover:text-fg">
+    <button type="button" onClick={onClick} aria-label={label} className="-m-1 grid size-9 shrink-0 place-items-center rounded-full text-subtle transition-colors hover:bg-surface hover:text-fg">
       <Info className="size-4" />
     </button>
   );

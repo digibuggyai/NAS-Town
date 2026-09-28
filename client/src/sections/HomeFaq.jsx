@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
-import { Plus } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
+import Accordion from '../components/Accordion.jsx';
 import { faqs } from '../data/site.js';
 
 // The five questions buyers ask first; the rest live on the FAQ page.
@@ -26,16 +26,8 @@ export default function HomeFaq() {
             <Link to="/resources/faq" className="link">full FAQ</Link>.
           </p>
         </Reveal>
-        <Reveal as="div" delay={100} className="rule-list border-y border-line">
-          {top.map(({ q, a }) => (
-            <details key={q} className="group">
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[1.05rem]">
-                {q}
-                <Plus className="mt-1 size-5 shrink-0 text-subtle transition-transform duration-200 group-open:rotate-45" />
-              </summary>
-              <p className="measure pb-6 text-muted">{a}</p>
-            </details>
-          ))}
+        <Reveal as="div" delay={100}>
+          <Accordion items={top} className="rule-list border-y border-line" />
         </Reveal>
       </div>
     </section>

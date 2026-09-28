@@ -88,7 +88,7 @@ function Shell({ user, onLogout }) {
       <header className="glass flex flex-wrap items-center justify-between gap-4 rounded-full py-2 pr-2 pl-5">
         <div className="flex items-center gap-4">
           <Logo />
-          <span className="hidden rounded-full bg-surface px-2.5 py-1 text-[0.65rem] tracking-wide text-muted uppercase sm:inline">Staff · {user.role}</span>
+          <span className="hidden rounded-full bg-surface px-2.5 py-1 text-xs tracking-wide text-muted uppercase sm:inline">Staff · {user.role}</span>
         </div>
         <nav className="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto">
           {tabs.map(([label, to]) => (

@@ -1,7 +1,5 @@
 import { Cloud, FileText, Folder, Globe, HardDrive, Image, Laptop, Link2, Lock, RotateCcw, ShieldCheck, Smartphone, User } from 'lucide-react';
 
-// Small illustration for the floating card on each feature photo: a central
-// icon with satellites joined by dashed lines, drawn in the brand blue.
 const LAYOUTS = {
   store: { center: HardDrive, around: [Image, FileText, Folder, Image] },
   protect: { center: ShieldCheck, around: [HardDrive, RotateCcw, HardDrive, Lock] },

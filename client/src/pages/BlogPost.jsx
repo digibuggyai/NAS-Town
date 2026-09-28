@@ -29,7 +29,7 @@ export default function BlogPost() {
       <title>{`${post.title} | NASTOWN Blog`}</title>
       {post.excerpt && <meta name="description" content={post.excerpt} />}
       <article className="mx-auto max-w-3xl px-4 pt-28 pb-12 sm:px-6 md:pt-32">
-        <Link to="/resources/blog" className="link inline-flex items-center gap-1.5 text-sm"><ArrowLeft className="size-4" /> All posts</Link>
+        <Link to="/resources/blog" className="link -my-2 inline-flex items-center gap-1.5 py-2.5 text-sm"><ArrowLeft className="size-4" /> All posts</Link>
         <Reveal>
           <p className="mt-8 text-sm text-subtle">
             {post.category && <><span className="font-semibold text-accent">{post.category}</span> · </>}

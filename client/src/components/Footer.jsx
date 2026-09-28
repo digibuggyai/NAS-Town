@@ -48,18 +48,18 @@ export default function Footer() {
             <p className="mt-3 text-[0.95rem] leading-snug text-fg">Smart Storage for Every Need.</p>
             <dl className="mt-5 grid gap-2.5 text-[0.8125rem]">
               <div>
-                <dt className="eyebrow !text-[0.68rem]">Showroom</dt>
+                <dt className="eyebrow !text-xs">Showroom</dt>
                 <dd className="mt-0.5 text-muted">
                   <a href={digibuggy.mapsHref} target="_blank" rel="noopener" className="hover:text-fg">{digibuggy.address}</a>
                 </dd>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2.5">
                 <div>
-                  <dt className="eyebrow !text-[0.68rem]">WhatsApp</dt>
+                  <dt className="eyebrow !text-xs">WhatsApp</dt>
                   <dd className="mt-0.5"><a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link">{digibuggy.whatsapp}</a></dd>
                 </div>
                 <div>
-                  <dt className="eyebrow !text-[0.68rem]">Email</dt>
+                  <dt className="eyebrow !text-xs">Email</dt>
                   <dd className="mt-0.5"><a href={`mailto:${digibuggy.email}`} className="link">{digibuggy.email}</a></dd>
                 </div>
               </div>
@@ -101,7 +101,7 @@ export default function Footer() {
               })}
             </ul>
           </div>
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-subtle">
+          <div className="flex flex-wrap items-center gap-x-5 text-xs text-subtle [&>a]:py-2.5 md:[&>a]:py-1">
             <span>© {new Date().getFullYear()} NASTOWN. All rights reserved.</span>
             <Link to="/privacy" className="hover:text-fg">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-fg">Terms &amp; Conditions</Link>

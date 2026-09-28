@@ -39,6 +39,10 @@
 
 @layer base {
   html { background: var(--color-bg); color-scheme: light; -webkit-text-size-adjust: 100%; }
+  /* Lenis smooth scroll */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-stopped { overflow: clip; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
   body {
     background: var(--color-bg);
     color: var(--color-body);
@@ -224,6 +228,13 @@
   }
 
   .led { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--color-led); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 18%, transparent); }
+}
+
+/* Brand strip: animated with GSAP in BrandsBand.jsx; edges fade out. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

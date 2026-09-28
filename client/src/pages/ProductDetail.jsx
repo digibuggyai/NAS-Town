@@ -39,7 +39,7 @@ export default function ProductDetail() {
     <>
       <title>{`${p.model} | NASTOWN`}</title>
       <section className="mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 md:pt-40">
-        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-muted hover:text-fg"><ArrowLeft className="size-4" /> All products</Link>
+        <Link to="/products" className="-my-2 inline-flex items-center gap-2 py-2.5 text-sm text-muted hover:text-fg"><ArrowLeft className="size-4" /> All products</Link>
         <div className="mt-8 grid gap-10 lg:grid-cols-2">
           <Reveal className="glass grid place-items-center rounded-xl p-10">
             <NasVisual bays={p.bays} className="w-full max-w-md" />

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { ChevronDown, Menu, MessageCircle, X } from 'lucide-react';
 import { digibuggy, nav } from '../data/site.js';
-import { lockScroll } from '../lib/motion.js';
+import { gsap, lockScroll, reducedMotion, useGSAP } from '../lib/motion.js';
 
 /** Bee mark + wordmark. The bee image is white, so it's inverted on light backgrounds. */
 export function Logo({ onDark = false }) {
@@ -19,6 +19,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const { pathname } = useLocation();
+  const header = useRef(null);
+  const menu = useRef(null);
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => lockScroll(open), [open]);
@@ -37,10 +39,20 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // GSAP: the bar glides out of the way while reading down and back on the way up.
+  useGSAP(() => {
+    gsap.to(header.current, { yPercent: hidden && !open ? -130 : 0, duration: reducedMotion() ? 0 : 0.55, ease: 'power3.out', overwrite: true });
+  }, { dependencies: [hidden, open] });
+
+  // GSAP: the phone menu drops in, then its rows cascade.
+  useGSAP(() => {
+    if (!open || !menu.current || reducedMotion()) return;
+    gsap.fromTo(menu.current, { autoAlpha: 0, y: -10, scale: 0.98, transformOrigin: 'top center' }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' });
+    gsap.from(menu.current.querySelectorAll('li, .menu-cta'), { autoAlpha: 0, y: 12, duration: 0.45, stagger: 0.035, delay: 0.08, ease: 'power3.out' });
+  }, { dependencies: [open] });
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 px-3 pt-3 transition-transform duration-300 sm:px-5 ${hidden && !open ? '-translate-y-[120%]' : ''}`}
-    >
+    <header ref={header} className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
       {/* Capsule: a floating rounded-full bar that gains a stronger shadow once the page scrolls. */}
       <div
         className={`mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-line bg-raised/90 pr-2 pl-5 backdrop-blur-md transition-shadow duration-300 ${
@@ -103,7 +115,7 @@ export default function Navbar() {
       </div>
       
       {open && (
-        <div id="mobile-menu" className="mx-auto mt-2 max-h-[calc(100svh-6rem)] max-w-7xl overflow-y-auto rounded-3xl border border-line bg-raised px-5 pb-8 shadow-[0_16px_40px_-16px_rgb(15_23_42/0.3)] xl:hidden">
+        <div id="mobile-menu" ref={menu} className="mx-auto mt-2 max-h-[calc(100svh-6rem)] max-w-7xl overflow-y-auto rounded-3xl border border-line bg-raised px-5 pb-8 shadow-[0_16px_40px_-16px_rgb(15_23_42/0.3)] xl:hidden">
           <ul className="rule-list">
             {nav.map(({ label, to, children }) => (
               <li key={label}>
@@ -125,7 +137,7 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="mt-6 grid gap-2">
+          <div className="menu-cta mt-6 grid gap-2">
             <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="btn border border-[#1fb855] bg-[#25d366] text-white hover:bg-[#1fb855]"><MessageCircle className="size-4" /> WhatsApp {digibuggy.whatsapp}</a>
           </div>
           <p className="mt-6 text-sm text-subtle">Showroom: {digibuggy.addressShort}</p>

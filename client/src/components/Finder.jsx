@@ -76,8 +76,8 @@ export default function Finder() {
                   <NasVisual bays={b.model.bays} className="mx-auto h-32 w-auto" />
                 </div>
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="eyebrow !text-[0.62rem]">{b.model.brand}</span>
-                  {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[0.65rem] text-accent">Best value</span>}
+                  <span className="eyebrow !text-xs">{b.model.brand}</span>
+                  {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">Best value</span>}
                 </div>
                 <h4 className="mt-2 text-lg font-medium">{b.units > 1 ? `${b.units} × ` : ''}{b.model.model}</h4>
                 <p className="mt-1 text-sm text-muted">

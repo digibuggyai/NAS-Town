@@ -26,7 +26,7 @@ export default function ProductCard({ product: p }) {
 
       <div className="mt-4 flex items-baseline justify-between gap-3">
         <p className="eyebrow">{brandName(p.brand)} · {p.bays}-Bay NAS</p>
-        {p.expandable && <p className="mono text-[0.7rem] text-subtle">Expandable</p>}
+        {p.expandable && <p className="mono text-xs text-subtle">Expandable</p>}
       </div>
       <h3 className="mt-1.5 text-xl">
         <Link to={`/products/${p.slug}`} className="after:absolute after:inset-0">{p.model}</Link>
@@ -45,7 +45,7 @@ export default function ProductCard({ product: p }) {
       <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
         {p.price_inr != null ? (
           <p>
-            <span className="mono block text-[0.7rem] text-subtle">Diskless · GST incl.</span>
+            <span className="mono block text-xs text-subtle">Diskless · GST incl.</span>
             <span className="text-lg font-medium">{formatInr(p.price_inr)}</span>
           </p>
         ) : <span />}
