@@ -14,7 +14,7 @@ const facts = [
   ['Showroom', digibuggy.addressShort],
 ];
 
-// Callouts for Fig. 1, positioned against the drawing's geometry (see NasVisual: 4 sleds, LEDs at 68% height).
+// Callouts for the hero drawing, positioned against the drawing's geometry (see NasVisual: 4 sleds, LEDs at 68% height).
 const annotations = [
   { label: 'Drive bays', note: 'From 2 to 8 drives in one box', top: '19%', lineTop: '29%', from: '21%', to: '31.5%', side: 'left' },
   { label: 'Status LEDs', note: 'A glance tells you each drive is healthy', top: '56%', lineTop: '63%', from: '21%', to: '35%', side: 'left' },
@@ -64,9 +64,8 @@ export default function Hero() {
               </div>
             ))}
           </div>
-          <figcaption className="mt-3 flex justify-between gap-4 text-xs text-subtle">
-            <span className="mono whitespace-nowrap">Fig. 1</span>
-            <span className="text-right">A 4-bay NAS: four drives, one box, every device connected.</span>
+          <figcaption className="mt-3 text-right text-xs text-subtle">
+            A 4-bay NAS: four drives, one box, every device connected.
           </figcaption>
         </figure>
       </div>
