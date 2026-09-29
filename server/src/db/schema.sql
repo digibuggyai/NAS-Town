@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS users (
   id             SERIAL PRIMARY KEY,
   email          TEXT UNIQUE NOT NULL,
   name           TEXT,
-  role           TEXT NOT NULL CHECK (role IN ('admin', 'sales')),
+  role           TEXT NOT NULL CHECK (role IN ('admin', 'sales', 'blog')),
   password_hash  TEXT NOT NULL,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -137,6 +137,9 @@ CREATE TABLE IF NOT EXISTS finder_submissions (
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
 -- Site pages that list this model (Admin → Product pages). NULL = not yet assigned.
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS pages TEXT[];
+-- Blog-only staff accounts (added after first release).
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'sales', 'blog'));
 
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries (type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_change_log_created ON nas_change_log (created_at DESC);

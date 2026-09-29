@@ -74,15 +74,25 @@ function Login({ onLogin, expired }) {
   );
 }
 
+// What each staff role can open. The server enforces the same rules on every request.
+const ROLE_INFO = {
+  admin: { label: 'Admin', help: 'Everything: prices, products, leads, blog, users.' },
+  sales: { label: 'Sales admin', help: 'Sales configurator (with floor prices) and leads.' },
+  blog: { label: 'Blog admin', help: 'The blog only: write, edit, publish and delete posts.' },
+};
+
 function Shell({ user, onLogout }) {
   const admin = user.role === 'admin';
+  const sales = admin || user.role === 'sales';
+  const blog = admin || user.role === 'blog';
+  const home = admin ? null : sales ? '/admin/configurator' : '/admin/blog';
   const tabs = [
     admin && ['Pricing', '/admin'],
     admin && ['Product pages', '/admin/pages'],
-    ['Sales configurator', '/admin/configurator'],
-    ['Leads', '/admin/leads'],
+    sales && ['Sales configurator', '/admin/configurator'],
+    sales && ['Leads', '/admin/leads'],
     admin && ['Change log', '/admin/log'],
-    admin && ['Blog', '/admin/blog'],
+    blog && ['Blog', '/admin/blog'],
     admin && ['Users', '/admin/users'],
   ].filter(Boolean);
 
@@ -91,7 +101,7 @@ function Shell({ user, onLogout }) {
       <header className="glass flex flex-wrap items-center justify-between gap-4 rounded-full py-2 pr-2 pl-5">
         <div className="flex items-center gap-4">
           <Logo />
-          <span className="hidden rounded-full bg-surface px-2.5 py-1 text-xs tracking-wide text-muted uppercase sm:inline">Staff · {user.role}</span>
+          <span className="hidden rounded-full bg-surface px-2.5 py-1 text-xs tracking-wide text-muted uppercase sm:inline">Staff · {ROLE_INFO[user.role]?.label ?? user.role}</span>
         </div>
         <nav className="order-3 flex w-full gap-1 overflow-x-auto sm:order-none sm:w-auto">
           {tabs.map(([label, to]) => (
@@ -108,12 +118,12 @@ function Shell({ user, onLogout }) {
 
       <main className="mt-8">
         <Routes>
-          <Route index element={admin ? <Pricing /> : <Navigate to="/admin/configurator" replace />} />
-          <Route path="configurator" element={<SalesConfigurator />} />
-          <Route path="leads" element={<Leads canDelete={admin} />} />
+          <Route index element={admin ? <Pricing /> : <Navigate to={home} replace />} />
+          {sales && <Route path="configurator" element={<SalesConfigurator />} />}
+          {sales && <Route path="leads" element={<Leads canDelete={admin} />} />}
           {admin && <Route path="pages" element={<ProductPages />} />}
           {admin && <Route path="log" element={<ChangeLog />} />}
-          {admin && <Route path="blog" element={<BlogManager />} />}
+          {blog && <Route path="blog" element={<BlogManager />} />}
           {admin && <Route path="users" element={<Users me={user} />} />}
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
@@ -301,11 +311,13 @@ function Users({ me }) {
     <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
       <div>
         <h1 className="text-2xl font-medium tracking-tight">Users</h1>
-        <p className="mt-1 text-sm text-muted">Admins edit prices. Sales can use the internal configurator and see leads.</p>
+        <ul className="mt-2 grid gap-1 text-sm text-muted">
+          {Object.entries(ROLE_INFO).map(([k, r]) => <li key={k}><span className="font-medium text-fg">{r.label}:</span> {r.help}</li>)}
+        </ul>
         <ul className="mt-6 grid gap-2">
           {data?.map((u) => (
             <li key={u.id} className="glass flex items-center gap-3 rounded-lg px-4 py-3 text-sm">
-              <span className="rounded-full bg-surface px-2 py-0.5 text-xs capitalize">{u.role}</span>
+              <span className="rounded-full bg-surface px-2 py-0.5 text-xs whitespace-nowrap">{ROLE_INFO[u.role]?.label ?? u.role}</span>
               <span className="flex-1">{u.email}{u.name ? <span className="text-muted"> · {u.name}</span> : null}</span>
               {u.id !== me.id && <button onClick={() => remove(u)} className="text-xs text-subtle hover:text-error">Remove</button>}
             </li>
@@ -317,10 +329,12 @@ function Users({ me }) {
         <div className="mt-4 grid gap-3">
           <input name="email" type="email" required placeholder="Email" className="field !py-2 text-sm" />
           <input name="name" placeholder="Name (optional)" className="field !py-2 text-sm" />
-          <select name="role" defaultValue="sales" className="field !py-2 text-sm">
-            <option value="sales">Sales</option>
-            <option value="admin">Admin</option>
-          </select>
+          <label className="grid gap-1">
+            <span className="text-xs text-muted">Access</span>
+            <select name="role" defaultValue="sales" className="field !py-2 text-sm">
+              {Object.entries(ROLE_INFO).map(([k, r]) => <option key={k} value={k}>{r.label}: {r.help}</option>)}
+            </select>
+          </label>
           <input name="password" type="password" required minLength={10} placeholder="Temporary password (10+ characters)" autoComplete="new-password" className="field !py-2 text-sm" />
         </div>
         {msg && <p className="mt-3 text-sm text-muted">{msg}</p>}

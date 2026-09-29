@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as store from './db/store.js';
 import { PricingUnavailable, toProduct, toPublicPricing } from './pricing.js';
-import { issueToken, loginAllowed, requireStaff, verifyPassword } from './auth.js';
+import { issueToken, loginAllowed, requireSignedIn, verifyPassword } from './auth.js';
 
 const router = Router();
 
@@ -89,7 +89,7 @@ router.post('/auth/login', async (req, res) => {
   res.json({ token: issueToken(user), user: { id: user.id, email: user.email, name: user.name, role: user.role } });
 });
 
-router.get('/auth/me', requireStaff, (req, res) => {
+router.get('/auth/me', requireSignedIn, (req, res) => {
   const { sub, email, name, role } = req.user;
   res.json({ user: { id: sub, email, name, role } });
 });

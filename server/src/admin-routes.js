@@ -3,7 +3,7 @@ import { Router } from 'express';
 import * as store from './db/store.js';
 import { COLLECTIONS, SETTINGS_FIELDS, clean } from './db/collections.js';
 import { PricingUnavailable, invalidatePricing, toSalesPricing } from './pricing.js';
-import { hashPassword, requireAdmin, requireStaff } from './auth.js';
+import { ROLES, hashPassword, requireAdmin, requireStaff } from './auth.js';
 import { NEW_MODEL_PAGES, PAGE_KEYS, PRODUCT_PAGES } from './placements.js';
 
 const router = Router();
@@ -150,7 +150,7 @@ router.post('/users', requireAdmin, async (req, res) => {
   const role = req.body?.role;
   const password = String(req.body?.password ?? '');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Enter a valid email.' });
-  if (!['admin', 'sales'].includes(role)) return res.status(400).json({ error: 'Role must be admin or sales.' });
+  if (!ROLES.includes(role)) return res.status(400).json({ error: 'Choose a role: admin, sales or blog.' });
   if (password.length < 10) return res.status(400).json({ error: 'Password must be at least 10 characters.' });
   if (await store.findUserByEmail(email)) return res.status(409).json({ error: 'That email already has an account.' });
   const user = await store.createUser({ email, name, role, passwordHash: hashPassword(password) });

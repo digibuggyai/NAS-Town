@@ -51,8 +51,12 @@ export const requireRole = (...roles) => (req, res, next) => {
   req.user = claims;
   next();
 };
+// admin: everything · sales: configurator (with floors) + leads · blog: the blog only.
+export const ROLES = ['admin', 'sales', 'blog'];
 export const requireAdmin = requireRole('admin');
 export const requireStaff = requireRole('admin', 'sales');
+export const requireBlog = requireRole('admin', 'blog');
+export const requireSignedIn = requireRole(...ROLES);
 
 // Simple login throttle: 8 attempts per IP per 10 minutes.
 const attempts = new Map();

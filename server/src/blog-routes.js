@@ -1,7 +1,7 @@
 // Blog API. Public: read published posts and cover images. Admin: full CRUD + cover upload.
 import express, { Router } from 'express';
 import * as store from './db/store.js';
-import { requireAdmin } from './auth.js';
+import { requireBlog } from './auth.js';
 import { bodyHtml, plainText } from './blog-html.js';
 
 export const publicBlog = Router();
@@ -75,11 +75,11 @@ publicBlog.get('/blog/:slug', async (req, res) => {
 
 /* ---------------- admin ---------------- */
 
-adminBlog.get('/blog', requireAdmin, async (_req, res) => {
+adminBlog.get('/blog', requireBlog, async (_req, res) => {
   res.json((await store.listPosts({ limit: 500 })).map((p) => ({ ...p, body: bodyHtml(p.body), readMins: readMins(p) })));
 });
 
-adminBlog.post('/blog/images', requireAdmin, express.raw({ type: [...IMAGE_TYPES], limit: MAX_IMAGE_BYTES }), async (req, res) => {
+adminBlog.post('/blog/images', requireBlog, express.raw({ type: [...IMAGE_TYPES], limit: MAX_IMAGE_BYTES }), async (req, res) => {
   const mime = req.get('content-type');
   if (!IMAGE_TYPES.has(mime) || !Buffer.isBuffer(req.body) || !req.body.length) {
     return res.status(400).json({ error: 'Upload a JPG, PNG, WebP or AVIF image (max 3 MB).' });
@@ -88,7 +88,7 @@ adminBlog.post('/blog/images', requireAdmin, express.raw({ type: [...IMAGE_TYPES
   res.status(201).json({ url: `/api/blog/images/${id}` });
 });
 
-adminBlog.post('/blog', requireAdmin, async (req, res) => {
+adminBlog.post('/blog', requireBlog, async (req, res) => {
   let data;
   try { data = cleanPost(req.body ?? {}); } catch (e) { return res.status(400).json({ error: e.message }); }
   data.slug = await uniqueSlug(data.slug || slugify(data.title));
@@ -97,7 +97,7 @@ adminBlog.post('/blog', requireAdmin, async (req, res) => {
   res.status(201).json(post);
 });
 
-adminBlog.patch('/blog/:id', requireAdmin, async (req, res) => {
+adminBlog.patch('/blog/:id', requireBlog, async (req, res) => {
   const id = Number(req.params.id);
   let data;
   try { data = cleanPost(req.body ?? {}, { partial: true }); } catch (e) { return res.status(400).json({ error: e.message }); }
@@ -115,7 +115,7 @@ adminBlog.patch('/blog/:id', requireAdmin, async (req, res) => {
   res.json(after);
 });
 
-adminBlog.delete('/blog/:id', requireAdmin, async (req, res) => {
+adminBlog.delete('/blog/:id', requireBlog, async (req, res) => {
   const before = await store.deletePost(Number(req.params.id));
   if (!before) return res.status(404).json({ error: 'Post not found.' });
   await store.logChanges([{ editor: req.user.email, collection: 'blog', itemId: before.id, itemLabel: before.title, field: '(deleted)', before: 'existed', after: 'deleted' }]);
