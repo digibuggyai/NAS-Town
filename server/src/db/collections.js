@@ -13,7 +13,7 @@ export const COLLECTIONS = {
       network: 'text', networkUpgrade: 'text', cpu: 'text', cpuCores: 'int', memory: 'text', memoryMax: 'text',
       m2Slots: 'int', maxDriveTb: 'int', baysWithExpansion: 'int', maxRawTb: 'int', usbPorts: 'text',
       dimensions: 'text', weightKg: 'num', warranty: 'text', specsUrl: 'text', summary: 'text', bestFor: 'text',
-      featured: 'bool', rentable: 'bool', quotePrice: 'int', minPrice: 'int', active: 'bool',
+      featured: 'bool', rentable: 'bool', quotePrice: 'int', minPrice: 'int', active: 'bool', pages: 'text[]',
     },
   },
   drives: {

@@ -5,6 +5,7 @@
 //                     so a floor price cannot reach a browser even by accident.
 //   toSalesPricing  — the same shape plus every floor. Staff routes only.
 import * as store from './db/store.js';
+import { useCasesOf } from './placements.js';
 
 export class PricingUnavailable extends Error {}
 
@@ -47,6 +48,7 @@ const publicModel = (m) => ({
   bestFor: m.bestFor,
   featured: Boolean(m.featured),
   rentable: Boolean(m.rentable),
+  pages: m.pages ?? [],
   quote: m.quotePrice,
 });
 
@@ -118,16 +120,6 @@ function segmentOf(m) {
   return 'creator';
 }
 
-function useCasesOf(m) {
-  const fast = speed(m.network) >= 2.5 || /10GbE/i.test(m.networkUpgrade ?? '');
-  const out = ['backup'];
-  if (m.bays <= 2 || m.quote < 50000) out.push('home');
-  if (m.bays >= 2) out.push('photos');
-  if (fast && (m.bays >= 4 || m.m2Slots)) out.push('videos');
-  if (m.bays >= 4) out.push('business', 'surveillance');
-  return out;
-}
-
 export function toProduct(m) {
   const top = speed(m.network);
   return {
@@ -154,6 +146,7 @@ export function toProduct(m) {
     price_inr: m.quote,
     featured: m.featured,
     rentable: m.rentable,
+    pages: m.pages,
     summary: m.summary,
     best_for: m.bestFor,
   };

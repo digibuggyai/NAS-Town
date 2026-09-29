@@ -54,7 +54,7 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
     const form = new FormData(e.currentTarget);
     const data = {};
     for (const [k, type] of Object.entries(schema.fields)) {
-      if (k === 'active') continue;
+      if (k === 'active' || k === 'pages') continue; // pages are managed in Product pages
       if (type === 'bool') data[k] = form.get(k) === 'on';
       else if (k === 'raid') data[k] = form.getAll('raid');
       else data[k] = form.get(k) ?? '';
@@ -120,7 +120,7 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
       <Dialog open={editing != null} onClose={() => setEditing(null)} title={editing?.id ? `Edit ${schema.label.toLowerCase()}` : `Add to ${schema.label.toLowerCase()}`}>
         {editing && (
           <form onSubmit={save} className="grid gap-3 pb-2 sm:grid-cols-2">
-            {Object.entries(schema.fields).filter(([k]) => k !== 'active').map(([k, type]) => {
+            {Object.entries(schema.fields).filter(([k]) => k !== 'active' && k !== 'pages').map(([k, type]) => {
               const required = schema.required.includes(k);
               if (k === 'raid') {
                 return (

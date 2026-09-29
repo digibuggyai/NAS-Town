@@ -33,10 +33,12 @@ async function products() {
 }
 
 router.get('/products', async (req, res) => {
-  const { brand, featured, rentable } = req.query;
+  const { brand, featured, rentable, page } = req.query;
   const b = clean(brand, 40)?.toLowerCase();
+  const pg = clean(page, 60); // a page key from placements.js, e.g. 'products' or 'solution:home'
   res.json((await products()).filter((p) =>
-    (!b || p.brand === b) && (featured !== 'true' || p.featured) && (rentable !== 'true' || p.rentable)));
+    (!b || p.brand === b) && (featured !== 'true' || p.featured) && (rentable !== 'true' || p.rentable)
+    && (!pg || p.pages.includes(pg))));
 });
 
 router.get('/products/:slug', async (req, res) => {

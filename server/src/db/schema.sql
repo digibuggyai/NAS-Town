@@ -135,6 +135,8 @@ CREATE TABLE IF NOT EXISTS finder_submissions (
 
 -- Columns added after first release (safe on existing databases).
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
+-- Site pages that list this model (Admin → Product pages). NULL = not yet assigned.
+ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS pages TEXT[];
 
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries (type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_change_log_created ON nas_change_log (created_at DESC);

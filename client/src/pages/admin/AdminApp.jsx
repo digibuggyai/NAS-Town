@@ -5,6 +5,7 @@ import { Logo } from '../../components/Navbar.jsx';
 import CatalogueTable, { SettingsForm } from '../../components/admin/CatalogueTable.jsx';
 import Configurator from '../../components/configurator/Configurator.jsx';
 import BlogManager from '../../components/admin/BlogManager.jsx';
+import ProductPages from '../../components/admin/ProductPages.jsx';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/useAuth.js';
 
@@ -77,6 +78,7 @@ function Shell({ user, onLogout }) {
   const admin = user.role === 'admin';
   const tabs = [
     admin && ['Pricing', '/admin'],
+    admin && ['Product pages', '/admin/pages'],
     ['Sales configurator', '/admin/configurator'],
     ['Leads', '/admin/leads'],
     admin && ['Change log', '/admin/log'],
@@ -109,6 +111,7 @@ function Shell({ user, onLogout }) {
           <Route index element={admin ? <Pricing /> : <Navigate to="/admin/configurator" replace />} />
           <Route path="configurator" element={<SalesConfigurator />} />
           <Route path="leads" element={<Leads canDelete={admin} />} />
+          {admin && <Route path="pages" element={<ProductPages />} />}
           {admin && <Route path="log" element={<ChangeLog />} />}
           {admin && <Route path="blog" element={<BlogManager />} />}
           {admin && <Route path="users" element={<Users me={user} />} />}

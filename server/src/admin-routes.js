@@ -4,6 +4,7 @@ import * as store from './db/store.js';
 import { COLLECTIONS, SETTINGS_FIELDS, clean } from './db/collections.js';
 import { PricingUnavailable, invalidatePricing, toSalesPricing } from './pricing.js';
 import { hashPassword, requireAdmin, requireStaff } from './auth.js';
+import { NEW_MODEL_PAGES, PAGE_KEYS, PRODUCT_PAGES } from './placements.js';
 
 const router = Router();
 
@@ -21,6 +22,16 @@ const labelOf = (key, row) =>
 
 const show = (v) => (v == null ? null : Array.isArray(v) ? v.join(', ') : String(v));
 
+/** Rejects page keys the site doesn't have, so a typo can't silently hide a product. */
+function badPages(data) {
+  const bad = (data.pages ?? []).filter((k) => !PAGE_KEYS.has(k));
+  return bad.length ? `Unknown page: ${bad.join(', ')}` : null;
+}
+
+const PAGE_LABELS = Object.fromEntries(PRODUCT_PAGES.map((p) => [p.key, p.label]));
+/** Page keys read as page names in the change log. */
+const logValue = (field, v) => (field === 'pages' ? (v?.length ? v.map((k) => PAGE_LABELS[k] ?? k).join(', ') : 'none') : show(v));
+
 function diff(before, after, keys) {
   return keys.filter((k) => show(before?.[k]) !== show(after?.[k]));
 }
@@ -31,7 +42,7 @@ router.get('/nas', requireAdmin, async (_req, res) => {
     store.list('models'), store.list('drives'), store.list('driveLines'), store.list('upgrades'), store.getSettings(),
   ]);
   const schema = Object.fromEntries(Object.entries(COLLECTIONS).map(([k, c]) => [k, { label: c.label, fields: c.fields, required: c.required }]));
-  res.json({ models, drives, driveLines, upgrades, settings, schema, settingsFields: SETTINGS_FIELDS });
+  res.json({ models, drives, driveLines, upgrades, settings, schema, settingsFields: SETTINGS_FIELDS, pages: PRODUCT_PAGES });
 });
 
 /** The staff pricing payload: same shape as the public one, every figure with its floor. */
@@ -66,6 +77,8 @@ router.post('/nas/:collection', requireAdmin, async (req, res) => {
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
   if (key === 'models' && !data.slug) data.slug = `${data.brand}-${data.model}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   if (key === 'models' && data.expandable == null) data.expandable = data.baysWithExpansion != null;
+  if (key === 'models' && data.pages == null) data.pages = [...NEW_MODEL_PAGES];
+  if (key === 'models' && badPages(data)) return res.status(400).json({ error: badPages(data) });
   let row;
   try { row = await store.create(key, data); } catch (e) {
     if (e.code === '23505') return res.status(409).json({ error: 'An item with that name already exists.' });
@@ -81,11 +94,13 @@ router.patch('/nas/:collection/:id', requireAdmin, async (req, res) => {
   if (!key) return;
   let data;
   try { data = clean(COLLECTIONS[key].fields, req.body ?? {}); } catch (e) { return res.status(400).json({ error: e.message }); }
+  if (key === 'models' && 'pages' in data && data.pages == null) data.pages = []; // cleared = on no pages
+  if (key === 'models' && badPages(data)) return res.status(400).json({ error: badPages(data) });
   const result = await store.update(key, Number(req.params.id), data);
   if (!result) return res.status(404).json({ error: 'Not found.' });
   const { before, after } = result;
   await store.logChanges(diff(before, after, Object.keys(data)).map((field) => ({
-    editor: req.user.email, collection: key, itemId: after.id, itemLabel: labelOf(key, after), field, before: show(before[field]), after: show(after[field]),
+    editor: req.user.email, collection: key, itemId: after.id, itemLabel: labelOf(key, after), field, before: logValue(field, before[field]), after: logValue(field, after[field]),
   })));
   invalidatePricing();
   res.json(after);

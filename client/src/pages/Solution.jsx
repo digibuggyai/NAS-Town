@@ -11,10 +11,10 @@ import NotFound from './NotFound.jsx';
 export default function Solution() {
   const { slug } = useParams();
   const s = solutions.find((x) => x.slug === slug);
-  const { data } = useProducts();
+  const { data } = useProducts({ page: `solution:${slug}` }); // chosen in Admin → Product pages
   if (!s) return <NotFound />;
   const Icon = s.icon;
-  const picks = (data ?? []).filter((p) => p.use_cases.includes(s.useCase)).slice(0, 4);
+  const picks = data ?? [];
 
   return (
     <>

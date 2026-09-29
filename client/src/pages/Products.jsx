@@ -15,7 +15,7 @@ const SIZES = [
 ];
 
 export default function Products() {
-  const { data, error, loading } = useProducts();
+  const { data, error, loading } = useProducts({ page: 'products' }); // placement set in Admin → Product pages
   const [params, setParams] = useSearchParams();
   const bays = params.get('bays') ?? 'all';
   const brand = params.get('brand') ?? 'all';

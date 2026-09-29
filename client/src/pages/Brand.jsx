@@ -9,7 +9,7 @@ import NotFound from './NotFound.jsx';
 export default function Brand() {
   const { slug } = useParams();
   const b = brands.find((x) => x.slug === slug);
-  const { data, loading } = useProducts(b ? { brand: b.filter } : undefined);
+  const { data, loading } = useProducts(b ? { brand: b.filter, page: 'brand' } : undefined);
   if (!b) return <NotFound />;
 
   return (

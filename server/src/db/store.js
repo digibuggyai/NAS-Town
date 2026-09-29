@@ -6,6 +6,7 @@ import pg from 'pg';
 import { COLLECTIONS, SETTINGS_FIELDS, camel, snake } from './collections.js';
 import * as catalogue from './catalogue.js';
 import { blogSeed } from './blog-seed.js';
+import { defaultPlacements } from '../placements.js';
 
 const url = process.env.DATABASE_URL;
 const pool = url
@@ -71,6 +72,8 @@ export async function init() {
       mem[key] = seed[key].map((row) => ({ id: nextId(key), active: true, ...row }));
     }
     mem.settings = seed.settings;
+    const placed = defaultPlacements([...mem.models].sort((a, b) => a.bays - b.bays || a.quotePrice - b.quotePrice));
+    for (const m of mem.models) m.pages = placed.get(m.id);
     for (const p of blogSeed) await createPost(p);
     return;
   }
@@ -97,6 +100,15 @@ export async function init() {
   // Fill fields added after first release, without touching anything edited in the admin panel.
   for (const m of catalogue.models) {
     if (m.bestFor) await pool.query('UPDATE nas_models SET best_for = $1 WHERE model = $2 AND best_for IS NULL', [m.bestFor, m.model]);
+  }
+  // Models from before page placements existed keep the pages they were already shown on.
+  const models = await list('models');
+  if (models.some((m) => m.pages == null)) {
+    const placed = defaultPlacements(models);
+    for (const m of models.filter((x) => x.pages == null)) {
+      await pool.query('UPDATE nas_models SET pages = $1 WHERE id = $2 AND pages IS NULL', [placed.get(m.id), m.id]);
+    }
+    console.log('[db] assigned default product pages');
   }
 }
 
