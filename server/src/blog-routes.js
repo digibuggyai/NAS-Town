@@ -2,6 +2,7 @@
 import express, { Router } from 'express';
 import * as store from './db/store.js';
 import { requireAdmin } from './auth.js';
+import { bodyHtml, plainText } from './blog-html.js';
 
 export const publicBlog = Router();
 export const adminBlog = Router();
@@ -11,7 +12,7 @@ const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
 const text = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
 const slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || 'post';
-const words = (s = '') => (s.match(/\S+/g) ?? []).length;
+const words = (s = '') => (plainText(s).match(/\S+/g) ?? []).length;
 const readMins = (p) => Math.max(1, Math.round(words(p.body) / 200));
 // List views don't need the full body.
 const summary = ({ body, ...p }) => ({ ...p, readMins: readMins({ body }) });
@@ -35,7 +36,7 @@ function cleanPost(b, { partial = false } = {}) {
   for (const [k, max] of [['excerpt', 400], ['category', 60], ['coverAlt', 200]]) {
     if (b[k] !== undefined) out[k] = text(b[k], max) || null;
   }
-  if (b.body !== undefined) out.body = text(b.body, 60000) ?? '';
+  if (b.body !== undefined) out.body = bodyHtml(text(b.body, 200000) ?? '');
   if (b.published !== undefined) out.published = b.published === true || b.published === 'true';
   if (b.publishedAt !== undefined) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.publishedAt))) throw new Error('Publish date must be YYYY-MM-DD.');
@@ -69,13 +70,13 @@ publicBlog.get('/blog/images/:id', async (req, res) => {
 publicBlog.get('/blog/:slug', async (req, res) => {
   const post = await store.getPost({ slug: String(req.params.slug) });
   if (!post || !post.published) return res.status(404).json({ error: 'Post not found.' });
-  res.json({ ...post, readMins: readMins(post) });
+  res.json({ ...post, body: bodyHtml(post.body), readMins: readMins(post) });
 });
 
 /* ---------------- admin ---------------- */
 
 adminBlog.get('/blog', requireAdmin, async (_req, res) => {
-  res.json((await store.listPosts({ limit: 500 })).map((p) => ({ ...p, readMins: readMins(p) })));
+  res.json((await store.listPosts({ limit: 500 })).map((p) => ({ ...p, body: bodyHtml(p.body), readMins: readMins(p) })));
 });
 
 adminBlog.post('/blog/images', requireAdmin, express.raw({ type: [...IMAGE_TYPES], limit: MAX_IMAGE_BYTES }), async (req, res) => {

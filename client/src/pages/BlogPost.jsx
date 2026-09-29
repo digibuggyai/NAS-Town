@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import PostCard from '../components/PostCard.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
-import { api, bodyBlocks, formatPostDate, mediaUrl } from '../lib/api.js';
+import { api, formatPostDate, mediaUrl } from '../lib/api.js';
 import NotFound from './NotFound.jsx';
 
 export default function BlogPost() {
@@ -43,13 +43,8 @@ export default function BlogPost() {
             <img src={mediaUrl(post.coverImage)} alt={post.coverAlt || ''} className="aspect-[16/9] w-full object-cover" />
           </Reveal>
         )}
-        <div className="mt-10 space-y-5 text-[1.0625rem] leading-[1.8]">
-          {bodyBlocks(post.body).map((block, i) =>
-            block.startsWith('## ')
-              ? <h2 key={i} className="!mt-10 text-2xl">{block.slice(3)}</h2>
-              : <p key={i} className="whitespace-pre-line">{block}</p>,
-          )}
-        </div>
+        {/* Sanitised on the server (server/src/blog-html.js): formatting tags only. */}
+        <div className="prose-blog mt-10" dangerouslySetInnerHTML={{ __html: post.body }} />
       </article>
 
       {more.length > 0 && (

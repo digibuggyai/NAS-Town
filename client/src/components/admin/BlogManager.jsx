@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ExternalLink, ImagePlus, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { api, formatPostDate, mediaUrl } from '../../lib/api.js';
+import RichEditor from './RichEditor.jsx';
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
@@ -86,6 +87,7 @@ function PostEditor({ post, onDone }) {
   const isNew = !post.id;
   const [f, setF] = useState({ ...EMPTY, ...post, publishedAt: post.publishedAt ?? today() });
   const [slugTouched, setSlugTouched] = useState(!isNew);
+  const [stats, setStats] = useState({ words: 0, mins: 1 });
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -127,7 +129,6 @@ function PostEditor({ post, onDone }) {
     }
   }
 
-  const words = (f.body.match(/\S+/g) ?? []).length;
 
   return (
     <form onSubmit={save}>
@@ -162,14 +163,16 @@ function PostEditor({ post, onDone }) {
             <span className="mb-1 block text-sm text-muted">Excerpt <span className="text-subtle">(shown on cards, 1–2 sentences)</span></span>
             <textarea rows={2} maxLength={400} value={f.excerpt ?? ''} onChange={(e) => set({ excerpt: e.target.value })} className="field resize-y" />
           </label>
-          <label>
+          <div>
             <span className="mb-1 flex justify-between text-sm text-muted">
               <span>Article</span>
-              <span className="text-subtle">{words} words · ~{Math.max(1, Math.round(words / 200))} min read</span>
+              <span className="text-subtle">{stats.words} words · ~{stats.mins} min read</span>
             </span>
-            <textarea rows={18} value={f.body ?? ''} onChange={(e) => set({ body: e.target.value })} className="field resize-y font-mono text-[0.9rem] leading-relaxed" placeholder={'Write the article here.\n\nLeave a blank line between paragraphs.\n\n## Start a line with two hashes for a subheading'} />
-            <span className="mt-1 block text-xs text-subtle">Blank line = new paragraph. A line starting with <code>## </code> becomes a subheading.</span>
-          </label>
+            <RichEditor value={f.body} onChange={(body) => set({ body })} onStats={setStats} />
+            <span className="mt-1 block text-xs text-subtle">
+              Paste from Google Docs, Word, a web page or ChatGPT and the formatting is kept. This is exactly how the post will look.
+            </span>
+          </div>
         </div>
 
         <aside className="grid content-start gap-4">

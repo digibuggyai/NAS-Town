@@ -93,9 +93,6 @@ export const mediaUrl = (u) => (u && u.startsWith('/api/') ? `${BASE}${u}` : u);
 export const formatPostDate = (iso) =>
   iso ? new Date(`${String(iso).slice(0, 10)}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
-/** Post body: blank line = paragraph; a line starting "## " = subheading. */
-export const bodyBlocks = (body = '') =>
-  String(body).split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
 
 export const formatInr = (n) =>
   n == null ? 'Price on request' : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
