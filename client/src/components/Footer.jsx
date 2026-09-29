@@ -101,7 +101,7 @@ export default function Footer() {
               })}
             </ul>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 text-xs text-subtle [&>a]:py-2.5 md:[&>a]:py-1">
+          <div className="flex flex-wrap items-center gap-x-5 pr-20 text-xs text-subtle [&>a]:py-2.5 md:[&>a]:py-1">
             <span>© {new Date().getFullYear()} NASTOWN. All rights reserved.</span>
             <Link to="/privacy" className="hover:text-fg">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-fg">Terms &amp; Conditions</Link>

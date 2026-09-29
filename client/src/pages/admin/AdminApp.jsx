@@ -21,7 +21,7 @@ export default function AdminApp() {
       {auth.loading ? (
         <div className="grid min-h-screen place-items-center"><Loader2 className="size-6 animate-spin text-muted" /></div>
       ) : !auth.user ? (
-        <Login onLogin={auth.login} />
+        <Login onLogin={auth.login} expired={auth.expired} />
       ) : (
         <Shell user={auth.user} onLogout={auth.logout} />
       )}
@@ -29,7 +29,7 @@ export default function AdminApp() {
   );
 }
 
-function Login({ onLogin }) {
+function Login({ onLogin, expired }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +46,7 @@ function Login({ onLogin }) {
         <Logo />
         <h1 className="mt-6 text-xl font-medium">Staff sign in</h1>
         <p className="mt-1 text-sm text-muted">Price manager and sales configurator.</p>
+        {expired && !error && <p role="status" className="mt-4 rounded-lg bg-surface px-3 py-2 text-sm text-muted">Your session ended. Please sign in again.</p>}
         <label className="mt-6 block">
           <span className="mb-1.5 block text-sm text-muted">Email</span>
           <input name="email" type="email" required autoComplete="username" className="field" />

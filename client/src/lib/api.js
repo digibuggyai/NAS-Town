@@ -1,5 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL ?? '';
 const TOKEN_KEY = 'nastown.staff';
+export const SESSION_EXPIRED = 'nastown:session-expired';
 
 export function getToken() {
   try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
@@ -20,7 +21,10 @@ async function request(path, { auth = false, ...options } = {}) {
   }
   const res = await fetch(`${BASE}/api${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && auth) setToken(null);
+  if (res.status === 401 && auth) {
+    setToken(null);
+    window.dispatchEvent(new Event(SESSION_EXPIRED)); // useAuth sends staff back to sign-in
+  }
   if (!res.ok) throw new ApiError(data.error || 'Something went wrong. Please try again.', res.status);
   return data;
 }
