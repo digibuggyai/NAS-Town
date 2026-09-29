@@ -1,10 +1,30 @@
 node_modules/
 client/dist/
-.env
-.env.*
-!.env.example
 *.log
 .DS_Store
 
-# Internal floor prices: never commit
+# Secrets: never commit. Real values live in Railway/Vercel variables and local .env files.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials*.json
+service-account*.json
+
+# Platform CLI link folders (contain project/account IDs)
+.vercel/
+.railway/
+
+# Database dumps and local databases
+*.sql.gz
+*.dump
+*.sqlite
+*.sqlite3
+
+# Internal floor prices and any other local-only data: never commit
 server/src/db/floors.local.json
+*.local.json
