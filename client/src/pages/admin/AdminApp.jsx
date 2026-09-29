@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { NavLink, Navigate, Route, Routes } from 'react-router';
-import { Download, Eye, EyeOff, Loader2, LogOut } from 'lucide-react';
+import { NavLink, Navigate, Route, Routes, useSearchParams } from 'react-router';
+import { Download, Eye, EyeOff, Loader2, LogOut, Trash2 } from 'lucide-react';
 import { Logo } from '../../components/Navbar.jsx';
 import CatalogueTable, { SettingsForm } from '../../components/admin/CatalogueTable.jsx';
 import Configurator from '../../components/configurator/Configurator.jsx';
@@ -108,7 +108,7 @@ function Shell({ user, onLogout }) {
         <Routes>
           <Route index element={admin ? <Pricing /> : <Navigate to="/admin/configurator" replace />} />
           <Route path="configurator" element={<SalesConfigurator />} />
-          <Route path="leads" element={<Leads />} />
+          <Route path="leads" element={<Leads canDelete={admin} />} />
           {admin && <Route path="log" element={<ChangeLog />} />}
           {admin && <Route path="blog" element={<BlogManager />} />}
           {admin && <Route path="users" element={<Users me={user} />} />}
@@ -172,14 +172,34 @@ function SalesConfigurator() {
   );
 }
 
-function Leads() {
-  const { data, error } = useLoad(api.enquiries);
+function Leads({ canDelete }) {
+  const { data, error, reload } = useLoad(api.enquiries);
+  const [busy, setBusy] = useState(null);
+  const [msg, setMsg] = useState('');
+  async function remove(e) {
+    if (!window.confirm(`Delete the ${e.type} lead from ${e.name}? A copy is kept in the change log.`)) return;
+    setBusy(e.id);
+    setMsg('');
+    try {
+      await api.deleteEnquiry(e.id);
+      setMsg(`Deleted ${e.name}'s lead.`);
+      reload();
+    } catch (err) {
+      setMsg(err.message);
+    } finally {
+      setBusy(null);
+    }
+  }
   if (error) return <p className="text-error">{error.message}</p>;
   if (!data) return <Loader2 className="size-5 animate-spin text-muted" />;
   return (
     <section>
       <h1 className="text-2xl font-medium tracking-tight">Leads</h1>
-      <p className="mt-1 text-sm text-muted">Every form on the site, newest first.</p>
+      <p className="mt-1 text-sm text-muted">
+        Every form on the site, newest first.
+        {canDelete && <> Deleted leads are recorded in the <NavLink to="/admin/log?view=leads" className="link">change log</NavLink>.</>}
+      </p>
+      {msg && <p role="status" className="mt-4 text-sm text-muted">{msg}</p>}
       <div className="mt-6 grid gap-3">
         {data.length === 0 && <p className="text-muted">No leads yet.</p>}
         {data.map((e) => (
@@ -194,6 +214,18 @@ function Leads() {
               {e.phone && <p className="text-muted">Phone: {e.phone}</p>}
               {e.message && <p className="mt-2 whitespace-pre-wrap">{e.message}</p>}
               {e.payload?.summary && <pre className="mt-3 overflow-x-auto rounded-xl bg-surface p-3 font-mono text-xs whitespace-pre-wrap">{e.payload.summary}</pre>}
+              {canDelete && (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => remove(e)}
+                    disabled={busy === e.id}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs text-error ring-1 ring-line transition-colors hover:bg-error/10 disabled:opacity-50"
+                  >
+                    <Trash2 className="size-3.5" /> {busy === e.id ? 'Deleting…' : 'Delete lead'}
+                  </button>
+                </div>
+              )}
             </div>
           </details>
         ))}
@@ -202,33 +234,43 @@ function Leads() {
   );
 }
 
+const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads']];
+
 function ChangeLog() {
   const { data, error } = useLoad(api.changeLog);
+  const [params, setParams] = useSearchParams();
+  const view = params.get('view') === 'leads' ? 'leads' : 'all';
   if (error) return <p className="text-error">{error.message}</p>;
   if (!data) return <Loader2 className="size-5 animate-spin text-muted" />;
+  const rows = view === 'leads' ? data.filter((c) => c.collection === 'leads') : data;
   return (
     <section>
       <h1 className="text-2xl font-medium tracking-tight">Change log</h1>
-      <p className="mt-1 text-sm text-muted">Every price, spec, visibility and account change.</p>
-      <div className="mt-6 overflow-x-auto rounded-lg ring-1 ring-line">
+      <p className="mt-1 text-sm text-muted">Every price, spec, visibility and account change, and every deleted lead.</p>
+      <div className="mt-6 flex flex-wrap gap-1.5">
+        {LOG_VIEWS.map(([k, label]) => (
+          <button key={k} onClick={() => setParams(k === 'all' ? {} : { view: k })} aria-pressed={view === k} className="chip !py-1.5 !text-xs">{label}</button>
+        ))}
+      </div>
+      <div className="mt-4 overflow-x-auto rounded-lg ring-1 ring-line">
         <table className="w-full text-left text-sm">
           <thead className="bg-surface text-xs text-muted">
             <tr>{['When', 'Who', 'What', 'Field', 'Before', 'After'].map((h) => <th key={h} className="px-4 py-3 font-normal">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {data.map((c) => (
-              <tr key={c.id} className="border-t border-line">
+            {rows.map((c) => (
+              <tr key={c.id} className="border-t border-line align-top">
                 <td className="px-4 py-2.5 whitespace-nowrap text-muted">{new Date(c.createdAt).toLocaleString('en-IN')}</td>
                 <td className="px-4 py-2.5">{c.editor}</td>
-                <td className="px-4 py-2.5">{c.itemLabel ?? c.collection}</td>
+                <td className="px-4 py-2.5 first-letter:uppercase">{c.itemLabel ?? c.collection}</td>
                 <td className="px-4 py-2.5 text-muted">{c.field}</td>
-                <td className="px-4 py-2.5 text-muted">{c.before ?? '—'}</td>
-                <td className="px-4 py-2.5">{c.after ?? '—'}</td>
+                <td className="max-w-md px-4 py-2.5 whitespace-pre-line text-muted">{c.before ?? '—'}</td>
+                <td className={`px-4 py-2.5 ${c.after === 'deleted' ? 'text-error' : ''}`}>{c.after ?? '—'}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {data.length === 0 && <p className="p-4 text-muted">No changes yet.</p>}
+        {rows.length === 0 && <p className="p-4 text-muted">{view === 'leads' ? 'No leads have been deleted.' : 'No changes yet.'}</p>}
       </div>
     </section>
   );

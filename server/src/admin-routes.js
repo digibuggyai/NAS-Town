@@ -155,4 +155,23 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
 
 router.get('/enquiries', requireStaff, async (_req, res) => res.json(await store.listEnquiries(200)));
 
+// Admins only. The lead's details are copied into the change log, so a deletion
+// always shows who removed what and the contact can still be recovered.
+router.delete('/enquiries/:id', requireAdmin, async (req, res) => {
+  const lead = await store.deleteEnquiry(Number(req.params.id));
+  if (!lead) return res.status(404).json({ error: 'Lead not found.' });
+  const contact = [lead.email, lead.phone].filter(Boolean).join(' · ');
+  const snapshot = [
+    `Received ${new Date(lead.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`,
+    contact,
+    lead.message,
+    lead.payload?.summary,
+  ].filter(Boolean).join('\n').slice(0, 4000);
+  await store.logChanges([{
+    editor: req.user.email, collection: 'leads', itemId: lead.id,
+    itemLabel: `${lead.type} lead: ${lead.name}`, field: '(deleted)', before: snapshot, after: 'deleted',
+  }]);
+  res.json({ ok: true });
+});
+
 export default router;

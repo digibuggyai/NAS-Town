@@ -294,6 +294,16 @@ export async function listEnquiries(limit = 200) {
   return rows.map((r) => fromRow({}, r));
 }
 
+/** Removes a lead and returns what was removed (for the change log), or null. */
+export async function deleteEnquiry(id) {
+  if (!pool) {
+    const i = mem.enquiries.findIndex((e) => e.id === id);
+    return i === -1 ? null : mem.enquiries.splice(i, 1)[0];
+  }
+  const { rows } = await pool.query('DELETE FROM enquiries WHERE id = $1 RETURNING *', [id]);
+  return rows[0] ? fromRow({}, rows[0]) : null;
+}
+
 export async function logFinder({ storing, capacity, work_style, recommended }) {
   if (!pool) { mem.finder.push({ storing, capacity, work_style, recommended, createdAt: new Date() }); return; }
   await pool.query(
