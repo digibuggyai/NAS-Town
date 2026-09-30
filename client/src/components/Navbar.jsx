@@ -18,11 +18,19 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, key } = useLocation();
   const header = useRef(null);
   const menu = useRef(null);
 
+  // Desktop dropdowns open on hover or keyboard focus. After a menu link is clicked the
+  // focus stays on it, which would keep the dropdown open on the new page, so drop it.
+  const closeDropdowns = () => {
+    if (header.current?.contains(document.activeElement)) document.activeElement.blur();
+  };
+
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(closeDropdowns, [key]); // every navigation, including ?filter changes
+  useEffect(() => { if (hidden) closeDropdowns(); }, [hidden]); // bar tucked away: nothing left hanging
   useEffect(() => lockScroll(open), [open]);
 
   // A hairline appears once the page scrolls; the bar tucks away while reading down, returns on the way up.
