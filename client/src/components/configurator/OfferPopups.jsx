@@ -63,7 +63,7 @@ function OfferForm({ source, summary, quoteTotal, submitLabel, onDone, onCancel 
       </label>
       <label>
         <span className="mb-1.5 block text-sm text-muted">Company</span>
-        <input name="company" autoComplete="organization" className={field} />
+        <input name="company" required autoComplete="organization" className={field} />
       </label>
       <label>
         <span className="mb-1.5 block text-sm text-muted">Email <span className="text-error">*</span></span>
@@ -71,7 +71,7 @@ function OfferForm({ source, summary, quoteTotal, submitLabel, onDone, onCancel 
       </label>
       <label>
         <span className="mb-1.5 block text-sm text-muted">Phone</span>
-        <input name="phone" type="tel" autoComplete="tel" className={field} />
+        <input name="phone" type="tel" required autoComplete="tel" className={field} />
       </label>
       <label className="sm:col-span-2">
         <span className="mb-1.5 block text-sm text-muted">Found it cheaper elsewhere? <span className="text-subtle">(optional)</span></span>
