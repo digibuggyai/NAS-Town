@@ -219,6 +219,16 @@ export const nav = [
 export const brandName = (slug) =>
   ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
 
+// Track record shown at the top of the footer. Real figures only: fill in `value` from
+// your own records (e.g. '1,200+' or '5,000 TB'). A figure with an empty value is not shown, and the
+// whole row stays hidden until at least one is filled in.
+export const trackRecord = [
+  { value: '', label: 'NAS units delivered' },
+  { value: '', label: 'Businesses & creators served' },
+  { value: '', label: 'Storage deployed' },
+  { value: '', label: 'Years serving Nehru Place' },
+];
+
 // Parent company. Links taken from digibuggy.com (checked 25 Sep 2026).
 export const digibuggy = {
   site: 'https://digibuggy.com/',

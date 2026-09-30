@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { MessageCircle } from 'lucide-react';
 import { Logo } from './Navbar.jsx';
-import { digibuggy, productLinks, solutions } from '../data/site.js';
+import { digibuggy, productLinks, solutions, trackRecord } from '../data/site.js';
 
 // Lucide no longer ships brand marks, so these are simple outline glyphs.
 const glyph = (children) =>
@@ -38,9 +38,22 @@ const columns = [
 ];
 
 export default function Footer() {
+  const figures = trackRecord.filter((f) => String(f.value).trim());
   return (
     <footer className="theme-dark">
       <div className="mx-auto max-w-7xl px-4 pt-12 pb-6 sm:px-6">
+        {/* Track record: only figures filled in data/site.js appear. */}
+        {figures.length > 0 && (
+          <dl className="mb-10 grid grid-cols-2 gap-x-6 gap-y-6 border-b border-line pb-10 md:grid-cols-4">
+            {figures.map((f) => (
+              // Label first in the markup (read as "label: value"), shown under the number.
+              <div key={f.label} className="flex flex-col-reverse justify-end">
+                <dt className="mt-2 text-[0.8125rem] text-muted">{f.label}</dt>
+                <dd className="font-display text-[clamp(1.75rem,3.2vw,2.5rem)] leading-none font-semibold tracking-tight text-fg tabular-nums">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <div className="grid gap-10 border-b border-line pb-10 lg:grid-cols-[minmax(0,15rem)_1fr] lg:gap-12">
           {/* Who we are and how to reach a person */}
           <div>
