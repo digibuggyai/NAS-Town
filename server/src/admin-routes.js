@@ -166,6 +166,11 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+/* ---------------- coupons ---------------- */
+
+// Which customer has which code, with their quote and message. Admin and sales.
+router.get('/coupons', requireStaff, async (_req, res) => res.json(await store.listCoupons()));
+
 /* ---------------- leads ---------------- */
 
 router.get('/enquiries', requireStaff, async (_req, res) => res.json(await store.listEnquiries(200)));

@@ -37,7 +37,7 @@ function FinePrint() {
 }
 
 /** Name / company / email / phone. On success calls onDone with the coupon and the details. */
-function OfferForm({ source, summary, submitLabel, onDone, onCancel }) {
+function OfferForm({ source, summary, quoteTotal, submitLabel, onDone, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   async function submit(e) {
@@ -46,7 +46,7 @@ function OfferForm({ source, summary, submitLabel, onDone, onCancel }) {
     setBusy(true);
     setError('');
     try {
-      const coupon = await api.offer({ ...details, source, summary });
+      const coupon = await api.offer({ ...details, source, summary, quoteTotal });
       onDone({ ...coupon, ...details });
     } catch (err) {
       setError(err.message);
@@ -73,7 +73,17 @@ function OfferForm({ source, summary, submitLabel, onDone, onCancel }) {
         <span className="mb-1.5 block text-sm text-muted">Phone</span>
         <input name="phone" type="tel" autoComplete="tel" className={field} />
       </label>
-      {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
+      <label className="sm:col-span-2">
+        <span className="mb-1.5 block text-sm text-muted">Found it cheaper elsewhere? <span className="text-subtle">(optional)</span></span>
+        <textarea
+          name="message"
+          rows={2}
+          maxLength={1000}
+          placeholder="Tell us the price and where you saw it, or anything else we should know."
+          className={`${field} resize-y`}
+        />
+      </label>
+      {error &&<p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
       <div className="flex flex-wrap gap-3 sm:col-span-2">
         <button disabled={busy} className="btn btn-primary">{busy && <Loader2 className="size-4 animate-spin" />}{submitLabel}</button>
         <button type="button" onClick={onCancel} className="btn btn-secondary">No thanks</button>
@@ -131,7 +141,7 @@ export function QuoteOfferPopup({ open, onClose, build, price, summary, offer, o
     setBusy(true);
     setError('');
     try {
-      await api.offer({ name: offer.name, company: offer.company, email: offer.email, phone: offer.phone, source: 'quote', summary });
+      await api.offer({ name: offer.name, company: offer.company, email: offer.email, phone: offer.phone, source: 'quote', summary, quoteTotal: Math.round(price.total) });
       setSent(true);
     } catch (err) {
       setError(err.message);
@@ -174,7 +184,7 @@ export function QuoteOfferPopup({ open, onClose, build, price, summary, offer, o
         ) : (
           <>
             <p className="mt-5 text-sm text-muted">Get your personal coupon code, and we'll send you this configuration as a formal quotation.</p>
-            <OfferForm source="quote" summary={summary} submitLabel={`Get my ${inr(COUPON_INR)} coupon`} onDone={(o) => { onOffer(o); setSent(true); }} onCancel={onClose} />
+            <OfferForm source="quote" summary={summary} quoteTotal={Math.round(price.total)} submitLabel={`Get my ${inr(COUPON_INR)} coupon`} onDone={(o) => { onOffer(o); setSent(true); }} onCancel={onClose} />
           </>
         )}
         {offer && sent && <button type="button" onClick={onClose} className="btn btn-secondary mt-4 w-full">Back to the configurator</button>}

@@ -99,10 +99,14 @@ router.post('/offers', async (req, res) => {
   const phone = clean(b.phone, 40) || null;
   const source = ['intro', 'quote'].includes(b.source) ? b.source : 'intro';
   const summary = clean(b.summary, 4000) || null; // the configured quote, from the second popup
+  const quoteTotal = Number.isFinite(Number(b.quoteTotal)) && Number(b.quoteTotal) > 0 ? Math.round(Number(b.quoteTotal)) : null;
+  const message = clean(b.message, 1000) || null; // e.g. a lower price they found elsewhere
   if (!name) return res.status(400).json({ error: 'Please tell us your name.' });
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
-  const coupon = await store.issueCoupon({ email, name, company, phone, valueInr: COUPON_VALUE_INR });
+  const coupon = await store.issueCoupon({
+    email, name, company, phone, valueInr: COUPON_VALUE_INR, quoteTotal, quoteSummary: summary, message, source,
+  });
   const intro = source === 'quote' ? 'Coupon requested with a configured quote.' : 'Asked for help choosing a NAS (coupon & call back).';
   await store.createEnquiry({
     type: 'offer',
@@ -114,7 +118,11 @@ router.post('/offers', async (req, res) => {
       coupon: coupon.code,
       couponValue: coupon.valueInr,
       source,
-      summary: [`Coupon ${coupon.code} (₹${coupon.valueInr.toLocaleString('en-IN')} off)${coupon.isNew ? '' : ', already issued to this email'}`, summary].filter(Boolean).join('\n\n'),
+      summary: [
+        `Coupon ${coupon.code} (₹${coupon.valueInr.toLocaleString('en-IN')} off)${coupon.isNew ? '' : ', already issued to this email'}`,
+        message && `Customer's message: ${message}`,
+        summary,
+      ].filter(Boolean).join('\n\n'),
     },
   });
   res.status(201).json({ code: coupon.code, valueInr: coupon.valueInr, isNew: coupon.isNew });

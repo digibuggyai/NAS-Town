@@ -294,35 +294,61 @@ const newCouponCode = () => `NAS-${Array.from({ length: 6 }, () => CODE_ALPHABET
 
 /**
  * The customer's coupon: the existing one for this email, or a new unique code.
+ * Details (quote, message, phone…) are saved on first issue and kept up to date after:
+ * a value left empty never wipes one given earlier.
  * Returns { code, valueInr, isNew }.
  */
-export async function issueCoupon({ email, name, company, phone, valueInr }) {
+export async function issueCoupon({ email, name, company, phone, valueInr, quoteTotal, quoteSummary, message, source }) {
   const key = email.toLowerCase();
+  const details = { name, company, phone, quoteTotal, quoteSummary, message, source };
   if (!pool) {
     mem.coupons ??= [];
     const found = mem.coupons.find((c) => c.email.toLowerCase() === key);
-    if (found) return { code: found.code, valueInr: found.valueInr, isNew: false };
+    if (found) {
+      for (const [k, v] of Object.entries(details)) if (v != null && v !== '') found[k] = v;
+      found.updatedAt = new Date();
+      return { code: found.code, valueInr: found.valueInr, isNew: false };
+    }
     let code;
     do code = newCouponCode(); while (mem.coupons.some((c) => c.code === code));
-    mem.coupons.push({ id: nextId('coupons'), code, email, name, company, phone, valueInr, status: 'issued', createdAt: new Date() });
+    mem.coupons.push({ id: nextId('coupons'), code, email, valueInr, ...details, status: 'issued', createdAt: new Date(), updatedAt: new Date() });
     return { code, valueInr, isNew: true };
   }
-  const existing = await pool.query('SELECT code, value_inr FROM coupons WHERE lower(email) = $1', [key]);
-  if (existing.rows[0]) return { code: existing.rows[0].code, valueInr: existing.rows[0].value_inr, isNew: false };
+  const values = [name, company, phone, quoteTotal, quoteSummary, message, source];
+  const update = async () => {
+    const { rows } = await pool.query(
+      `UPDATE coupons SET name = COALESCE($2, name), company = COALESCE($3, company), phone = COALESCE($4, phone),
+         quote_total = COALESCE($5, quote_total), quote_summary = COALESCE($6, quote_summary),
+         message = COALESCE($7, message), source = COALESCE($8, source), updated_at = now()
+       WHERE lower(email) = $1 RETURNING code, value_inr`,
+      [key, ...values],
+    );
+    return rows[0] && { code: rows[0].code, valueInr: rows[0].value_inr, isNew: false };
+  };
+  const existing = await update();
+  if (existing) return existing;
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       const { rows } = await pool.query(
-        'INSERT INTO coupons (code, email, name, company, phone, value_inr) VALUES ($1,$2,$3,$4,$5,$6) RETURNING code, value_inr',
-        [newCouponCode(), email, name, company, phone, valueInr],
+        `INSERT INTO coupons (code, email, value_inr, name, company, phone, quote_total, quote_summary, message, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING code, value_inr`,
+        [newCouponCode(), email, valueInr, ...values],
       );
       return { code: rows[0].code, valueInr: rows[0].value_inr, isNew: true };
     } catch (e) {
       if (e.code !== '23505') throw e; // unique clash: the email raced us, or (rarely) the code exists
-      const again = await pool.query('SELECT code, value_inr FROM coupons WHERE lower(email) = $1', [key]);
-      if (again.rows[0]) return { code: again.rows[0].code, valueInr: again.rows[0].value_inr, isNew: false };
+      const again = await update();
+      if (again) return again;
     }
   }
   throw new Error('Could not issue a coupon code.');
+}
+
+/** Every issued coupon with its customer details, newest first (Admin → Coupons). */
+export async function listCoupons(limit = 500) {
+  if (!pool) return [...(mem.coupons ?? [])].reverse().slice(0, limit).map((c) => structuredClone(c));
+  const { rows } = await pool.query('SELECT * FROM coupons ORDER BY created_at DESC LIMIT $1', [limit]);
+  return rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v])));
 }
 
 /* ---------------- leads ---------------- */

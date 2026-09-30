@@ -54,6 +54,7 @@ export const api = {
   createUser: (data) => request('/admin/users', { auth: true, ...body('POST', data) }),
   deleteUser: (id) => request(`/admin/users/${id}`, { auth: true, method: 'DELETE' }),
   enquiries: () => request('/admin/enquiries', { auth: true }),
+  coupons: () => request('/admin/coupons', { auth: true }),
   deleteEnquiry: (id) => request(`/admin/enquiries/${id}`, { auth: true, method: 'DELETE' }),
 
   blog: (params = {}) => request(`/blog?${new URLSearchParams(params)}`),

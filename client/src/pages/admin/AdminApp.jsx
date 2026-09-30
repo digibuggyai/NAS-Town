@@ -6,6 +6,7 @@ import CatalogueTable, { SettingsForm } from '../../components/admin/CatalogueTa
 import Configurator from '../../components/configurator/Configurator.jsx';
 import BlogManager from '../../components/admin/BlogManager.jsx';
 import ProductPages from '../../components/admin/ProductPages.jsx';
+import CouponsPanel from '../../components/admin/CouponsPanel.jsx';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/useAuth.js';
 
@@ -91,6 +92,7 @@ function Shell({ user, onLogout }) {
     admin && ['Product pages', '/admin/pages'],
     sales && ['Sales configurator', '/admin/configurator'],
     sales && ['Leads', '/admin/leads'],
+    sales && ['Coupons', '/admin/coupons'],
     admin && ['Change log', '/admin/log'],
     blog && ['Blog', '/admin/blog'],
     admin && ['Users', '/admin/users'],
@@ -111,8 +113,7 @@ function Shell({ user, onLogout }) {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <span className="hidden text-xs text-muted md:inline">{user.email}</span>
-          <button onClick={onLogout} className="btn btn-secondary !p-2" aria-label="Sign out"><LogOut className="size-4" /></button>
+          <button onClick={onLogout} className="btn btn-secondary !p-2" aria-label={`Sign out (${user.email})`} title={`Signed in as ${user.email}. Sign out`}><LogOut className="size-4" /></button>
         </div>
       </header>
 
@@ -121,6 +122,7 @@ function Shell({ user, onLogout }) {
           <Route index element={admin ? <Pricing /> : <Navigate to={home} replace />} />
           {sales && <Route path="configurator" element={<SalesConfigurator />} />}
           {sales && <Route path="leads" element={<Leads canDelete={admin} />} />}
+          {sales && <Route path="coupons" element={<CouponsPanel />} />}
           {admin && <Route path="pages" element={<ProductPages />} />}
           {admin && <Route path="log" element={<ChangeLog />} />}
           {blog && <Route path="blog" element={<BlogManager />} />}

@@ -188,3 +188,9 @@ CREATE TABLE IF NOT EXISTS coupons (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_email ON coupons (lower(email));
+-- Coupon details shown in Admin → Coupons: the latest quote and the customer's message.
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS quote_total INTEGER;
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS quote_summary TEXT;
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS message TEXT;
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS source TEXT;
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();

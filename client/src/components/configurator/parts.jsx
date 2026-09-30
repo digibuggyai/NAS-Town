@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Info, X } from 'lucide-react';
+import { lockScroll } from '../../lib/motion.js';
 
 export function Step({ n, title, hint, children, aside }) {
   return (
@@ -67,10 +68,16 @@ export function Dialog({ open, onClose, title, children }) {
     if (!d) return;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
+    // While open, the page behind stays still: smooth scrolling pauses and the wheel
+    // scrolls the popup instead (data-lenis-prevent below).
+    if (!open) return;
+    lockScroll(true);
+    return () => lockScroll(false);
   }, [open]);
   return (
     <dialog
       ref={ref}
+      data-lenis-prevent
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       className="m-auto w-[min(92vw,34rem)] rounded-xl border border-line bg-raised p-0 text-fg shadow-2xl backdrop:bg-fg/40 backdrop:backdrop-blur-sm"
