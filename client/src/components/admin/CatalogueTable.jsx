@@ -6,13 +6,13 @@ import { Dialog } from '../configurator/parts.jsx';
 
 const COLUMNS = {
   models: ['model', 'brand', 'bays', 'quotePrice', 'minPrice', 'featured', 'rentable'],
-  drives: ['capacityTb', 'line', 'quotePrice', 'minPrice'],
+  drives: ['drive', 'partNumber', 'quotePrice', 'minPrice'], // 'drive' = name + specs, see DriveCell
   driveLines: ['name', 'brand', 'driveClass', 'workloadTbYear', 'warrantyYears'],
   upgrades: ['sku', 'category', 'name', 'quotePrice', 'minPrice'],
 };
 
 const LABELS = {
-  quotePrice: 'Quote ₹', minPrice: 'Floor ₹', capacityTb: 'TB', m2Slots: 'M.2 slots', maxDriveTb: 'Max drive TB',
+  quotePrice: 'Quote ₹', minPrice: 'Floor ₹', capacityTb: 'Capacity (TB)', partNumber: 'Part number', rpm: 'RPM', cache: 'Cache', drive: 'Drive', m2Slots: 'M.2 slots', maxDriveTb: 'Max drive TB',
   baysWithExpansion: 'Bays with expansion', maxRawTb: 'Max raw TB', networkUpgrade: 'Network upgrade', memoryMax: 'Max memory',
   cpuCores: 'CPU cores', usbPorts: 'USB ports', weightKg: 'Weight kg', specsUrl: 'Specs URL', driveClass: 'Class',
   madeForBrand: 'Made for brand', workloadTbYear: 'Workload', warrantyYears: 'Warranty (years)', bestFor: 'Best for', sortOrder: 'Sort order',
@@ -27,7 +27,36 @@ function cell(k, v) {
   return String(v);
 }
 
-export default function CatalogueTable({ collection, rows, schema, onChanged }) {
+/** A drive row: full name plus the specs that identify it. Exact per-drive RPM/cache win
+ * over the line's ranges from Drive specs. */
+function DriveCell({ row, line }) {
+  if (!line) {
+    return (
+      <>
+        <span className="font-medium">{row.line} {row.capacityTb} TB</span>
+        <span className="block text-xs text-warning">No specs: add "{row.line}" in the Drive specs tab</span>
+      </>
+    );
+  }
+  const rpm = row.rpm || line.rpm;
+  const cache = row.cache || line.cache;
+  const specs = [
+    line.driveClass && `${line.driveClass} drive`,
+    rpm && `${rpm} rpm`,
+    cache && `${cache} cache`,
+    line.recording,
+    line.workloadTbYear,
+    line.warrantyYears && `${line.warrantyYears}-year warranty`,
+  ].filter(Boolean);
+  return (
+    <>
+      <span className="font-medium">{line.brand && <span className="font-normal text-muted">{line.brand} · </span>}{row.line} {row.capacityTb} TB</span>
+      <span className="block text-xs whitespace-normal text-subtle">{specs.join(' · ')}</span>
+    </>
+  );
+}
+
+export default function CatalogueTable({ collection, rows, schema, onChanged, lines = [] }) {
   const [editing, setEditing] = useState(null); // row, or {} for new
   const cols = COLUMNS[collection];
   const hasActive = 'active' in schema.fields;
@@ -68,7 +97,9 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
             {rows.map((r) => (
               <tr key={r.id} className={`border-t border-line ${hasActive && !r.active ? 'opacity-50' : ''}`}>
                 {cols.map((k) => (
-                  <td key={k} className={`px-4 py-2.5 whitespace-nowrap ${k === 'minPrice' ? 'text-warning' : ''}`}>{cell(k, r[k])}</td>
+                  <td key={k} className={`px-4 py-2.5 whitespace-nowrap ${k === 'minPrice' ? 'text-warning' : ''} ${k === 'drive' ? 'min-w-72' : ''}`}>
+                    {k === 'drive' ? <DriveCell row={r} line={lines.find((l) => l.name === r.line)} /> : cell(k, r[k])}
+                  </td>
                 ))}
                 {hasActive && (
                   <td className="px-4 py-2.5">
@@ -87,13 +118,13 @@ export default function CatalogueTable({ collection, rows, schema, onChanged }) 
         </table>
       </div>
 
-      <ItemEditor collection={collection} schema={schema} editing={editing} onClose={() => setEditing(null)} onSaved={onChanged} />
+      <ItemEditor collection={collection} schema={schema} editing={editing} onClose={() => setEditing(null)} onSaved={onChanged} lines={lines} />
     </div>
   );
 }
 
 /** Add/edit form for one catalogue item. Shared by the price manager and Product pages. */
-export function ItemEditor({ collection, schema, editing, onClose, onSaved }) {
+export function ItemEditor({ collection, schema, editing, onClose, onSaved, lines = [] }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => { setError(''); }, [editing]);
@@ -154,7 +185,29 @@ export function ItemEditor({ collection, schema, editing, onClose, onSaved }) {
                 </label>
               );
             }
-            const wide = ['summary', 'specsUrl', 'extras', 'bestFor', 'network', 'networkUpgrade'].includes(k);
+            // A drive's line must match a row in Drive specs, so pick it from a list.
+            if (collection === 'drives' && k === 'line' && lines.length) {
+              const names = lines.map((l) => l.name);
+              if (editing.line && !names.includes(editing.line)) names.push(editing.line);
+              return (
+                <label key={k}>
+                  <span className="mb-1 block text-xs text-muted">Line *</span>
+                  <select name={k} required defaultValue={editing.line ?? ''} className="field !py-2 text-sm">
+                    <option value="" disabled>Choose a drive line</option>
+                    {names.map((n) => {
+                      const l = lines.find((x) => x.name === n);
+                      return <option key={n} value={n}>{l?.brand && !n.startsWith(l.brand) ? `${l.brand} ${n}` : n}</option>;
+                    })}
+                  </select>
+                </label>
+              );
+            }
+            const hint = collection === 'drives' && {
+              partNumber: 'Model number on the drive label / invoice, e.g. ST4000VN006',
+              rpm: 'For this capacity, e.g. 5,400 (blank = the line’s range)',
+              cache: 'For this capacity, e.g. 256 MB (blank = the line’s range)',
+            }[k];
+            const wide = ['summary', 'specsUrl', 'extras', 'bestFor', 'network', 'networkUpgrade', 'partNumber'].includes(k);
             return (
               <label key={k} className={wide ? 'sm:col-span-2' : ''}>
                 <span className={`mb-1 block text-xs ${k === 'minPrice' ? 'text-warning' : 'text-muted'}`}>
@@ -167,6 +220,7 @@ export function ItemEditor({ collection, schema, editing, onClose, onSaved }) {
                   min={type === 'int' || type === 'num' ? 0 : undefined}
                   required={required}
                   defaultValue={editing[k] ?? ''}
+                  placeholder={hint || undefined}
                   className="field !py-2 text-sm"
                 />
               </label>

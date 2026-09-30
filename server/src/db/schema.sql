@@ -137,6 +137,11 @@ CREATE TABLE IF NOT EXISTS finder_submissions (
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
 -- Site pages that list this model (Admin → Product pages). NULL = not yet assigned.
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS pages TEXT[];
+-- Per-drive identification: manufacturer part number and specs for that capacity.
+ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS part_number TEXT;
+ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS rpm TEXT;
+ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS cache TEXT;
+
 -- Blog-only staff accounts (added after first release).
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'sales', 'blog'));

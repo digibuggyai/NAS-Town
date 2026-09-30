@@ -129,7 +129,7 @@ router.get('/price-sheet.csv', requireAdmin, async (_req, res) => {
     [],
     ['Kind', 'Item', 'Detail', 'Quote INR (GST incl.)', 'Floor INR', 'Active'],
     ...models.map((m) => ['NAS', `${m.brand} ${m.model}`, `${m.bays}-bay`, m.quotePrice, m.minPrice, m.active]),
-    ...drives.map((d) => ['Drive', `${d.capacityTb} TB ${d.line}`, '', d.quotePrice, d.minPrice, d.active]),
+    ...drives.map((d) => ['Drive', `${d.capacityTb} TB ${d.line}`, d.partNumber ?? '', d.quotePrice, d.minPrice, d.active]),
     ...upgrades.map((u) => ['Upgrade', u.name, u.category, u.quotePrice, u.minPrice, u.active]),
     ['Service', 'Installation & setup', 'per chassis', settings.installQuote, settings.installMin, true],
     ['Service', 'AMC', '% of hardware per year', `${settings.amcQuotePercent}%`, settings.amcMinPercent != null ? `${settings.amcMinPercent}%` : '', true],

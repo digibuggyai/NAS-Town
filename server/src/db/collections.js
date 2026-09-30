@@ -21,7 +21,8 @@ export const COLLECTIONS = {
     label: 'Drives',
     order: 'capacity_tb, line',
     required: ['capacityTb', 'line', 'quotePrice'],
-    fields: { capacityTb: 'int', line: 'text', quotePrice: 'int', minPrice: 'int', active: 'bool' },
+    // partNumber / rpm / cache: this exact capacity (the line in Drive specs gives ranges).
+    fields: { capacityTb: 'int', line: 'text', partNumber: 'text', rpm: 'text', cache: 'text', quotePrice: 'int', minPrice: 'int', active: 'bool' },
   },
   driveLines: {
     table: 'nas_drive_lines',

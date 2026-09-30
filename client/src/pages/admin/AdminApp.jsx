@@ -168,7 +168,7 @@ function Pricing() {
         {tab === 'settings' ? (
           <SettingsForm settings={data.settings} onChanged={reload} />
         ) : (
-          <CatalogueTable key={tab} collection={tab} rows={data[tab]} schema={data.schema[tab]} onChanged={reload} />
+          <CatalogueTable key={tab} collection={tab} rows={data[tab]} schema={data.schema[tab]} onChanged={reload} lines={data.driveLines} />
         )}
       </div>
     </section>
