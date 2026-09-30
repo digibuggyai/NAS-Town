@@ -14,7 +14,10 @@ const app = express();
 const port = process.env.PORT || 4000;
 const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
 
-app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : true }));
+// Allowed site addresses, comma-separated. Spaces and trailing slashes are ignored,
+// because browsers send the origin as e.g. "https://nastown.com" with neither.
+const origins = (process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim().replace(/\/+$/, '')).filter(Boolean);
+app.use(cors({ origin: origins.length ? origins : true }));
 app.use(express.json({ limit: '100kb' }));
 app.set('trust proxy', 1); // Railway sits behind a proxy; needed for per-IP login throttling
 app.use('/api/admin', adminBlog);
