@@ -7,6 +7,7 @@ import {
 } from '../../lib/nas/configure.js';
 import { compareRows, compatibilityNotes, driveLineRows, modelSpecRows } from '../../lib/nas/specs.js';
 import EnquiryForm from '../EnquiryForm.jsx';
+import { digibuggy } from '../../data/site.js';
 import { Choice, Dialog, InfoButton, SpecTable, Step, Toggle } from './parts.jsx';
 
 /** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5 */
@@ -27,6 +28,7 @@ function initialAnswers(P, params) {
 
 export default function Configurator({ source = 'public', params }) {
   const { pricing, error, loading, reload } = usePricing(source);
+  const [openedAt] = useState(() => Date.now()); // popup timings count from here, not from when prices load
 
   if (loading) {
     return (
@@ -46,10 +48,10 @@ export default function Configurator({ source = 'public', params }) {
       </div>
     );
   }
-  return <ConfiguratorLoaded P={pricing} sales={source === 'sales'} params={params} />;
+  return <ConfiguratorLoaded P={pricing} sales={source === 'sales'} params={params} openedAt={openedAt} />;
 }
 
-function ConfiguratorLoaded({ P, sales, params }) {
+function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const [a, setAnswers] = useState(() => initialAnswers(P, params));
   const set = (patch) => setAnswers((prev) => ({ ...prev, ...patch }));
 
@@ -61,6 +63,12 @@ function ConfiguratorLoaded({ P, sales, params }) {
   const [dialog, setDialog] = useState(null); // { kind: 'model' | 'line', item }
   const [compare, setCompare] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const requestQuote = () => {
+    setQuoteOpen(true);
+    requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  };
+  // Quote reminder at 5 s and 45 s (public only; not once they're already requesting it).
+  const [popupOpen, setPopupOpen] = useQuotePopup(!sales && !quoteOpen && Boolean(d.build && price), openedAt);
 
   const build = d.build;
   const brands = useMemo(() => [...new Set(P.models.map((m) => m.brand))].sort(), [P]);
@@ -386,7 +394,7 @@ function ConfiguratorLoaded({ P, sales, params }) {
               {sales ? (
                 <CopySummary text={leadSummary(build, price, a, d)} />
               ) : (
-                <button onClick={() => { setQuoteOpen(true); requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })); }} className="btn btn-primary mt-5 w-full">
+                <button onClick={requestQuote} className="btn btn-primary mt-5 w-full">
                   Request this quote
                 </button>
               )}
@@ -427,6 +435,16 @@ function ConfiguratorLoaded({ P, sales, params }) {
         </div>
       )}
 
+      {!sales && (
+        <QuotePopup
+          open={popupOpen}
+          onClose={() => setPopupOpen(false)}
+          build={build}
+          price={price}
+          summary={build ? leadSummary(build, price, a, d) : ''}
+          onRequest={() => { setPopupOpen(false); requestQuote(); }}
+        />
+      )}
       <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.brand} ${dialog.item.model}` : ''}>
         {dialog?.kind === 'model' && (
           <>
@@ -460,5 +478,52 @@ function CopySummary({ text }) {
       {state === 'done' ? <Check className="size-4" /> : state === 'fail' ? <Loader2 className="size-4" /> : <Copy className="size-4" />}
       {state === 'done' ? 'Copied' : state === 'fail' ? 'Copy failed' : 'Copy summary for the customer'}
     </button>
+  );
+}
+
+/* Quote reminder for visitors on the public configurator. */
+const POPUP_AT_MS = [5000, 45000]; // counted from when the configurator opens
+
+/** Opens at each time in POPUP_AT_MS after `openedAt`, unless the visitor is already requesting the quote.
+ * A time that passed while prices were loading fires as soon as the quote is ready. */
+function useQuotePopup(enabled, openedAt = Date.now()) {
+  const [open, setOpen] = useState(false);
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
+  useEffect(() => {
+    const elapsed = Date.now() - openedAt;
+    const timers = POPUP_AT_MS.map((ms) => setTimeout(() => enabledRef.current && setOpen(true), Math.max(0, ms - elapsed)));
+    return () => timers.forEach(clearTimeout);
+  }, []);
+  return [open, setOpen];
+}
+
+/** The visitor's live quote, with ways to receive it. Same figures each time it opens. */
+function QuotePopup({ open, onClose, build, price, summary, onRequest }) {
+  const whatsapp = `https://wa.me/${digibuggy.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi NASTOWN, I'd like this NAS quote:\n\n${summary}`)}`;
+  return (
+    <Dialog open={open} onClose={onClose} title="Your NAS quote is ready">
+      {build && price && (
+        <div className="pb-2">
+          <p className="text-sm text-muted">Here's the system you've built so far. Want us to send it to you and check it fits your setup?</p>
+          <div className="mt-4 rounded-xl bg-surface p-4">
+            <p className="font-medium">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</p>
+            <p className="mt-1 text-sm text-muted">
+              {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="whitespace-nowrap">{build.totalUsable} TB usable</span>
+            </p>
+            <p className="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
+              <span className="text-sm text-muted">Estimated total</span>
+              <span className="text-2xl font-semibold tracking-tight">{inr(price.total)}</span>
+            </p>
+            <p className="mt-1 text-right text-xs text-subtle">GST inclusive</p>
+          </div>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
+            <button onClick={onRequest} className="btn btn-primary">Send me this quote</button>
+            <a href={whatsapp} target="_blank" rel="noopener" onClick={onClose} className="btn bg-[#25d366] text-white hover:bg-[#1fb857]">Get it on WhatsApp</a>
+          </div>
+          <button onClick={onClose} className="mt-3 w-full py-2 text-sm text-muted hover:text-fg">Keep configuring</button>
+        </div>
+      )}
+    </Dialog>
   );
 }
