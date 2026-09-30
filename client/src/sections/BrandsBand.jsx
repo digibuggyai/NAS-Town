@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { usePricing } from '../lib/nas/usePricing.js';
@@ -27,6 +27,9 @@ function BrandCard({ b, detail, hidden }) {
       </div>
       <p className="mt-4 text-sm text-body">{b.line}</p>
       <p className="mt-0.5 min-h-5 text-xs text-subtle">{detail}</p>
+      <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+        <BadgeCheck className="size-3.5" aria-hidden /> Authorized dealer
+      </p>
     </>
   );
   const cls = 'group block h-full w-[272px] rounded-2xl border border-line bg-raised p-5 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-[0_14px_30px_-18px_rgb(15_23_42/0.35)]';
@@ -80,13 +83,16 @@ export default function BrandsBand() {
     <section className="py-16 md:py-24">
       <Reveal className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
-          <p className="eyebrow mb-4">Brands</p>
+          <p className="eyebrow mb-4">Authorized dealer</p>
           <h2 className="h-section">The brands inside your NAS.</h2>
-          <p className="measure mt-5 text-muted">The box and the drives both matter. We build with platforms and NAS-rated drives we'd trust with our own data.</p>
+          <p className="measure mt-5 text-muted">
+            We're an authorized dealer for Synology, QNAP, Seagate and Western Digital, so every NAS and drive we supply is genuine
+            and sourced through official channels. The box and the drives both matter, and we build with ones we'd trust with our own data.
+          </p>
         </div>
       </Reveal>
 
-      <div ref={strip} className="marquee mt-10" aria-label="Brands we sell">
+      <div ref={strip} className="marquee mt-10" aria-label="Brands we are an authorized dealer for">
         <ul className="marquee-track flex w-max gap-5 py-2 pl-5">
           {[...half, ...half].map((b, i) => {
             const copy = i >= BRANDS.length; // only the first set is exposed to screen readers
