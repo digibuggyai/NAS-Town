@@ -36,7 +36,35 @@ export const INITIAL_ANSWERS = {
   includeAMC: false,
 };
 
-export const BUDGET_PRESETS = [100000, 150000, 200000, 300000, 500000];
+/**
+ * The public configurator starts blank: the customer picks storage, protection, unit and
+ * drives themselves (see `missingChoices`). Staff keep INITIAL_ANSWERS for quick quotes.
+ */
+export const PUBLIC_START = {
+  ...INITIAL_ANSWERS,
+  targetTB: null,
+  budget: null,
+  raid: null,
+  raidAuto: false,
+  includeInstall: false,
+  chosen: { unit: false, driveCap: false, driveLine: false },
+};
+
+/** What the customer still has to choose before the quote is final (public configurator). */
+export function missingChoices(a) {
+  const chosen = a.chosen ?? { unit: true, driveCap: true, driveLine: true };
+  const storage = a.storageMode === 'budget' ? a.budget > 0 : a.targetTB > 0;
+  const raid = a.storageMode === 'budget' ? a.raidAuto || a.raid != null : a.raid != null;
+  return [
+    !storage && 'Storage',
+    !raid && 'Protection (RAID)',
+    !chosen.unit && 'Unit',
+    !chosen.driveCap && 'Drive size',
+    !chosen.driveLine && 'Drive line',
+  ].filter(Boolean);
+}
+
+export const BUDGET_PRESETS =[100000, 150000, 200000, 300000, 500000];
 export const CAPACITY_PRESETS = [10, 20, 50, 100];
 
 /** Narrow by drive size first, then line, each falling back on its own; then settle on a unit. */
@@ -72,7 +100,8 @@ export function derive(a, P) {
 
   if (a.storageMode === 'budget') {
     const budget = a.budget;
-    if (budget == null || !(budget > 0)) return unbuilt(a, 'budget', 'Enter a budget to size against.');
+    // Not chosen yet (public configurator starts blank): incomplete, not an error.
+    if (budget == null || !(budget > 0) || (!a.raidAuto && a.raid == null)) return { ...unbuilt(a, 'budget', null), incomplete: true };
 
     // A budget covers the whole quote, so anything ticked on top of the
     // hardware comes out of it rather than surprising the customer later.
@@ -122,6 +151,12 @@ export function derive(a, P) {
       builds,
       ...picked,
     };
+  }
+
+  if (a.raid == null || !(a.targetTB > 0)) {
+    // Sizes to offer before a RAID level is picked: what RAID 5 can build (the common case).
+    const sizes = buildableSizes({ raid: a.raid ?? 'RAID5', ...catalogue });
+    return { ...unbuilt(a, 'capacity', null), sizes, incomplete: true };
   }
 
   const sizes = buildableSizes({ raid: a.raid, ...catalogue });

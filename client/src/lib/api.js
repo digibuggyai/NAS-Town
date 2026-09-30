@@ -37,6 +37,8 @@ export const api = {
   nasPricing: () => request('/nas-pricing'),
   logFinder: (data) => request('/finder', body('POST', data)),
   enquire: (data) => request('/enquiries', body('POST', data)),
+  /** Configurator popups: returns this customer's unique coupon { code, valueInr, isNew }. */
+  offer: (data) => request('/offers', body('POST', data)),
 
   login: (email, password) => request('/auth/login', body('POST', { email, password })),
   me: () => request('/auth/me', { auth: true }),

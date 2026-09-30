@@ -3,16 +3,17 @@ import { AlertTriangle, Check, Copy, Loader2, RotateCcw, Sparkles } from 'lucide
 import { usePricing } from '../../lib/nas/usePricing.js';
 import { RAID_INFO, RAID_LEVELS, inr, networkFor } from '../../lib/nas/logic.js';
 import {
-  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, derive, estimateLines, feasibleOptions, leadSummary, priceFor,
+  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, PUBLIC_START, derive, estimateLines, feasibleOptions, leadSummary, missingChoices, priceFor,
 } from '../../lib/nas/configure.js';
 import { compareRows, compatibilityNotes, driveLineRows, modelSpecRows } from '../../lib/nas/specs.js';
 import EnquiryForm from '../EnquiryForm.jsx';
-import { digibuggy } from '../../data/site.js';
+import { IntroPopup, QuoteOfferPopup } from './OfferPopups.jsx';
 import { Choice, Dialog, InfoButton, SpecTable, Step, Toggle } from './parts.jsx';
 
-/** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5 */
-function initialAnswers(P, params) {
-  const a = { ...INITIAL_ANSWERS };
+/** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5. The public tool starts blank. */
+function initialAnswers(P, params, sales) {
+  const start = sales ? INITIAL_ANSWERS : PUBLIC_START;
+  const a = { ...start, chosen: start.chosen && { ...start.chosen } };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
   const raid = params?.get('raid');
@@ -21,6 +22,7 @@ function initialAnswers(P, params) {
   if (model) {
     a.modelId = model.id;
     a.autoPick = false;
+    if (a.chosen) a.chosen.unit = true; // arrived from "Configure this NAS" on a product page
     if (!model.raid.includes(a.raid)) a.raid = model.bays >= 3 ? 'RAID5' : 'RAID1';
   }
   return a;
@@ -52,8 +54,11 @@ export default function Configurator({ source = 'public', params }) {
 }
 
 function ConfiguratorLoaded({ P, sales, params, openedAt }) {
-  const [a, setAnswers] = useState(() => initialAnswers(P, params));
+  const [a, setAnswers] = useState(() => initialAnswers(P, params, sales));
   const set = (patch) => setAnswers((prev) => ({ ...prev, ...patch }));
+  // A step the customer has answered themselves (public tool: nothing is picked for them).
+  const choose = (key, patch) => setAnswers((prev) => ({ ...prev, ...patch, chosen: prev.chosen && { ...prev.chosen, [key]: true } }));
+  const picked = (key) => !a.chosen || a.chosen[key];
 
   const d = useMemo(() => derive(a, P), [a, P]);
   const price = useMemo(() => priceFor(d.build, a, P), [d.build, a, P]);
@@ -67,8 +72,10 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
     setQuoteOpen(true);
     requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
   };
-  // Quote reminder at 5 s and 45 s (public only; not once they're already requesting it).
-  const [popupOpen, setPopupOpen] = useQuotePopup(!sales && !quoteOpen && Boolean(d.build && price), openedAt);
+  const missing = sales ? [] : missingChoices(a);
+  const quoteReady = Boolean(d.build && price) && missing.length === 0;
+  // Offer popups (public only): see useOfferPopups below.
+  const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, quoteReady, quoteOpen, openedAt });
 
   const build = d.build;
   const brands = useMemo(() => [...new Set(P.models.map((m) => m.brand))].sort(), [P]);
@@ -118,11 +125,11 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             <>
               <div className="flex flex-wrap gap-2">
                 {CAPACITY_PRESETS.map((tb) => (
-                  <Choice key={tb} active={d.targetTB === tb} onClick={() => set({ targetTB: tb })}>{tb} TB</Choice>
+                  <Choice key={tb} active={a.targetTB != null && d.targetTB === tb} onClick={() => set({ targetTB: tb })}>{tb} TB</Choice>
                 ))}
                 <select
                   aria-label="Exact usable size"
-                  value={d.sizes.includes(d.targetTB) ? d.targetTB : ''}
+                  value={a.targetTB != null && d.sizes.includes(d.targetTB) ? d.targetTB : ''}
                   onChange={(e) => set({ targetTB: Number(e.target.value) })}
                   className="field !w-auto !rounded-full !py-2 text-sm"
                 >
@@ -160,10 +167,10 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </Step>
 
         {/* 02 RAID */}
-        <Step n={2} title="Protection (RAID)" hint={RAID_INFO[d.raid].blurb}>
+        <Step n={2} title="Protection (RAID)" hint={d.raid ? RAID_INFO[d.raid].blurb : 'How many drive failures your storage should survive.'}>
           <div className="flex flex-wrap gap-2">
             {a.storageMode === 'budget' && (
-              <Choice active={a.raidAuto} onClick={() => set({ raidAuto: true })} sub="most space, with protection">
+              <Choice active={a.raidAuto} onClick={() => set({ raidAuto: true, raid: a.raid ?? 'RAID5' })} sub="most space, with protection">
                 <span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>
               </Choice>
             )}
@@ -178,7 +185,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </Choice>
             ))}
           </div>
-          {a.storageMode === 'budget' && a.raidAuto && !d.error && (
+          {a.storageMode === 'budget' && a.raidAuto && !d.error && !d.incomplete && (
             <p className="mt-3 text-sm text-muted">We chose <span className="text-fg">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ' with protection.' : '.'}</p>
           )}
           {d.raid === 'RAID0' && !d.error && (
@@ -190,24 +197,29 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         <Step n={3} title="Drive bays, brand and room to grow">
           <p className="mb-2 text-xs tracking-wide text-muted uppercase">Bays</p>
           <div className="flex flex-wrap gap-2">
-            <Choice active={a.bays == null} onClick={() => set({ bays: null })} sub="best value">Auto</Choice>
+            <Choice active={picked('bays') && a.bays == null} onClick={() => choose('bays', { bays: null })} sub="best value">Auto</Choice>
             {bayTiers.map((t) => (
-              <Choice key={t} active={a.bays === t} disabled={!can.bays.has(t)} onClick={() => set({ bays: t })} sub={bayHint(t)}>
+              <Choice key={t} active={a.bays === t} disabled={!d.incomplete && !can.bays.has(t)} onClick={() => choose('bays', { bays: t })} sub={d.incomplete ? undefined : bayHint(t)}>
                 {t}-bay
               </Choice>
             ))}
           </div>
           <p className="mt-5 mb-2 text-xs tracking-wide text-muted uppercase">Brand</p>
           <div className="flex flex-wrap gap-2">
-            <Choice active={a.brand === 'any'} onClick={() => set({ brand: 'any' })}>Any</Choice>
-            {brands.map((b) => <Choice key={b} active={a.brand === b} onClick={() => set({ brand: b })}>{b}</Choice>)}
+            <Choice active={picked('brand') && a.brand === 'any'} onClick={() => choose('brand', { brand: 'any' })}>Any</Choice>
+            {brands.map((b) => <Choice key={b} active={a.brand === b} onClick={() => choose('brand', { brand: b })}>{b}</Choice>)}
           </div>
           <div className="mt-5 max-w-sm">
             <Toggle checked={a.expandable} onChange={(v) => set({ expandable: v })} label="Room to expand" sub="Only units that take an expansion enclosure" />
           </div>
         </Step>
 
-        {d.error ? (
+        {d.incomplete ? (
+          <div className="glass flex items-start gap-3 rounded-xl p-6 text-sm text-muted">
+            <Sparkles className="mt-0.5 size-5 shrink-0 text-accent" />
+            <p>Choose how much storage you need and how it should be protected, and we'll show the units that fit.</p>
+          </div>
+        ) : d.error ? (
           <div className="glass flex items-start gap-3 rounded-xl p-6 text-sm">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
             <p>{d.error}</p>
@@ -227,14 +239,14 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             >
               <ul className="grid gap-2">
                 {d.options.slice(0, 6).map((b, i) => {
-                  const selected = build?.model.id === b.model.id;
+                  const selected = picked('unit') && build?.model.id === b.model.id;
                   return (
                     <li key={b.model.id}>
                       <div
                         role="button"
                         tabIndex={0}
-                        onClick={() => set({ modelId: b.model.id, autoPick: false })}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), set({ modelId: b.model.id, autoPick: false }))}
+                        onClick={() => choose('unit', { modelId: b.model.id, autoPick: false })}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose('unit', { modelId: b.model.id, autoPick: false }))}
                         aria-pressed={selected}
                         className={`flex cursor-pointer items-center gap-3 rounded-lg p-3.5 ring-1 transition-colors ${selected ? 'bg-surface ring-line' : 'ring-line hover:bg-surface'}`}
                       >
@@ -258,7 +270,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                 })}
               </ul>
               {!d.autoPick && (
-                <button onClick={() => set({ autoPick: true, modelId: null })} className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg">
+                <button onClick={() => choose('unit', { autoPick: true, modelId: null })} className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg">
                   <RotateCcw className="size-3" /> Back to the recommendation
                 </button>
               )}
@@ -285,24 +297,27 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             </Step>
 
             {/* 07 Network (shown, not asked) + 08 Drives */}
-            {build && (
+            {build && picked('unit') && (
               <Step n={5} title="Drives" hint={`Network on the ${build.model.model}: ${networkFor(build.model).ports}${build.model.networkUpgrade ? ` · upgradable: ${build.model.networkUpgrade}` : ''}`}>
                 <p className="mb-2 text-xs tracking-wide text-muted uppercase">Drive size</p>
                 <div className="flex flex-wrap gap-2">
-                  <Choice active={a.driveCap == null} onClick={() => set({ driveCap: null })}>Auto</Choice>
+                  <Choice active={picked('driveCap') && a.driveCap == null} onClick={() => choose('driveCap', { driveCap: null })} sub="best fit">Auto</Choice>
                   {P.capacities.map((c) => (
-                    <Choice key={c} active={a.driveCap === c} disabled={!can.caps.has(c)} onClick={() => set({ driveCap: c })}>{c} TB</Choice>
+                    <Choice key={c} active={picked('driveCap') && a.driveCap === c} disabled={!can.caps.has(c)} onClick={() => choose('driveCap', { driveCap: c })}>{c} TB</Choice>
                   ))}
                 </div>
                 <p className="mt-5 mb-2 text-xs tracking-wide text-muted uppercase">Drive line</p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Choice active={a.driveLine == null} onClick={() => set({ driveLine: null })}>Auto</Choice>
+                  <Choice active={picked('driveLine') && a.driveLine == null} onClick={() => choose('driveLine', { driveLine: null })} sub="best fit">Auto</Choice>
                   {pricedLines.map((l) => (
-                    <Choice key={l} active={a.driveLine === l} disabled={!can.lines.has(l)} onClick={() => set({ driveLine: l })} sub={lineSpec(l)?.driveClass}>
+                    <Choice key={l} active={picked('driveLine') && a.driveLine === l} disabled={!can.lines.has(l)} onClick={() => choose('driveLine', { driveLine: l })} sub={lineSpec(l)?.driveClass}>
                       {l}
                     </Choice>
                   ))}
                 </div>
+                {!(picked('driveCap') && picked('driveLine')) ? (
+                  <p className="mt-5 text-sm text-muted">Choose a drive size and a drive line, or Auto for the best fit.</p>
+                ) : (
                 <div className="mt-5 rounded-lg bg-surface p-4 ring-1 ring-line">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm">
@@ -317,6 +332,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                     ))}
                   </ul>
                 </div>
+                )}
               </Step>
             )}
 
@@ -355,7 +371,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             <p className="eyebrow">{sales ? 'Internal estimate' : 'Your estimate'}</p>
             {sales && <span className="rounded-full bg-warning/10 px-2.5 py-1 text-xs text-warning">Floors visible</span>}
           </div>
-          {build && price ? (
+          {build && price && quoteReady ? (
             <>
               <h3 className="mt-4 text-xl font-medium tracking-tight">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</h3>
               <p className="mt-1 text-sm text-muted">
@@ -400,7 +416,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               )}
             </>
           ) : (
-            <p className="mt-4 text-sm text-muted">{d.error ?? 'Choose your storage to see an estimate.'}</p>
+            d.error ? <p className="mt-4 text-sm text-muted">{d.error}</p> : <ChoicesLeft missing={missing} />
           )}
         </div>
 
@@ -425,7 +441,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
       </div>
 
       {/* Mobile bar when the estimate is off screen */}
-      {build && price && !panelVisible && (
+      {build && price && quoteReady && !panelVisible && (
         <div className="glass fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-3 rounded-full py-2 pr-2 pl-5 lg:hidden">
           <div className="min-w-0 text-sm">
             <p className="truncate font-medium">{build.model.model} · {build.totalUsable} TB</p>
@@ -436,14 +452,18 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
       )}
 
       {!sales && (
-        <QuotePopup
-          open={popupOpen}
-          onClose={() => setPopupOpen(false)}
-          build={build}
-          price={price}
-          summary={build ? leadSummary(build, price, a, d) : ''}
-          onRequest={() => { setPopupOpen(false); requestQuote(); }}
-        />
+        <>
+          <IntroPopup open={popup === 'intro'} onClose={closePopup} offer={offer} onOffer={setOffer} />
+          <QuoteOfferPopup
+            open={popup === 'quote'}
+            onClose={closePopup}
+            build={build}
+            price={price}
+            summary={build && price ? leadSummary(build, price, a, d) : ''}
+            offer={offer}
+            onOffer={setOffer}
+          />
+        </>
       )}
       <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.brand} ${dialog.item.model}` : ''}>
         {dialog?.kind === 'model' && (
@@ -481,49 +501,63 @@ function CopySummary({ text }) {
   );
 }
 
-/* Quote reminder for visitors on the public configurator. */
-const POPUP_AT_MS = [5000, 45000]; // counted from when the configurator opens
 
-/** Opens at each time in POPUP_AT_MS after `openedAt`, unless the visitor is already requesting the quote.
- * A time that passed while prices were loading fires as soon as the quote is ready. */
-function useQuotePopup(enabled, openedAt = Date.now()) {
-  const [open, setOpen] = useState(false);
-  const enabledRef = useRef(enabled);
-  enabledRef.current = enabled;
-  useEffect(() => {
-    const elapsed = Date.now() - openedAt;
-    const timers = POPUP_AT_MS.map((ms) => setTimeout(() => enabledRef.current && setOpen(true), Math.max(0, ms - elapsed)));
-    return () => timers.forEach(clearTimeout);
-  }, []);
-  return [open, setOpen];
+const ALL_CHOICES = ['Storage', 'Protection (RAID)', 'Unit', 'Drive size', 'Drive line'];
+
+/** Estimate panel before the quote is complete: what's done and what's left. */
+function ChoicesLeft({ missing }) {
+  return (
+    <div className="mt-4">
+      <p className="text-sm text-muted">Choose these to see your quote:</p>
+      <ul className="mt-3 grid gap-2 text-sm">
+        {ALL_CHOICES.map((c) => {
+          const done = !missing.includes(c);
+          return (
+            <li key={c} className={`flex items-center gap-2.5 ${done ? 'text-fg' : 'text-muted'}`}>
+              <span className={`grid size-5 place-items-center rounded-full ring-1 ${done ? 'bg-fg text-bg ring-fg' : 'ring-line-strong'}`}>
+                {done && <Check className="size-3" strokeWidth={3} />}
+              </span>
+              {c}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
 
-/** The visitor's live quote, with ways to receive it. Same figures each time it opens. */
-function QuotePopup({ open, onClose, build, price, summary, onRequest }) {
-  const whatsapp = `https://wa.me/${digibuggy.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi NASTOWN, I'd like this NAS quote:\n\n${summary}`)}`;
-  return (
-    <Dialog open={open} onClose={onClose} title="Your NAS quote is ready">
-      {build && price && (
-        <div className="pb-2">
-          <p className="text-sm text-muted">Here's the system you've built so far. Want us to send it to you and check it fits your setup?</p>
-          <div className="mt-4 rounded-xl bg-surface p-4">
-            <p className="font-medium">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</p>
-            <p className="mt-1 text-sm text-muted">
-              {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="whitespace-nowrap">{build.totalUsable} TB usable</span>
-            </p>
-            <p className="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
-              <span className="text-sm text-muted">Estimated total</span>
-              <span className="text-2xl font-semibold tracking-tight">{inr(price.total)}</span>
-            </p>
-            <p className="mt-1 text-right text-xs text-subtle">GST inclusive</p>
-          </div>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <button onClick={onRequest} className="btn btn-primary">Send me this quote</button>
-            <a href={whatsapp} target="_blank" rel="noopener" onClick={onClose} className="btn bg-[#25d366] text-white hover:bg-[#1fb857]">Get it on WhatsApp</a>
-          </div>
-          <button onClick={onClose} className="mt-3 w-full py-2 text-sm text-muted hover:text-fg">Keep configuring</button>
-        </div>
-      )}
-    </Dialog>
-  );
+/* Offer popups, at most two per visit:
+ *   'intro': 10 s after the configurator opens, only if no quote has been built yet.
+ *   'quote': 10 s after the quote is complete (restarts if they change it before then).
+ * Neither opens once the visitor is already requesting the quote. */
+const OFFER_DELAY_MS = 10000;
+
+function useOfferPopups({ enabled, quoteReady, quoteOpen, openedAt }) {
+  const [popup, setPopup] = useState(null); // 'intro' | 'quote' | null
+  const [offer, setOffer] = useState(null); // the issued coupon + contact details, shared by both popups
+  const shown = useRef(new Set());
+  const now = useRef({});
+  now.current = { quoteReady, quoteOpen };
+
+  const show = (kind) => {
+    if (shown.current.has(kind) || shown.current.size >= 2 || now.current.quoteOpen) return;
+    shown.current.add(kind);
+    setPopup(kind);
+  };
+
+  useEffect(() => {
+    if (!enabled) return;
+    const t = setTimeout(() => !now.current.quoteReady && show('intro'), Math.max(0, OFFER_DELAY_MS - (Date.now() - openedAt)));
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || !quoteReady) return;
+    const t = setTimeout(() => now.current.quoteReady && show('quote'), OFFER_DELAY_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, quoteReady]);
+
+  return { popup, closePopup: () => setPopup(null), offer, setOffer };
 }

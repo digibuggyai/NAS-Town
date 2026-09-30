@@ -76,6 +76,50 @@ router.post('/enquiries', async (req, res) => {
   res.status(201).json({ ok: true, id: row.id });
 });
 
+/* ---------------- offer coupons (configurator popups) ---------------- */
+
+export const COUPON_VALUE_INR = 2000;
+
+// 6 coupon requests per IP per 10 minutes: enough for a real customer, not for farming codes.
+const offerHits = new Map();
+function offerAllowed(ip) {
+  const now = Date.now();
+  const recent = (offerHits.get(ip) ?? []).filter((t) => now - t < 10 * 60 * 1000);
+  recent.push(now);
+  offerHits.set(ip, recent);
+  return recent.length <= 6;
+}
+
+router.post('/offers', async (req, res) => {
+  if (!offerAllowed(req.ip)) return res.status(429).json({ error: 'Too many requests. Please try again in a few minutes.' });
+  const b = req.body ?? {};
+  const name = clean(b.name, 120);
+  const company = clean(b.company, 160) || null;
+  const email = clean(b.email, 200);
+  const phone = clean(b.phone, 40) || null;
+  const source = ['intro', 'quote'].includes(b.source) ? b.source : 'intro';
+  const summary = clean(b.summary, 4000) || null; // the configured quote, from the second popup
+  if (!name) return res.status(400).json({ error: 'Please tell us your name.' });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
+
+  const coupon = await store.issueCoupon({ email, name, company, phone, valueInr: COUPON_VALUE_INR });
+  const intro = source === 'quote' ? 'Coupon requested with a configured quote.' : 'Asked for help choosing a NAS (coupon & call back).';
+  await store.createEnquiry({
+    type: 'offer',
+    name,
+    email,
+    phone,
+    message: company ? `${intro}\nCompany: ${company}` : intro,
+    payload: {
+      coupon: coupon.code,
+      couponValue: coupon.valueInr,
+      source,
+      summary: [`Coupon ${coupon.code} (₹${coupon.valueInr.toLocaleString('en-IN')} off)${coupon.isNew ? '' : ', already issued to this email'}`, summary].filter(Boolean).join('\n\n'),
+    },
+  });
+  res.status(201).json({ code: coupon.code, valueInr: coupon.valueInr, isNew: coupon.isNew });
+});
+
 /* ---------------- staff sign-in ---------------- */
 
 router.post('/auth/login', async (req, res) => {

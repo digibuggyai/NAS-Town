@@ -174,3 +174,17 @@ CREATE TABLE IF NOT EXISTS blog_images (
 );
 
 CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts (published, published_at DESC);
+
+-- Offer coupons (configurator popups). One per customer email; every code is unique.
+CREATE TABLE IF NOT EXISTS coupons (
+  id           SERIAL PRIMARY KEY,
+  code         TEXT UNIQUE NOT NULL,
+  email        TEXT NOT NULL,
+  name         TEXT,
+  company      TEXT,
+  phone        TEXT,
+  value_inr    INTEGER NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'issued',
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_email ON coupons (lower(email));

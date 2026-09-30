@@ -1,5 +1,6 @@
 // Data access. Uses PostgreSQL when DATABASE_URL is set; otherwise an in-memory
 // store with the same interface, so the site runs locally without a database.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import pg from 'pg';
@@ -283,6 +284,45 @@ export async function countAdmins() {
   if (!pool) return mem.users.filter((u) => u.role === 'admin').length;
   const { rows } = await pool.query("SELECT COUNT(*)::int AS n FROM users WHERE role = 'admin'");
   return rows[0].n;
+}
+
+/* ---------------- offer coupons ---------------- */
+
+// No 0/O or 1/I/L, so a code read out over the phone can't be misheard.
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const newCouponCode = () => `NAS-${Array.from({ length: 6 }, () => CODE_ALPHABET[crypto.randomInt(CODE_ALPHABET.length)]).join('')}`;
+
+/**
+ * The customer's coupon: the existing one for this email, or a new unique code.
+ * Returns { code, valueInr, isNew }.
+ */
+export async function issueCoupon({ email, name, company, phone, valueInr }) {
+  const key = email.toLowerCase();
+  if (!pool) {
+    mem.coupons ??= [];
+    const found = mem.coupons.find((c) => c.email.toLowerCase() === key);
+    if (found) return { code: found.code, valueInr: found.valueInr, isNew: false };
+    let code;
+    do code = newCouponCode(); while (mem.coupons.some((c) => c.code === code));
+    mem.coupons.push({ id: nextId('coupons'), code, email, name, company, phone, valueInr, status: 'issued', createdAt: new Date() });
+    return { code, valueInr, isNew: true };
+  }
+  const existing = await pool.query('SELECT code, value_inr FROM coupons WHERE lower(email) = $1', [key]);
+  if (existing.rows[0]) return { code: existing.rows[0].code, valueInr: existing.rows[0].value_inr, isNew: false };
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const { rows } = await pool.query(
+        'INSERT INTO coupons (code, email, name, company, phone, value_inr) VALUES ($1,$2,$3,$4,$5,$6) RETURNING code, value_inr',
+        [newCouponCode(), email, name, company, phone, valueInr],
+      );
+      return { code: rows[0].code, valueInr: rows[0].value_inr, isNew: true };
+    } catch (e) {
+      if (e.code !== '23505') throw e; // unique clash: the email raced us, or (rarely) the code exists
+      const again = await pool.query('SELECT code, value_inr FROM coupons WHERE lower(email) = $1', [key]);
+      if (again.rows[0]) return { code: again.rows[0].code, valueInr: again.rows[0].value_inr, isNew: false };
+    }
+  }
+  throw new Error('Could not issue a coupon code.');
 }
 
 /* ---------------- leads ---------------- */
