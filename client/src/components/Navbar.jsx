@@ -11,7 +11,7 @@ export function Logo({ onDark = false }) {
   return (
     <Link to="/" className={`flex items-center gap-2.5 text-[0.95rem] font-semibold tracking-[0.14em] ${onDark ? 'text-white' : ''}`} aria-label="NASTOWN home">
       <span className={onDark ? 'grid size-10 place-items-center rounded-xl bg-white' : ''}>
-        <img src="/nastown-logo-sm.png" alt="" width="114" height="128" className={onDark ? 'h-7 w-auto' : 'h-9 w-auto'} />
+        <img src="/nastown-logo-sm.png" alt="" width="162" height="128" className={onDark ? 'h-7 w-auto' : 'h-9 w-auto'} />
       </span>
       NASTOWN
     </Link>
