@@ -49,7 +49,8 @@ export const api = {
   updateItem: (collection, id, data) => request(`/admin/nas/${collection}/${id}`, { auth: true, ...body('PATCH', data) }),
   deleteItem: (collection, id) => request(`/admin/nas/${collection}/${id}`, { auth: true, method: 'DELETE' }),
   updateSettings: (data) => request('/admin/nas/settings', { auth: true, ...body('PATCH', data) }),
-  changeLog: () => request('/admin/change-log', { auth: true }),
+  /** One page of the permanent change log: { entries, more }. */
+  changeLog: ({ before, areas } = {}) => request(`/admin/change-log?${new URLSearchParams({ ...(before && { before }), ...(areas && { areas }) })}`, { auth: true }),
   users: () => request('/admin/users', { auth: true }),
   createUser: (data) => request('/admin/users', { auth: true, ...body('POST', data) }),
   deleteUser: (id) => request(`/admin/users/${id}`, { auth: true, method: 'DELETE' }),

@@ -85,6 +85,10 @@ adminBlog.post('/blog/images', requireBlog, express.raw({ type: [...IMAGE_TYPES]
     return res.status(400).json({ error: 'Upload a JPG, PNG, WebP or AVIF image (max 3 MB).' });
   }
   const id = await store.saveImage(mime, req.body);
+  await store.logChanges([{
+    editor: req.user.email, collection: 'blog', itemId: id, itemLabel: `Cover image #${id}`, field: '(uploaded)',
+    after: `${mime.replace('image/', '').toUpperCase()}, ${Math.round(req.body.length / 1024)} KB`,
+  }]);
   res.status(201).json({ url: `/api/blog/images/${id}` });
 });
 

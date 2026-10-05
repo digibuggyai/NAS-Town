@@ -116,13 +116,20 @@ router.delete('/nas/:collection/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-router.get('/change-log', requireAdmin, async (_req, res) => {
-  res.json(await store.listChangeLog(300));
+// Pages of 200, newest first: ?before=<oldest id shown> loads older ones, ?areas=coupons,reviews filters.
+router.get('/change-log', requireAdmin, async (req, res) => {
+  const before = Number(req.query.before) > 0 ? Number(req.query.before) : null;
+  const collections = typeof req.query.areas === 'string' && req.query.areas ? req.query.areas.split(',').slice(0, 20) : null;
+  const limit = 200;
+  const rows = await store.listChangeLog({ limit: limit + 1, before, collections });
+  res.json({ entries: rows.slice(0, limit), more: rows.length > limit });
 });
 
 /** Internal price sheet with floors. Marked internal in the file itself. */
-router.get('/price-sheet.csv', requireAdmin, async (_req, res) => {
+router.get('/price-sheet.csv', requireAdmin, async (req, res) => {
   const [models, drives, upgrades, settings] = await Promise.all([store.list('models'), store.list('drives'), store.list('upgrades'), store.getSettings()]);
+  // It contains every floor price, so each download is on record.
+  await store.logChanges([{ editor: req.user.email, collection: 'exports', itemLabel: 'Internal price sheet (CSV)', field: '(downloaded)', after: 'downloaded' }]);
   const esc = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
   const rows = [
     ['INTERNAL - contains floor prices. Do not share outside the company.'],
@@ -161,8 +168,9 @@ router.post('/users', requireAdmin, async (req, res) => {
 router.delete('/users/:id', requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (id === req.user.sub) return res.status(400).json({ error: 'You cannot remove your own account.' });
-  await store.deleteUser(id);
-  await store.logChanges([{ editor: req.user.email, collection: 'users', itemId: id, field: '(deleted)', after: 'deleted' }]);
+  const removed = await store.deleteUser(id);
+  if (!removed) return res.status(404).json({ error: 'User not found.' });
+  await store.logChanges([{ editor: req.user.email, collection: 'users', itemId: id, itemLabel: removed.email, field: '(deleted)', before: removed.role, after: 'deleted' }]);
   res.json({ ok: true });
 });
 
@@ -225,7 +233,7 @@ router.delete('/enquiries/:id', requireAdmin, async (req, res) => {
   ].filter(Boolean).join('\n').slice(0, 4000);
   await store.logChanges([{
     editor: req.user.email, collection: 'leads', itemId: lead.id,
-    itemLabel: `${lead.type} lead: ${lead.name}`, field: '(deleted)', before: snapshot, after: 'deleted',
+    itemLabel: `${lead.type[0].toUpperCase()}${lead.type.slice(1)} lead: ${lead.name}`, field: '(deleted)', before: snapshot, after: 'deleted',
   }]);
   res.json({ ok: true });
 });

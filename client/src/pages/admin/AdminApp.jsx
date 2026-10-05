@@ -253,44 +253,81 @@ function Leads({ canDelete }) {
   );
 }
 
-const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads'], ['coupons', 'Coupons'], ['reviews', 'Reviews']];
+// Each filter is one or more log areas, filtered on the server so older entries are reachable too.
+const LOG_VIEWS = [
+  ['all', 'All changes', null],
+  ['catalogue', 'Prices & products', 'models,drives,driveLines,upgrades,settings,exports'],
+  ['leads', 'Leads', 'leads'],
+  ['coupons', 'Coupons', 'coupons'],
+  ['reviews', 'Reviews', 'reviews'],
+  ['blog', 'Blog', 'blog'],
+  ['users', 'Users & sign-ins', 'users,sign-ins'],
+];
 
+/* The change log is permanent: the database refuses to edit or delete any entry (schema.sql),
+ * so this page has no delete either. Pages of 200, newest first; "Load older" goes back to the start. */
 function ChangeLog() {
-  const { data, error } = useLoad(api.changeLog);
   const [params, setParams] = useSearchParams();
-  const view = LOG_VIEWS.some(([k]) => k === params.get('view')) ? params.get('view') : 'all';
+  const view = LOG_VIEWS.find(([k]) => k === params.get('view')) ?? LOG_VIEWS[0];
+  const [state, setState] = useState({ entries: null, more: false, error: null, loading: false });
+
+  const load = useCallback(async (before) => {
+    setState((s) => ({ ...s, loading: true }));
+    try {
+      const page = await api.changeLog({ before, areas: view[2] });
+      setState((s) => ({ entries: before ? [...(s.entries ?? []), ...page.entries] : page.entries, more: page.more, error: null, loading: false }));
+    } catch (error) {
+      setState((s) => ({ ...s, error, loading: false }));
+    }
+  }, [view]);
+  useEffect(() => { setState({ entries: null, more: false, error: null, loading: false }); load(null); }, [load]);
+
+  const { entries, more, error, loading } = state;
   if (error) return <p className="text-error">{error.message}</p>;
-  if (!data) return <Loader2 className="size-5 animate-spin text-muted" />;
-  const rows = view === 'all' ? data : data.filter((c) => c.collection === view);
   return (
     <section>
       <h1 className="text-2xl font-medium tracking-tight">Change log</h1>
-      <p className="mt-1 text-sm text-muted">Every price, spec, visibility and account change, and every deleted lead.</p>
+      <p className="mt-1 max-w-3xl text-sm text-muted">
+        Every change made in this admin panel: prices, products, pages, leads, coupons, reviews, blog, users and sign-ins.
+        The log is permanent: entries can never be edited or deleted.
+      </p>
       <div className="mt-6 flex flex-wrap gap-1.5">
         {LOG_VIEWS.map(([k, label]) => (
-          <button key={k} onClick={() => setParams(k === 'all' ? {} : { view: k })} aria-pressed={view === k} className="chip !py-1.5 !text-xs">{label}</button>
+          <button key={k} onClick={() => setParams(k === 'all' ? {} : { view: k })} aria-pressed={view[0] === k} className="chip !py-1.5 !text-xs">{label}</button>
         ))}
       </div>
-      <div className="mt-4 overflow-x-auto rounded-lg ring-1 ring-line">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-surface text-xs text-muted">
-            <tr>{['When', 'Who', 'What', 'Field', 'Before', 'After'].map((h) => <th key={h} className="px-4 py-3 font-normal">{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.id} className="border-t border-line align-top">
-                <td className="px-4 py-2.5 whitespace-nowrap text-muted">{new Date(c.createdAt).toLocaleString('en-IN')}</td>
-                <td className="px-4 py-2.5">{c.editor}</td>
-                <td className="px-4 py-2.5 first-letter:uppercase">{c.itemLabel ?? c.collection}</td>
-                <td className="px-4 py-2.5 text-muted">{c.field}</td>
-                <td className="max-w-md px-4 py-2.5 whitespace-pre-line text-muted">{c.before ?? '—'}</td>
-                <td className={`px-4 py-2.5 ${c.after === 'deleted' ? 'text-error' : ''}`}>{c.after ?? '—'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {rows.length === 0 && <p className="p-4 text-muted">{view === 'leads' ? 'No leads have been deleted.' : view === 'coupons' ? 'No coupon changes yet.' : 'No changes yet.'}</p>}
-      </div>
+      {!entries ? <Loader2 className="mt-6 size-5 animate-spin text-muted" /> : (
+        <>
+          <div className="mt-4 overflow-x-auto rounded-lg ring-1 ring-line">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface text-xs text-muted">
+                <tr>{['When', 'Who', 'What', 'Field', 'Before', 'After'].map((h) => <th key={h} className="px-4 py-3 font-normal">{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {entries.map((c) => (
+                  <tr key={c.id} className="border-t border-line align-top">
+                    <td className="px-4 py-2.5 whitespace-nowrap text-muted">{new Date(c.createdAt).toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-2.5">{c.editor}</td>
+                    <td className="px-4 py-2.5">{c.itemLabel ?? c.collection}</td>
+                    <td className="px-4 py-2.5 text-muted">{c.field}</td>
+                    <td className="max-w-md px-4 py-2.5 whitespace-pre-line text-muted">{c.before ?? '—'}</td>
+                    <td className={`px-4 py-2.5 ${c.after === 'deleted' || c.field === '(failed sign-in)' ? 'text-error' : ''}`}>{c.after ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {entries.length === 0 && <p className="p-4 text-muted">Nothing recorded here yet.</p>}
+          </div>
+          <div className="mt-4 flex items-center gap-3 text-sm text-muted">
+            <span>Showing {entries.length} {entries.length === 1 ? 'entry' : 'entries'}{!more && entries.length ? ', back to the very first one' : ''}.</span>
+            {more && (
+              <button onClick={() => load(entries[entries.length - 1].id)} disabled={loading} className="btn btn-secondary !py-2 !text-xs">
+                {loading && <Loader2 className="size-3.5 animate-spin" />}Load older
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </section>
   );
 }

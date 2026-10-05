@@ -136,8 +136,11 @@ router.post('/auth/login', async (req, res) => {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   const user = email ? await store.findUserByEmail(email) : null;
   if (!user || !verifyPassword(password, user.passwordHash)) {
+    // A wrong password for a real staff account is worth knowing about (unknown emails are just noise).
+    if (user) await store.logChanges([{ editor: user.email, collection: 'sign-ins', itemLabel: user.email, field: '(failed sign-in)', after: `wrong password · ${req.ip}` }]);
     return res.status(401).json({ error: 'Email or password is incorrect.' });
   }
+  await store.logChanges([{ editor: user.email, collection: 'sign-ins', itemLabel: user.email, field: '(signed in)', after: `${user.role} · ${req.ip}` }]);
   res.json({ token: issueToken(user), user: { id: user.id, email: user.email, name: user.name, role: user.role } });
 });
 

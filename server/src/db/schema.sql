@@ -211,3 +211,17 @@ CREATE TABLE IF NOT EXISTS reviews (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status, created_at DESC);
+
+-- The change log is permanent. Entries can only be added: any UPDATE, DELETE or TRUNCATE on
+-- the table is refused by the database itself, whatever code or tool sends it.
+CREATE OR REPLACE FUNCTION nas_change_log_is_permanent() RETURNS trigger AS $$
+BEGIN
+  RAISE EXCEPTION 'The change log is permanent: entries cannot be changed or deleted.';
+END;
+$$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS change_log_no_edit ON nas_change_log;
+CREATE TRIGGER change_log_no_edit BEFORE UPDATE OR DELETE ON nas_change_log
+  FOR EACH ROW EXECUTE FUNCTION nas_change_log_is_permanent();
+DROP TRIGGER IF EXISTS change_log_no_truncate ON nas_change_log;
+CREATE TRIGGER change_log_no_truncate BEFORE TRUNCATE ON nas_change_log
+  FOR EACH STATEMENT EXECUTE FUNCTION nas_change_log_is_permanent();

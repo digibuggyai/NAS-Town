@@ -226,6 +226,8 @@ export async function applyFloors(floors) {
 }
 
 /* ---------------- change log ---------------- */
+// Append-only: entries are only ever added. There is no update or delete function, and in
+// Postgres a trigger (schema.sql) refuses UPDATE / DELETE / TRUNCATE on the table.
 
 export async function logChanges(entries) {
   if (!entries.length) return;
@@ -241,9 +243,26 @@ export async function logChanges(entries) {
   }
 }
 
-export async function listChangeLog(limit = 200) {
-  if (!pool) return mem.changeLog.slice(0, limit);
-  const { rows } = await pool.query('SELECT * FROM nas_change_log ORDER BY created_at DESC LIMIT $1', [limit]);
+/**
+ * A page of the log, newest first. `before` = the oldest id already shown, to load older
+ * entries; `collections` narrows to some areas (e.g. ['coupons']). Nothing is ever cut off:
+ * paging walks back to the very first entry.
+ */
+export async function listChangeLog({ limit = 200, before = null, collections = null } = {}) {
+  if (!pool) {
+    return mem.changeLog
+      .filter((e) => (before == null || e.id < before) && (!collections || collections.includes(e.collection)))
+      .slice(0, limit);
+  }
+  const where = [];
+  const params = [];
+  if (before != null) { params.push(before); where.push(`id < $${params.length}`); }
+  if (collections) { params.push(collections); where.push(`collection = ANY($${params.length})`); }
+  params.push(limit);
+  const { rows } = await pool.query(
+    `SELECT * FROM nas_change_log ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ORDER BY id DESC LIMIT $${params.length}`,
+    params,
+  );
   return rows.map((r) => fromRow({}, r));
 }
 
@@ -275,9 +294,15 @@ export async function createUser({ email, name, role, passwordHash }) {
   return fromRow({}, rows[0]);
 }
 
+/** Remove a staff account; returns { email, role } of who was removed (for the change log), or null. */
 export async function deleteUser(id) {
-  if (!pool) { mem.users = mem.users.filter((u) => u.id !== id); return; }
-  await pool.query('DELETE FROM users WHERE id = $1', [id]);
+  if (!pool) {
+    const u = mem.users.find((x) => x.id === id);
+    mem.users = mem.users.filter((x) => x.id !== id);
+    return u ? { email: u.email, role: u.role } : null;
+  }
+  const { rows } = await pool.query('DELETE FROM users WHERE id = $1 RETURNING email, role', [id]);
+  return rows[0] ?? null;
 }
 
 export async function countAdmins() {
