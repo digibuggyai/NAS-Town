@@ -265,6 +265,15 @@ export const nav = [
 export const brandName = (slug) =>
   ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
 
+// Instagram reels on the homepage. They play silently on the page; tapping opens the reel
+// on Instagram. Put each video in client/public/reels/ (MP4, ideally under 10 MB) with an
+// optional poster image (the first frame, JPG). The section stays hidden while this is empty;
+// 4 or 8 reels fill the desktop rows neatly.
+// Example: { video: '/reels/raid-explained.mp4', poster: '/reels/raid-explained.jpg',
+//            url: 'https://www.instagram.com/reel/XXXXXXXXX/', caption: 'RAID explained in 30 seconds' }
+export const reels = [];
+export const instagramHandle = 'digibuggy';
+
 // Track record shown at the top of the footer. Real figures only: fill in `value` from
 // your own records (e.g. '1,200+' or '5,000 TB'). A figure with an empty value is not shown, and the
 // whole row stays hidden until at least one is filled in.

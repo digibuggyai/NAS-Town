@@ -3,6 +3,7 @@ import FeatureRows from '../sections/FeatureRows.jsx';
 import Solutions from '../sections/Solutions.jsx';
 import BlogSection from '../sections/BlogSection.jsx';
 import BrandsBand from '../sections/BrandsBand.jsx';
+import InstaReels from '../sections/InstaReels.jsx';
 import Reviews from '../sections/Reviews.jsx';
 import HomeFaq from '../sections/HomeFaq.jsx';
 import CtaBanner from '../sections/CtaBanner.jsx';
@@ -19,6 +20,7 @@ export default function Home() {
       <Solutions />
       <BlogSection />
       <BrandsBand />
+      <InstaReels />
       <Reviews />
       <HomeFaq />
       <CtaBanner />
