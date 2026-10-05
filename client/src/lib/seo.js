@@ -166,10 +166,163 @@ export function staticPages(siteUrl) {
         mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
       });
     }
+    // Guides, comparisons, reviews and how-tos are "coming soon" lists for now. Thin pages like
+    // that drag the whole site down in Google, so they stay out of search until they have articles.
+    if (r.upcoming) page.noindex = true;
     pages[`/resources/${r.slug}`] = page;
   }
+
+  for (const [path, copy] of Object.entries(KEYWORDS)) Object.assign(pages[path], copy);
   return pages;
 }
+
+/**
+ * What each page is written to rank for: the search a buyer actually types (in the comment),
+ * worked into the title (≈60 characters show) and the description (≈155 characters show).
+ * One main search per page, so pages don't compete with each other.
+ */
+const KEYWORDS = {
+  // "nas", "nas storage", "buy nas india"
+  '/': {
+    title: 'NAS Storage in India: Buy Synology & QNAP NAS | NASTOWN',
+    description: 'Buy the right NAS storage in India: Synology and QNAP NAS with drives, GST-inclusive prices, installation and support. Showroom in Nehru Place, Delhi.',
+  },
+  // "nas price in india", "nas price list"
+  '/products': {
+    title: 'NAS Price in India: Synology & QNAP NAS Price List | NASTOWN',
+    description: 'Compare NAS prices in India: 2-bay, 4-bay, 6-bay, 8-bay and rackmount Synology and QNAP NAS with specs and GST-inclusive prices. Configure yours with drives.',
+  },
+  // "nas solutions", "which nas for"
+  '/solutions': {
+    title: 'NAS Solutions for Home, Business & Creators | NASTOWN',
+    description: 'The right NAS for photographers, video editors, creators, small businesses, homes, CCTV and enterprise, with recommended models and drive setups for each.',
+  },
+  // "best nas for photographers india"
+  '/solutions/photographers': {
+    title: 'Best NAS for Photographers in India | NASTOWN',
+    description: 'NAS storage for photographers: a RAID-protected RAW archive, automatic backup from cards and laptops, Lightroom-friendly, with remote client galleries.',
+  },
+  // "nas for video editing"
+  '/solutions/videographers': {
+    title: 'Best NAS for Video Editing in India | NASTOWN',
+    description: 'Edit 4K and 8K footage straight off a NAS with 2.5GbE or 10GbE and NVMe cache. Shared projects for editing teams and a safe archive for finished work.',
+  },
+  // "nas for content creators", "nas for youtubers"
+  '/solutions/creators': {
+    title: 'NAS for Content Creators & YouTubers | NASTOWN',
+    description: 'One NAS for your footage, design files, client assets and backups. Synced across devices, protected by RAID, reachable from anywhere. Built for creators.',
+  },
+  // "nas for small business", "business nas storage"
+  '/solutions/business': {
+    title: 'NAS for Small Business: Office File Server & Backup | NASTOWN',
+    description: 'A business NAS gives your office one secure file server with user permissions, automatic backups and remote access. Set up and supported by our team.',
+  },
+  // "best home nas india", "personal cloud storage"
+  '/solutions/home': {
+    title: 'Best Home NAS in India: Private Cloud & Backup | NASTOWN',
+    description: 'Replace cloud subscriptions with your own home NAS: back up every phone and laptop, keep family photos safe and stream your media to any screen.',
+  },
+  // "nas for cctv", "surveillance nas"
+  '/solutions/surveillance': {
+    title: 'NAS for CCTV & Surveillance Recording | NASTOWN',
+    description: 'Surveillance NAS for 24/7 CCTV recording: surveillance-grade drives, multiple camera streams and footage kept safe and searchable.',
+  },
+  // "enterprise nas storage"
+  '/solutions/enterprise': {
+    title: 'Enterprise NAS Storage Solutions in India | NASTOWN',
+    description: 'Enterprise NAS with high availability, expansion units, iSCSI and virtualisation support, plus dedicated support and AMC for critical workloads.',
+  },
+  // "synology nas price in india", "synology dealer delhi"
+  '/brands/synology': {
+    title: 'Synology NAS Price in India | Authorized Dealer | NASTOWN',
+    description: 'Buy genuine Synology NAS in India from an authorized dealer. DS225+, DS425+, DS925+ and more with GST-inclusive prices, installation and support in Delhi.',
+  },
+  // "qnap nas price in india", "qnap dealer delhi"
+  '/brands/qnap': {
+    title: 'QNAP NAS Price in India | Authorized Dealer | NASTOWN',
+    description: 'Buy genuine QNAP NAS in India from an authorized dealer. 2-bay to 8-bay QNAP models with GST-inclusive prices, installation and support in Delhi.',
+  },
+  // "asustor nas india"
+  '/brands/other': {
+    title: 'Asustor & Other NAS Brands in India | NASTOWN',
+    description: 'Compare Asustor and other trusted NAS brands against Synology and QNAP on features, price and performance, and get it installed by our team.',
+  },
+  // "nas on rent", "rent nas delhi"
+  '/rent': {
+    title: 'NAS on Rent in Delhi: Short-Term Storage Rental | NASTOWN',
+    description: 'Rent a NAS for a shoot, event, data migration or trial. Configured before delivery, full performance, support included and no big upfront cost.',
+  },
+  // "nas installation service", "nas support delhi"
+  '/services': {
+    title: 'NAS Installation, Repair & Support in Delhi | NASTOWN',
+    description: 'NAS installation, data migration, RAID setup, upgrades, repair, data recovery and AMC for Synology and QNAP, remote or on-site, from our Delhi team.',
+  },
+  '/services/installation': {
+    title: 'NAS Installation & Setup Service in Delhi | NASTOWN',
+    description: 'Professional NAS installation for Synology and QNAP: drives, storage pools, users, shared folders, remote access and alerts, set up right from day one.',
+  },
+  '/services/migration': {
+    title: 'NAS Data Migration Service | NASTOWN',
+    description: 'Move to a new NAS without losing a file. Planned migration with folder structure and permissions preserved, checksummed transfers and minimal downtime.',
+  },
+  '/services/repair': {
+    title: 'NAS Repair Service: Synology & QNAP | NASTOWN',
+    description: 'NAS not booting, a failed drive or a degraded RAID? We diagnose and repair Synology and QNAP NAS fast, with your data safety first.',
+  },
+  '/services/upgrade': {
+    title: 'NAS Upgrade: RAM, SSD Cache & 10GbE | NASTOWN',
+    description: 'Get more from your current NAS: bigger drives, RAM and NVMe SSD cache upgrades, 2.5GbE or 10GbE networking and performance tuning.',
+  },
+  '/services/raid-setup': {
+    title: 'NAS RAID Setup: RAID 1, 5, 6, 10 & SHR | NASTOWN',
+    description: 'Get the right RAID level for your NAS. We recommend and build RAID 1, 5, 6, 10 or SHR for your workload, verify the array and set up alerts and hot spares.',
+  },
+  '/services/amc': {
+    title: 'NAS AMC: Annual Maintenance Contract | NASTOWN',
+    description: 'NAS AMC plans with scheduled health checks, firmware and security updates, backup verification and priority support for Synology and QNAP.',
+  },
+  '/services/remote-support': {
+    title: 'NAS Remote Support from ₹2,000 | NASTOWN',
+    description: 'Fix NAS software, sharing, remote access and backup problems remotely with our support team. Remote NAS support starts from ₹2,000 + tax.',
+  },
+  '/services/on-site-support': {
+    title: 'On-Site NAS Support from ₹5,000 | NASTOWN',
+    description: 'A NAS technician at your home or office for hardware failures, complex installs, rack mounting and network setup. On-site support from ₹5,000 + tax.',
+  },
+  '/services/data-recovery': {
+    title: 'NAS Data Recovery: Synology, QNAP & RAID | NASTOWN',
+    description: 'Recover data from a crashed NAS volume, failed drives, a broken RAID or accidental deletion, with a clear assessment before any work begins.',
+  },
+  // "nas storage calculator", "nas vs cloud cost"
+  '/tools/calculator': {
+    title: 'NAS Storage Calculator & NAS vs Cloud Cost | NASTOWN',
+    description: 'How much NAS storage do you need? Estimate it from your photos, video and backups, and see when a NAS pays for itself compared with cloud storage.',
+  },
+  // "nas configurator", "nas price with hard drives"
+  '/tools/configurator': {
+    title: 'NAS Configurator: Price a NAS with Hard Drives | NASTOWN',
+    description: 'Choose capacity, RAID, bays and brand, and get a complete NAS quote with hard drives, installation and AMC, priced instantly with GST.',
+  },
+  // "which nas should i buy"
+  '/finder': {
+    title: 'Which NAS Should I Buy? Free NAS Finder | NASTOWN',
+    description: 'Not sure which NAS to buy? Answer a few questions about what you store and how you work, and get a NAS recommendation that fits your needs and budget.',
+  },
+  // "nas dealer nehru place", "nastown contact"
+  '/about': {
+    title: 'NAS Dealer in Nehru Place, Delhi: About & Contact | NASTOWN',
+    description: 'NASTOWN by Digibuggy: NAS sales, setup and support from our showroom in Nehru Place, New Delhi. Call or WhatsApp +91 93114 47394.',
+  },
+  // "what is nas", "nas faq"
+  '/resources/faq': {
+    title: 'What Is a NAS? NAS FAQ & Common Questions | NASTOWN',
+    description: 'What is a NAS, how is it different from an external drive, is RAID a backup and how much storage do you need? Clear answers to common NAS questions.',
+  },
+  '/resources/blog': {
+    title: 'NAS Blog: Buying Guides, Tips & News | NASTOWN',
+    description: 'NAS buying guides, storage tips and practical advice for photographers, creators, homes and businesses in India.',
+  },
+};
 
 /* ---------------- database pages ---------------- */
 
@@ -180,7 +333,8 @@ export function productMeta(p, siteUrl) {
   const price = p.price_inr != null ? `₹${Number(p.price_inr).toLocaleString('en-IN')} diskless, GST incl.` : '';
   const path = `/products/${p.slug}`;
   return {
-    title: `${p.model} ${p.bays}-Bay NAS: Price & Specs | NASTOWN`,
+    // People search a model plus "price": "ds925+ price in india".
+    title: `${p.model} Price in India & Specs (${p.bays}-Bay NAS) | NASTOWN`,
     description: clip([p.summary, [p.cpu, p.memory?.replace(/\s*\(.*?\)/g, ''), p.network].filter(Boolean).join(', ') + '.', price, 'Configure with drives and installation.'].filter(Boolean).join(' ')),
     path,
     jsonLd: [
