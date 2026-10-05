@@ -42,7 +42,11 @@ Floor (minimum) prices must never reach a browser.
 
 The schema is applied and the catalogue seeded on first start. Then run `import-floors` once (see above).
 
-**Vercel (site)**: root directory `client`, Vite preset. Set `VITE_API_URL` to the Railway URL (no `/api`).
+**Vercel (site)**: root directory `client`, Vite preset. Set `VITE_API_URL` to the Railway URL (no `/api`), and
+`VITE_SITE_URL` to the live address, e.g. `https://nastown.com` (canonical links, social cards, `sitemap.xml`;
+falls back to Vercel's production domain). The build writes every page's title and description into its own HTML
+file, plus `sitemap.xml` and `robots.txt` (`client/scripts/seo-plugin.mjs`; page copy in `client/src/lib/seo.js`).
+New blog posts and products reach the sitemap on the next deploy.
 `client/vercel.json` rewrites deep links such as `/products` and `/admin` to the app.
 
 ## API
