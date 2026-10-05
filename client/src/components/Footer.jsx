@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { MessageCircle } from 'lucide-react';
 import { Logo } from './Navbar.jsx';
-import { digibuggy, productLinks, solutions, trackRecord } from '../data/site.js';
+import { brands, digibuggy, productLinks, solutions, trackRecord } from '../data/site.js';
 
 // Lucide no longer ships brand marks, so these are simple outline glyphs.
 const glyph = (children) =>
@@ -24,7 +24,7 @@ const ICONS = { WhatsApp: MessageCircle, Instagram, YouTube: Youtube, LinkedIn: 
 const columns = [
   ['Products', productLinks.map(({ label, to }) => [label === 'All NAS Products' ? 'NAS Products' : label, to])],
   ['Solutions', solutions.map((s) => [`NAS for ${s.name}`, `/solutions/${s.slug}`])],
-  ['Brands', [['Synology', '/brands/synology'], ['QNAP', '/brands/qnap'], ['Other NAS Brands', '/brands/other']]],
+  ['Brands', brands.map((b) => [b.name, `/brands/${b.slug}`])],
   ['Services', [
     ['NAS Installation', '/services/installation'], ['Data Migration', '/services/migration'], ['NAS Repair', '/services/repair'],
     ['NAS Upgrade', '/services/upgrade'], ['RAID Setup', '/services/raid-setup'], ['AMC', '/services/amc'],

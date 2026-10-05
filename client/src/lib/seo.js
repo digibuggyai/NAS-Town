@@ -126,7 +126,7 @@ export function staticPages(siteUrl) {
     };
   }
   for (const b of brands) {
-    const name = b.slug === 'other' ? 'Other NAS Brands' : `${b.name} NAS`;
+    const name = `${b.name} NAS`;
     pages[`/brands/${b.slug}`] = {
       title: `${name}: Prices, Setup & Support | NASTOWN`,
       description: clip(b.intro),
@@ -256,10 +256,10 @@ const KEYWORDS = {
     title: 'QNAP NAS Price in India | Authorized Dealer | NASTOWN',
     description: 'Buy genuine QNAP NAS in India from an authorized dealer. 2-bay to 8-bay QNAP models with GST-inclusive prices, installation and support in Delhi.',
   },
-  // "asustor nas india"
-  '/brands/other': {
-    title: 'Asustor & Other NAS Brands in India | NASTOWN',
-    description: 'Compare Asustor and other trusted NAS brands against Synology and QNAP on features, price and performance, and get it installed by our team.',
+  // "asustor nas india", "asustor nas price"
+  '/brands/asustor': {
+    title: 'Asustor NAS Price in India | NASTOWN',
+    description: 'Asustor NAS in India with the easy ADM operating system: compare it with Synology and QNAP on features and price, and get it configured and installed by our team in Delhi.',
   },
   // "nas on rent", "rent nas delhi"
   '/rent': {

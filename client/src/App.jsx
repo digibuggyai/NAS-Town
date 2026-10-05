@@ -37,6 +37,7 @@ export default function App() {
         <Route path="nas/:size" element={<CapacityPage />} />
         <Route path="solutions" element={<SolutionsIndex />} />
         <Route path="solutions/:slug" element={<Solution />} />
+        <Route path="brands/other" element={<Navigate to="/brands/asustor" replace />} />{/* old address */}
         <Route path="brands/:slug" element={<Brand />} />
         <Route path="rent" element={<Rent />} />
         <Route path="services" element={<ServicesIndex />} />

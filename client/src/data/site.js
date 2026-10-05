@@ -72,10 +72,10 @@ export const brands = [
     intro: 'QNAP systems are built for users who want more power under the hood, from multimedia and virtualization to heavy-duty enterprise workloads. Explore the lineup and let our team handle the setup.',
   },
   {
-    slug: 'other', name: 'Other Brands', filter: 'asustor',
-    tagline: 'Asustor and more.',
-    h1: 'More Trusted NAS Brands to Choose From',
-    intro: "Synology and QNAP aren't your only options. We carry additional trusted NAS brands so you can compare features, pricing, and performance to find the system that fits your exact needs.",
+    slug: 'asustor', name: 'Asustor', filter: 'asustor',
+    tagline: 'Fast hardware, easy ADM software.',
+    h1: 'Asustor NAS: Capable Storage, Sharp Pricing',
+    intro: 'Asustor pairs fast hardware with its easy-to-use ADM operating system, a strong choice for home media, creators and small offices. Compare it with Synology and QNAP, and let our team configure and install it for you.',
   },
 ];
 
