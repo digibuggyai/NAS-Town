@@ -4,7 +4,7 @@
 //   - at build time, by scripts/seo-plugin.mjs, which writes each page's <head> into its own
 //     HTML file so search engines and link previews (WhatsApp, LinkedIn…) see it without JavaScript.
 // Keep this file plain JS with no browser-only or Vite-only code, so Node can import it.
-import { brands, digibuggy, faqs, resources, services, solutions } from '../data/site.js';
+import { brands, capacityPages, digibuggy, faqs, resources, services, solutions } from '../data/site.js';
 
 export const SITE_NAME = 'NASTOWN';
 export const DEFAULT_IMAGE = '/og-image.jpg'; // 1200×630 social card
@@ -38,7 +38,7 @@ export function siteJsonLd(siteUrl) {
         url: `${siteUrl}/`,
         logo: abs('/apple-touch-icon.png', siteUrl),
         email: digibuggy.email,
-        telephone: '+91-93114-47394',
+        telephone: digibuggy.whatsapp.replace(/ /g, '-'),
         parentOrganization: { '@type': 'Organization', name: 'Digibuggy', url: digibuggy.site, sameAs: digibuggy.socials.filter((s) => s.label !== 'WhatsApp').map((s) => s.href) },
       },
       {
@@ -47,7 +47,7 @@ export function siteJsonLd(siteUrl) {
         name: `${SITE_NAME} by Digibuggy`,
         url: `${siteUrl}/`,
         image: abs(DEFAULT_IMAGE, siteUrl),
-        telephone: '+91-93114-47394',
+        telephone: digibuggy.whatsapp.replace(/ /g, '-'),
         email: digibuggy.email,
         priceRange: '₹₹',
         address: {
@@ -172,6 +172,20 @@ export function staticPages(siteUrl) {
     pages[`/resources/${r.slug}`] = page;
   }
 
+  // "nas for 50tb", "50tb nas", "50tb nas storage", "50tb nas price", "50tb nas setup"
+  pages['/nas'] = {
+    title: 'NAS Storage by Capacity: 5TB to 100TB NAS Price | NASTOWN',
+    description: 'How much NAS storage do you need? Compare 5TB, 10TB, 20TB, 50TB and 100TB NAS builds with drives, RAID and GST-inclusive prices in India.',
+    jsonLd: crumbs(siteUrl, [['NAS by Capacity', '/nas']]),
+  };
+  for (const { tb } of capacityPages) {
+    pages[`/nas/${tb}tb`] = {
+      title: `${tb}TB NAS Storage: Price & Setup in India | NASTOWN`,
+      description: `Need a NAS for ${tb}TB of data? Compare ${tb}TB NAS builds from Synology and QNAP with drives, RAID 5 or RAID 6, setup and GST-inclusive prices.`,
+      jsonLd: crumbs(siteUrl, [['NAS by Capacity', '/nas'], [`${tb}TB NAS`, `/nas/${tb}tb`]]),
+    };
+  }
+
   for (const [path, copy] of Object.entries(KEYWORDS)) Object.assign(pages[path], copy);
   return pages;
 }
@@ -182,15 +196,15 @@ export function staticPages(siteUrl) {
  * One main search per page, so pages don't compete with each other.
  */
 const KEYWORDS = {
-  // "nas", "nas storage", "buy nas india"
+  // "nas", "nas storage", "nas server", "network attached storage", "nas system", "nas storage device", "nas storage india"
   '/': {
-    title: 'NAS Storage in India: Buy Synology & QNAP NAS | NASTOWN',
-    description: 'Buy the right NAS storage in India: Synology and QNAP NAS with drives, GST-inclusive prices, installation and support. Showroom in Nehru Place, Delhi.',
+    title: 'NAS Storage & NAS Servers in India | NASTOWN',
+    description: 'Buy network attached storage (NAS) in India: Synology and QNAP NAS systems with drives, GST-inclusive prices, installation and support in Delhi.',
   },
-  // "nas price in india", "nas price list"
+  // "nas price india", "nas server price india"
   '/products': {
-    title: 'NAS Price in India: Synology & QNAP NAS Price List | NASTOWN',
-    description: 'Compare NAS prices in India: 2-bay, 4-bay, 6-bay, 8-bay and rackmount Synology and QNAP NAS with specs and GST-inclusive prices. Configure yours with drives.',
+    title: 'NAS Price in India: NAS Server & Storage Price List | NASTOWN',
+    description: 'NAS and NAS server prices in India: 2-bay to 8-bay and rackmount Synology and QNAP NAS with specs and GST-inclusive prices. Configure yours with drives.',
   },
   // "nas solutions", "which nas for"
   '/solutions': {
@@ -212,14 +226,14 @@ const KEYWORDS = {
     title: 'NAS for Content Creators & YouTubers | NASTOWN',
     description: 'One NAS for your footage, design files, client assets and backups. Synced across devices, protected by RAID, reachable from anywhere. Built for creators.',
   },
-  // "nas for small business", "business nas storage"
+  // "best nas for business", "nas for small business"
   '/solutions/business': {
-    title: 'NAS for Small Business: Office File Server & Backup | NASTOWN',
+    title: 'Best NAS for Business in India: Office File Server | NASTOWN',
     description: 'A business NAS gives your office one secure file server with user permissions, automatic backups and remote access. Set up and supported by our team.',
   },
-  // "best home nas india", "personal cloud storage"
+  // "best nas for home", "best home nas india"
   '/solutions/home': {
-    title: 'Best Home NAS in India: Private Cloud & Backup | NASTOWN',
+    title: 'Best NAS for Home in India: Private Cloud & Backup | NASTOWN',
     description: 'Replace cloud subscriptions with your own home NAS: back up every phone and laptop, keep family photos safe and stream your media to any screen.',
   },
   // "nas for cctv", "surveillance nas"
@@ -252,9 +266,9 @@ const KEYWORDS = {
     title: 'NAS on Rent in Delhi: Short-Term Storage Rental | NASTOWN',
     description: 'Rent a NAS for a shoot, event, data migration or trial. Configured before delivery, full performance, support included and no big upfront cost.',
   },
-  // "nas installation service", "nas support delhi"
+  // "nas service", "nas installation", "nas support delhi"
   '/services': {
-    title: 'NAS Installation, Repair & Support in Delhi | NASTOWN',
+    title: 'NAS Service in Delhi: Installation, Repair & AMC | NASTOWN',
     description: 'NAS installation, data migration, RAID setup, upgrades, repair, data recovery and AMC for Synology and QNAP, remote or on-site, from our Delhi team.',
   },
   '/services/installation': {
@@ -298,20 +312,20 @@ const KEYWORDS = {
     title: 'NAS Storage Calculator & NAS vs Cloud Cost | NASTOWN',
     description: 'How much NAS storage do you need? Estimate it from your photos, video and backups, and see when a NAS pays for itself compared with cloud storage.',
   },
-  // "nas configurator", "nas price with hard drives"
+  // "nas configuration", "nas setup price"
   '/tools/configurator': {
-    title: 'NAS Configurator: Price a NAS with Hard Drives | NASTOWN',
-    description: 'Choose capacity, RAID, bays and brand, and get a complete NAS quote with hard drives, installation and AMC, priced instantly with GST.',
+    title: 'NAS Configuration & Setup Price, with Drives | NASTOWN',
+    description: 'Configure your NAS: choose capacity, RAID, bays and brand, and get the full setup price with hard drives, installation and AMC, instantly with GST.',
   },
-  // "which nas should i buy"
+  // "best nas", "which nas should i buy"
   '/finder': {
-    title: 'Which NAS Should I Buy? Free NAS Finder | NASTOWN',
+    title: 'Best NAS for You? Free NAS Finder: Which NAS to Buy | NASTOWN',
     description: 'Not sure which NAS to buy? Answer a few questions about what you store and how you work, and get a NAS recommendation that fits your needs and budget.',
   },
   // "nas dealer nehru place", "nastown contact"
   '/about': {
     title: 'NAS Dealer in Nehru Place, Delhi: About & Contact | NASTOWN',
-    description: 'NASTOWN by Digibuggy: NAS sales, setup and support from our showroom in Nehru Place, New Delhi. Call or WhatsApp +91 93114 47394.',
+    description: `NASTOWN by Digibuggy: NAS sales, setup and support from our showroom in Nehru Place, New Delhi. Call or WhatsApp ${digibuggy.whatsapp}.`,
   },
   // "what is nas", "nas faq"
   '/resources/faq': {

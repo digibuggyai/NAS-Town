@@ -191,6 +191,51 @@ export const faqs = [
   { q: 'How much does support cost?', a: 'Remote support starts from ₹2,000 + tax and on-site support starts from ₹5,000 + tax. AMC plans are quoted based on your setup.' },
 ];
 
+// "NAS for 50TB" landing pages (/nas/50tb). Builds and prices on each page come live from
+// the configurator engine; this is the copy that makes each size its own page.
+export const capacityPages = [
+  {
+    tb: 5,
+    who: 'Five terabytes suits a household or a solo freelancer: phone and laptop backups for the family, a lifetime of photos, and room for documents and a small media library.',
+    tip: 'At this size a 2-bay NAS with two mirrored drives (RAID 1) is usually the simplest, most affordable setup, and it keeps a full copy of everything if one drive fails.',
+  },
+  {
+    tb: 10,
+    who: 'Ten terabytes is the sweet spot for an enthusiast photographer, a home media library, or a small office that wants every PC backed up in one place.',
+    tip: 'Two large drives mirrored in RAID 1, or three smaller drives in RAID 5, both reach 10TB. A 4-bay unit leaves empty bays so you can grow later without starting over.',
+  },
+  {
+    tb: 20,
+    who: 'Twenty terabytes fits working photographers with years of RAW files, YouTubers and editors keeping recent projects online, and offices of 10 to 25 people sharing files.',
+    tip: 'A 4-bay NAS in RAID 5 is the usual choice here: good capacity per rupee, protection against one drive failure, and bays to spare on larger drives.',
+  },
+  {
+    tb: 30,
+    who: 'Thirty terabytes is where video starts to dominate: wedding and event studios, creators shooting 4K every week, and businesses keeping several years of records and backups.',
+    tip: 'Look at 4-bay and 5-bay units with large drives. If the data is irreplaceable, RAID 6 on a 5- or 6-bay NAS survives two drive failures at once.',
+  },
+  {
+    tb: 40,
+    who: 'Forty terabytes suits production houses with an active footage archive, multi-camera CCTV keeping weeks of recordings, and growing teams that centralise every department’s files.',
+    tip: 'Network speed matters at this size. A unit with 2.5GbE or 10GbE (or an upgrade slot) keeps large transfers and editing off the NAS smooth.',
+  },
+  {
+    tb: 50,
+    who: 'Fifty terabytes is a serious archive: a studio’s full client history, 4K and 8K post-production, or a company running file sharing, backups and surveillance on one system.',
+    tip: 'A 50TB build usually means four to eight large drives, 16TB to 24TB each. RAID 6 is worth considering, because rebuilding a large array takes long enough for a second drive to fail.',
+  },
+  {
+    tb: 60,
+    who: 'Sixty terabytes covers agencies and post houses with multiple editors, schools and offices consolidating years of data, and long-retention surveillance recording.',
+    tip: 'Plan for growth: choose a unit that takes an expansion enclosure, and add NVMe cache if several people work off the NAS at once.',
+  },
+  {
+    tb: 100,
+    who: 'A hundred terabytes is enterprise territory: media archives, research data, virtualisation storage and backups for an entire organisation.',
+    tip: 'At this scale an 8-bay NAS with the largest drives, or more than one unit, is typical. RAID 6, a 10GbE network and an AMC plan protect both the data and the uptime.',
+  },
+];
+
 // Product shortcuts by size, used by the navbar and footer.
 export const productLinks = [
   { label: 'All NAS Products', to: '/products' },
@@ -198,6 +243,7 @@ export const productLinks = [
   { label: '4-Bay NAS', to: '/products?bays=4' },
   { label: '6/8-Bay NAS', to: '/products?bays=6-8' },
   { label: 'Rackmount NAS', to: '/products?type=rackmount' },
+  { label: 'NAS by Capacity', to: '/nas' },
 ];
 
 export const nav = [
@@ -233,8 +279,8 @@ export const trackRecord = [
 export const digibuggy = {
   site: 'https://digibuggy.com/',
   email: 'sales@digibuggy.com',
-  whatsapp: '+91 93114 47394',
-  whatsappHref: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.',
+  whatsapp: '+91 95601 11954',
+  whatsappHref: 'https://wa.me/919560111954?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.',
   // From digibuggy.com/contact-us (checked 26 Sep 2026).
   address: '207, Second Floor, Mansarovar Building, 90 Nehru Place, New Delhi 110019',
   addressShort: 'Nehru Place, New Delhi',
@@ -249,7 +295,7 @@ export const digibuggy = {
     reviews: [],
   },
   socials: [
-    { label: 'WhatsApp', href: 'https://wa.me/919311447394?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
+    { label: 'WhatsApp', href: 'https://wa.me/919560111954?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
     { label: 'Instagram', href: 'https://www.instagram.com/digibuggy/' },
     { label: 'YouTube', href: 'https://www.youtube.com/@digibuggy' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/company/digibuggy' },
