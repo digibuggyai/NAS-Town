@@ -4,11 +4,12 @@ import { ChevronDown, Menu, MessageCircle, X } from 'lucide-react';
 import { digibuggy, nav } from '../data/site.js';
 import { gsap, lockScroll, reducedMotion, useGSAP } from '../lib/motion.js';
 
-/** Bee mark + wordmark. The bee image is white, so it's inverted on light backgrounds. */
+/** NASTOWN mark (house of drives with bees) + wordmark. The mark is a transparent PNG,
+ * so it works on the white navbar and the black footer alike. */
 export function Logo({ onDark = false }) {
   return (
-    <Link to="/" className="flex items-center gap-2 text-[0.95rem] font-semibold tracking-[0.14em]" aria-label="NASTOWN home">
-      <img src="/digibuggy-bee.png" alt="" width="128" height="128" className={`size-6 ${onDark ? '' : 'invert'}`} />
+    <Link to="/" className={`flex items-center gap-2 text-[0.95rem] font-semibold tracking-[0.14em] ${onDark ? 'text-white' : ''}`} aria-label="NASTOWN home">
+      <img src="/nastown-logo-sm.png" alt="" width="169" height="128" className="h-10 w-auto" />
       NASTOWN
     </Link>
   );
