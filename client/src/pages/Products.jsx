@@ -3,7 +3,7 @@ import PageHero from '../components/PageHero.jsx';
 import ProductCard, { ProductGridSkeleton } from '../components/ProductCard.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
 import { useProducts } from '../lib/hooks.js';
-import { brandName } from '../data/site.js';
+import { brandName, capacityPages } from '../data/site.js';
 import Seo from '../components/Seo.jsx';
 
 // Size filters, in the URL so the navbar and footer can link straight to them.
@@ -74,6 +74,13 @@ export default function Products() {
           </div>
         )}
         <p className="mt-6 text-xs text-subtle">Diskless unit prices, GST inclusive. Add drives, installation and AMC in the configurator for a complete quote.</p>
+        {/* Shop by how much storage you need: links to the capacity pages. */}
+        <div className="mt-10">
+          <h2 className="eyebrow mb-4">Shop by capacity</h2>
+          <div className="flex flex-wrap gap-2">
+            {capacityPages.map((c) => <Link key={c.tb} to={`/nas/${c.tb}tb`} className="chip">{c.tb}TB NAS</Link>)}
+          </div>
+        </div>
       </section>
       <FinalCta />
     </>

@@ -19,6 +19,8 @@ const BlogPost = lazy(() => import('./pages/BlogPost.jsx'));
 const About = lazy(() => import('./pages/About.jsx'));
 const SitemapPage = lazy(() => import('./pages/SitemapPage.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
+const CapacityIndex = lazy(() => import('./pages/CapacityIndex.jsx'));
+const CapacityPage = lazy(() => import('./pages/CapacityPage.jsx'));
 
 // Staff area: loaded only when visited (linked quietly from the footer).
 const AdminApp = lazy(() => import('./pages/admin/AdminApp.jsx'));
@@ -31,6 +33,8 @@ export default function App() {
         <Route index element={<Home />} />    
         <Route path="products" element={<Products />} />
         <Route path="products/:slug" element={<ProductDetail />} />
+        <Route path="nas" element={<CapacityIndex />} />
+        <Route path="nas/:size" element={<CapacityPage />} />
         <Route path="solutions" element={<SolutionsIndex />} />
         <Route path="solutions/:slug" element={<Solution />} />
         <Route path="brands/:slug" element={<Brand />} />
