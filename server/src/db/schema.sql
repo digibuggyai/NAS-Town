@@ -194,3 +194,20 @@ ALTER TABLE coupons ADD COLUMN IF NOT EXISTS quote_summary TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS source TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+-- Customer reviews: written on the site (start as 'pending') or added by staff from
+-- Google / WhatsApp / in person. Only 'published' ones are shown publicly.
+CREATE TABLE IF NOT EXISTS reviews (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL,
+  email       TEXT,                 -- never shown publicly
+  city        TEXT,
+  product     TEXT,
+  rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  body        TEXT NOT NULL,
+  source      TEXT NOT NULL DEFAULT 'website',
+  status      TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'published', 'hidden')),
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status, created_at DESC);

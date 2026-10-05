@@ -5,6 +5,7 @@ import { Logo } from '../../components/Navbar.jsx';
 import CatalogueTable, { SettingsForm } from '../../components/admin/CatalogueTable.jsx';
 import Configurator from '../../components/configurator/Configurator.jsx';
 import BlogManager from '../../components/admin/BlogManager.jsx';
+import ReviewsManager from '../../components/admin/ReviewsManager.jsx';
 import ProductPages from '../../components/admin/ProductPages.jsx';
 import CouponsPanel from '../../components/admin/CouponsPanel.jsx';
 import { api } from '../../lib/api.js';
@@ -96,6 +97,7 @@ function Shell({ user, onLogout }) {
     sales && ['Coupons', '/admin/coupons'],
     admin && ['Change log', '/admin/log'],
     blog && ['Blog', '/admin/blog'],
+    admin && ['Reviews', '/admin/reviews'],
     admin && ['Users', '/admin/users'],
   ].filter(Boolean);
 
@@ -127,6 +129,7 @@ function Shell({ user, onLogout }) {
           {admin && <Route path="pages" element={<ProductPages />} />}
           {admin && <Route path="log" element={<ChangeLog />} />}
           {blog && <Route path="blog" element={<BlogManager />} />}
+          {admin && <Route path="reviews" element={<ReviewsManager />} />}
           {admin && <Route path="users" element={<Users me={user} />} />}
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
@@ -250,7 +253,7 @@ function Leads({ canDelete }) {
   );
 }
 
-const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads'], ['coupons', 'Coupons']];
+const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads'], ['coupons', 'Coupons'], ['reviews', 'Reviews']];
 
 function ChangeLog() {
   const { data, error } = useLoad(api.changeLog);

@@ -378,6 +378,70 @@ export async function listCoupons(limit = 500) {
   return rows.map(couponFromRow);
 }
 
+/* ---------------- customer reviews ---------------- */
+
+const REVIEW_FIELDS = ['name', 'email', 'city', 'product', 'rating', 'body', 'source', 'status'];
+const rowObj = (r) => r && Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v]));
+
+/** Reviews newest first. `publishedOnly` for the public site. */
+export async function listReviews({ publishedOnly = false, limit = 500 } = {}) {
+  if (!pool) {
+    return [...(mem.reviews ?? [])].filter((r) => !publishedOnly || r.status === 'published')
+      .sort((a, b) => b.createdAt - a.createdAt).slice(0, limit).map((r) => structuredClone(r));
+  }
+  const { rows } = await pool.query(
+    `SELECT * FROM reviews ${publishedOnly ? "WHERE status = 'published'" : ''} ORDER BY created_at DESC LIMIT $1`, [limit],
+  );
+  return rows.map(rowObj);
+}
+
+export async function createReview(data) {
+  const row = Object.fromEntries(REVIEW_FIELDS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]]));
+  if (!pool) {
+    mem.reviews ??= [];
+    const r = { id: nextId('reviews'), email: null, city: null, product: null, source: 'website', status: 'pending', ...row, createdAt: new Date(), updatedAt: new Date() };
+    mem.reviews.push(r);
+    return structuredClone(r);
+  }
+  const keys = Object.keys(row);
+  const { rows } = await pool.query(
+    `INSERT INTO reviews (${keys.map(snake).join(', ')}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(', ')}) RETURNING *`,
+    keys.map((k) => row[k]),
+  );
+  return rowObj(rows[0]);
+}
+
+/** Update some fields. Returns { before, after } or null. */
+export async function updateReview(id, data) {
+  const patch = Object.fromEntries(REVIEW_FIELDS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]]));
+  if (!pool) {
+    const r = (mem.reviews ?? []).find((x) => x.id === id);
+    if (!r) return null;
+    const before = structuredClone(r);
+    Object.assign(r, patch, { updatedAt: new Date() });
+    return { before, after: structuredClone(r) };
+  }
+  const before = (await pool.query('SELECT * FROM reviews WHERE id = $1', [id])).rows[0];
+  if (!before) return null;
+  const keys = Object.keys(patch);
+  if (!keys.length) return { before: rowObj(before), after: rowObj(before) };
+  const { rows } = await pool.query(
+    `UPDATE reviews SET ${keys.map((k, i) => `${snake(k)} = $${i + 2}`).join(', ')}, updated_at = now() WHERE id = $1 RETURNING *`,
+    [id, ...keys.map((k) => patch[k])],
+  );
+  return { before: rowObj(before), after: rowObj(rows[0]) };
+}
+
+/** Remove a review and return it (for the change log), or null. */
+export async function deleteReview(id) {
+  if (!pool) {
+    const i = (mem.reviews ?? []).findIndex((x) => x.id === id);
+    return i === -1 ? null : mem.reviews.splice(i, 1)[0];
+  }
+  const { rows } = await pool.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [id]);
+  return rowObj(rows[0]) ?? null;
+}
+
 /* ---------------- leads ---------------- */
 
 export async function createEnquiry({ type, name, email, phone, message, payload }) {
