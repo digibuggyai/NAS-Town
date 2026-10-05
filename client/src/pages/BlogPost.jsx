@@ -6,6 +6,8 @@ import PostCard from '../components/PostCard.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
 import { api, formatPostDate, mediaUrl } from '../lib/api.js';
 import NotFound from './NotFound.jsx';
+import Seo, { SITE_URL } from '../components/Seo.jsx';
+import { abs, postMeta } from '../lib/seo.js';
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -26,8 +28,7 @@ export default function BlogPost() {
 
   return (
     <>
-      <title>{`${post.title} | NASTOWN Blog`}</title>
-      {post.excerpt && <meta name="description" content={post.excerpt} />}
+      <Seo {...postMeta(post, SITE_URL, post.coverImage ? abs(mediaUrl(post.coverImage), SITE_URL) : '')} />
       <article className="mx-auto max-w-3xl px-4 pt-28 pb-12 sm:px-6 md:pt-32">
         <Link to="/resources/blog" className="link -my-2 inline-flex items-center gap-1.5 py-2.5 text-sm"><ArrowLeft className="size-4" /> All posts</Link>
         <Reveal>

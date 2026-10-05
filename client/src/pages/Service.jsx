@@ -5,6 +5,7 @@ import EnquiryForm from '../components/EnquiryForm.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { services } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function Service() {
   const { slug } = useParams();
@@ -14,7 +15,7 @@ export default function Service() {
 
   return (
     <>
-      <title>{`${s.name} | NASTOWN Services`}</title>
+      <Seo />
       <PageHero
         eyebrow={`Services · ${s.name}`}
         title={s.h1}

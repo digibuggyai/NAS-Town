@@ -29,7 +29,13 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 // In production the built React app is served from the same Railway service.
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist, { maxAge: '1h', index: false }));
-  app.get(/^\/(?!api\/).*/, (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  // Each page has its own pre-rendered HTML (title, description, social card) from the build;
+  // anything else falls back to the app shell.
+  app.get(/^\/(?!api\/).*/, (req, res) => {
+    const page = path.join(clientDist, req.path, 'index.html');
+    const own = page.startsWith(clientDist + path.sep) && fs.existsSync(page);
+    res.sendFile(own ? page : path.join(clientDist, 'index.html'));
+  });
 }
 
 app.use((err, _req, res, _next) => {

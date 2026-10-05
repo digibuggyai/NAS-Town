@@ -1,10 +1,11 @@
 import Finder from '../components/Finder.jsx';
 import PageHero from '../components/PageHero.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function FinderPage() {
   return (
     <>
-      <title>NAS Finder | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="Find your perfect NAS"
         title="Not Sure Which NAS You Need?"

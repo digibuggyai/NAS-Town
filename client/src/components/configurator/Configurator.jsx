@@ -112,9 +112,9 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           title="How much storage?"
           hint={a.storageMode === 'capacity' ? 'Usable space after RAID protection.' : 'The budget covers the whole quote, including installation and AMC if ticked.'}
           aside={
-            <div className="flex rounded-full bg-surface p-1 text-xs ring-1 ring-line">
+            <div className="flex shrink-0 self-start rounded-full bg-surface p-1 text-xs ring-1 ring-line">
               {[['capacity', 'By capacity'], ['budget', 'By budget']].map(([mode, label]) => (
-                <button key={mode} onClick={() => set({ storageMode: mode })} className={`rounded-full px-3 py-1.5 transition-colors ${a.storageMode === mode ? 'bg-fg text-bg' : 'text-muted hover:text-fg'}`}>
+                <button key={mode} onClick={() => set({ storageMode: mode })} className={`min-h-9 whitespace-nowrap rounded-full px-3.5 py-1.5 transition-colors ${a.storageMode === mode ? 'bg-fg text-bg' : 'text-muted hover:text-fg'}`}>
                   {label}
                 </button>
               ))}

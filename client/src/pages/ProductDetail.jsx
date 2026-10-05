@@ -7,6 +7,8 @@ import Reveal from '../components/Reveal.jsx';
 import { api, formatInr } from '../lib/api.js';
 import { brandName } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import Seo, { SITE_URL } from '../components/Seo.jsx';
+import { productMeta } from '../lib/seo.js';
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -37,7 +39,7 @@ export default function ProductDetail() {
 
   return (
     <>
-      <title>{`${p.model} | NASTOWN`}</title>
+      <Seo {...productMeta(p, SITE_URL)} />
       <section className="mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 md:pt-40">
         <Link to="/products" className="-my-2 inline-flex items-center gap-2 py-2.5 text-sm text-muted hover:text-fg"><ArrowLeft className="size-4" /> All products</Link>
         <div className="mt-8 grid gap-10 lg:grid-cols-2">

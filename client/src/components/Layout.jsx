@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { Suspense, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
@@ -12,17 +12,22 @@ export default function Layout() {
 
   // On route change: go to the top (or the #hash), fade the new page in, re-measure scroll triggers.
   useGSAP(() => {
+    let frame;
     if (hash) {
-      requestAnimationFrame(() => {
+      // The page may still be loading its code, so look for the target for up to ~2s.
+      let tries = 120;
+      const find = () => {
         const el = document.getElementById(hash.slice(1));
         if (el) scrollToEl(el);
-      });
+        else if (--tries > 0) frame = requestAnimationFrame(find);
+      };
+      frame = requestAnimationFrame(find);
     } else {
       scrollToTop();
     }
     if (!reducedMotion()) gsap.fromTo(main.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: 'power1.out' });
     const id = setTimeout(() => ScrollTrigger.refresh(), 300);
-    return () => clearTimeout(id);
+    return () => { clearTimeout(id); cancelAnimationFrame(frame); };
   }, { dependencies: [pathname, hash] });
 
   return (
@@ -32,7 +37,10 @@ export default function Layout() {
       </a>
       <Navbar />
       <main id="main" ref={main} className="overflow-x-clip">
-        <Outlet />
+        {/* Pages load on first visit; hold their space meanwhile so the footer doesn't jump up. */}
+        <Suspense fallback={<div className="min-h-svh" />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
       {/* Floating WhatsApp, always one tap from a person. */}
@@ -41,9 +49,9 @@ export default function Layout() {
         target="_blank"
         rel="noopener"
         aria-label={`Chat on WhatsApp: ${digibuggy.whatsapp}`}
-        className="fixed right-5 bottom-5 z-40 grid size-14 place-items-center rounded-full bg-[#25d366] text-white shadow-[0_10px_24px_-8px_rgb(37_211_102/0.6)] transition-transform hover:scale-105"
+        className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 grid size-12 place-items-center rounded-full bg-[#25d366] text-white shadow-[0_10px_24px_-8px_rgb(37_211_102/0.6)] transition-transform hover:scale-105 sm:right-5 sm:bottom-5 sm:size-14"
       >
-        <MessageCircle className="size-7" strokeWidth={2} />
+        <MessageCircle className="size-6 sm:size-7" strokeWidth={2} />
       </a>
     </>
   );

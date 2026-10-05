@@ -1,11 +1,12 @@
 import { Link } from 'react-router';
 import PageHero from '../components/PageHero.jsx';
 import { nav } from '../data/site.js';
+import Seo from '../components/Seo.jsx';
 
 export default function SitemapPage() {
   return (
     <>
-      <title>Sitemap | NASTOWN</title>
+      <Seo />
       <PageHero eyebrow="Sitemap" title="Everything on NASTOWN" />
       <section className="mx-auto grid max-w-7xl gap-5 px-4 pb-28 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div className="glass rounded-xl p-6">

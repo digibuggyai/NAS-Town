@@ -5,11 +5,12 @@ import Reveal from '../components/Reveal.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
 import { services } from '../data/site.js';
 import { why } from '../data/home.js';
+import Seo from '../components/Seo.jsx';
 
 export default function ServicesIndex() {
   return (
     <>
-      <title>NAS Services | NASTOWN</title>
+      <Seo />
       <PageHero eyebrow="NAS Services" title="NAS Installation, Migration & Support" intro={why.body.join(' ')} />
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 md:pb-28">
         <Reveal as="ul" className="rule-list border-y border-line">

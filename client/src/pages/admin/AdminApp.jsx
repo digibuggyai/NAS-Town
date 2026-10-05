@@ -9,6 +9,7 @@ import ProductPages from '../../components/admin/ProductPages.jsx';
 import CouponsPanel from '../../components/admin/CouponsPanel.jsx';
 import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/useAuth.js';
+import Seo from '../../components/Seo.jsx';
 
 /* Staff area. Nothing here is linked from the public site, and every API call it
  * makes is role-checked on the server; the UI only decides what to draw. */
@@ -19,7 +20,7 @@ export default function AdminApp() {
   return (
     <>
       <meta name="robots" content="noindex, nofollow" />
-      <title>Staff | NASTOWN</title>
+      <Seo title="Staff | NASTOWN" description="NASTOWN staff area." noindex />
       {auth.loading ? (
         <div className="grid min-h-screen place-items-center"><Loader2 className="size-6 animate-spin text-muted" /></div>
       ) : !auth.user ? (
@@ -122,7 +123,7 @@ function Shell({ user, onLogout }) {
           <Route index element={admin ? <Pricing /> : <Navigate to={home} replace />} />
           {sales && <Route path="configurator" element={<SalesConfigurator />} />}
           {sales && <Route path="leads" element={<Leads canDelete={admin} />} />}
-          {sales && <Route path="coupons" element={<CouponsPanel />} />}
+          {sales && <Route path="coupons" element={<CouponsPanel canDelete={admin} />} />}
           {admin && <Route path="pages" element={<ProductPages />} />}
           {admin && <Route path="log" element={<ChangeLog />} />}
           {blog && <Route path="blog" element={<BlogManager />} />}
@@ -249,15 +250,15 @@ function Leads({ canDelete }) {
   );
 }
 
-const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads']];
+const LOG_VIEWS = [['all', 'All changes'], ['leads', 'Deleted leads'], ['coupons', 'Coupons']];
 
 function ChangeLog() {
   const { data, error } = useLoad(api.changeLog);
   const [params, setParams] = useSearchParams();
-  const view = params.get('view') === 'leads' ? 'leads' : 'all';
+  const view = LOG_VIEWS.some(([k]) => k === params.get('view')) ? params.get('view') : 'all';
   if (error) return <p className="text-error">{error.message}</p>;
   if (!data) return <Loader2 className="size-5 animate-spin text-muted" />;
-  const rows = view === 'leads' ? data.filter((c) => c.collection === 'leads') : data;
+  const rows = view === 'all' ? data : data.filter((c) => c.collection === view);
   return (
     <section>
       <h1 className="text-2xl font-medium tracking-tight">Change log</h1>
@@ -285,7 +286,7 @@ function ChangeLog() {
             ))}
           </tbody>
         </table>
-        {rows.length === 0 && <p className="p-4 text-muted">{view === 'leads' ? 'No leads have been deleted.' : 'No changes yet.'}</p>}
+        {rows.length === 0 && <p className="p-4 text-muted">{view === 'leads' ? 'No leads have been deleted.' : view === 'coupons' ? 'No coupon changes yet.' : 'No changes yet.'}</p>}
       </div>
     </section>
   );

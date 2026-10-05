@@ -4,6 +4,7 @@ import ProductCard, { ProductGridSkeleton } from '../components/ProductCard.jsx'
 import FinalCta from '../sections/FinalCta.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { brandName } from '../data/site.js';
+import Seo from '../components/Seo.jsx';
 
 // Size filters, in the URL so the navbar and footer can link straight to them.
 const SIZES = [
@@ -34,7 +35,7 @@ export default function Products() {
 
   return (
     <>
-      <title>NAS Products | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="NAS Products"
         title="NAS Products for Every Scale of Storage"

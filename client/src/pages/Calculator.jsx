@@ -5,6 +5,7 @@ import Reveal from '../components/Reveal.jsx';
 import { formatInr } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { RAID_INFO, buildableSizes, suggestBuilds } from '../lib/nas/logic.js';
+import Seo from '../components/Seo.jsx';
 
 const videoPresets = [
   ['1080p H.264', 15],
@@ -74,7 +75,7 @@ export default function Calculator() {
 
   return (
     <>
-      <title>NAS ROI Calculator | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="NAS Tools · ROI Calculator"
         title="How Much Storage Do You Actually Need?"

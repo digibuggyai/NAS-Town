@@ -3,6 +3,7 @@ import { Headset, ShieldCheck, Wrench } from 'lucide-react';
 import PageHero from '../components/PageHero.jsx';
 import EnquiryForm from '../components/EnquiryForm.jsx';
 import Reveal from '../components/Reveal.jsx';
+import Seo from '../components/Seo.jsx';
 
 const values = [
   { icon: ShieldCheck, title: 'Choose right', body: 'Honest recommendations across brands, matched to how you actually work.' },
@@ -13,7 +14,7 @@ const values = [
 export default function About() {
   return (
     <>
-      <title>About & Contact | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="About NASTOWN"
         title="About NASTOWN"
@@ -38,7 +39,7 @@ export default function About() {
           <p className="mt-5 text-base text-muted">Have a question or need a custom recommendation? Get in touch with our team.</p>
           <div className="glass mt-8 rounded-xl p-6">
             <a href={digibuggy.site} target="_blank" rel="noopener" className="inline-block">
-              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-5 w-auto" />
+              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-5 w-auto invert" />
             </a>
             <p className="mt-3 text-sm text-muted">NASTOWN is backed by Digibuggy, custom PC and storage builders in Nehru Place, New Delhi.</p>
             <dl className="mt-5 grid gap-2 text-sm">

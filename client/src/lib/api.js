@@ -55,6 +55,8 @@ export const api = {
   deleteUser: (id) => request(`/admin/users/${id}`, { auth: true, method: 'DELETE' }),
   enquiries: () => request('/admin/enquiries', { auth: true }),
   coupons: () => request('/admin/coupons', { auth: true }),
+  setCouponStatus: (id, status) => request(`/admin/coupons/${id}`, { auth: true, ...body('PATCH', { status }) }),
+  deleteCoupon: (id) => request(`/admin/coupons/${id}`, { auth: true, method: 'DELETE' }),
   deleteEnquiry: (id) => request(`/admin/enquiries/${id}`, { auth: true, method: 'DELETE' }),
 
   blog: (params = {}) => request(`/blog?${new URLSearchParams(params)}`),

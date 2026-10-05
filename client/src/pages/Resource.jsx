@@ -5,6 +5,7 @@ import { faqs, resources } from '../data/site.js';
 import NotFound from './NotFound.jsx';
 import BlogList from '../components/BlogList.jsx';
 import Accordion from '../components/Accordion.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function Resource() {
   const { slug } = useParams();
@@ -13,7 +14,7 @@ export default function Resource() {
 
   return (
     <>
-      <title>{`${r.name} | NASTOWN`}</title>
+      <Seo />
       <PageHero eyebrow={`Resources · ${r.name}`} title={r.h1} intro={r.intro} />
 
       <section className="mx-auto max-w-7xl px-4 sm:px-6">

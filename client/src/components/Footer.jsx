@@ -54,7 +54,8 @@ export default function Footer() {
             ))}
           </dl>
         )}
-        <div className="grid gap-10 border-b border-line pb-10 lg:grid-cols-[minmax(0,15rem)_1fr] lg:gap-12">
+        {/* Contact block sits beside the link columns only on wide screens; at laptop/tablet width it stacks above. */}
+        <div className="grid gap-10 border-b border-line pb-10 xl:grid-cols-[minmax(0,15rem)_1fr] xl:gap-12">
           {/* Who we are and how to reach a person */}
           <div>
             <Logo onDark />

@@ -171,6 +171,42 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
 // Which customer has which code, with their quote and message. Admin and sales.
 router.get('/coupons', requireStaff, async (_req, res) => res.json(await store.listCoupons()));
 
+export const COUPON_STATUS = { issued: 'Open', deal_done: 'Deal done', not_interested: 'Not interested' };
+const couponLabel = (c) => `${c.code} · ${c.name ?? c.email}`;
+
+// Mark the outcome (admin and sales). Every change is recorded in the change log.
+router.patch('/coupons/:id', requireStaff, async (req, res) => {
+  const status = req.body?.status;
+  if (!Object.hasOwn(COUPON_STATUS, status)) return res.status(400).json({ error: 'Status must be issued, deal_done or not_interested.' });
+  const result = await store.setCouponStatus(Number(req.params.id), status);
+  if (!result) return res.status(404).json({ error: 'Coupon not found.' });
+  const { before, after } = result;
+  if (before.status !== after.status) {
+    await store.logChanges([{
+      editor: req.user.email, collection: 'coupons', itemId: after.id, itemLabel: couponLabel(after),
+      field: 'status', before: COUPON_STATUS[before.status] ?? before.status, after: COUPON_STATUS[after.status],
+    }]);
+  }
+  res.json(after);
+});
+
+// Admins only. A copy of the coupon goes into the change log, so it can be recovered.
+router.delete('/coupons/:id', requireAdmin, async (req, res) => {
+  const c = await store.deleteCoupon(Number(req.params.id));
+  if (!c) return res.status(404).json({ error: 'Coupon not found.' });
+  const snapshot = [
+    `${c.code} (₹${Number(c.valueInr).toLocaleString('en-IN')} off), status: ${COUPON_STATUS[c.status] ?? c.status}`,
+    [c.name, c.company].filter(Boolean).join(', '),
+    [c.email, c.phone].filter(Boolean).join(' · '),
+    c.quoteTotal ? `Quote ₹${Number(c.quoteTotal).toLocaleString('en-IN')}` : null,
+    c.message ? `Message: ${c.message}` : null,
+  ].filter(Boolean).join('\n');
+  await store.logChanges([{
+    editor: req.user.email, collection: 'coupons', itemId: c.id, itemLabel: couponLabel(c), field: '(deleted)', before: snapshot, after: 'deleted',
+  }]);
+  res.json({ ok: true });
+});
+
 /* ---------------- leads ---------------- */
 
 router.get('/enquiries', requireStaff, async (_req, res) => res.json(await store.listEnquiries(200)));

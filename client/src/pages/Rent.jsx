@@ -3,6 +3,7 @@ import EnquiryForm from '../components/EnquiryForm.jsx';
 import NasVisual from '../components/NasVisual.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { useProducts } from '../lib/hooks.js';
+import Seo from '../components/Seo.jsx';
 
 const steps = [
   ['Tell us the job', 'Project, capacity and how long you need it.'],
@@ -15,7 +16,7 @@ export default function Rent() {
   const { data } = useProducts({ rentable: true });
   return (
     <>
-      <title>Rent a NAS | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="Rent a NAS"
         title="Not Ready to Buy? Rent a NAS Instead"

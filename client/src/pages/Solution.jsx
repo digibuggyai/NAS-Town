@@ -7,6 +7,7 @@ import FinalCta from '../sections/FinalCta.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { solutions } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function Solution() {
   const { slug } = useParams();
@@ -18,7 +19,7 @@ export default function Solution() {
 
   return (
     <>
-      <title>{`NAS for ${s.name} | NASTOWN`}</title>
+      <Seo />
       <PageHero
         eyebrow={`Solutions · NAS for ${s.name}`}
         title={s.h1}

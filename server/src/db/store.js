@@ -344,11 +344,38 @@ export async function issueCoupon({ email, name, company, phone, valueInr, quote
   throw new Error('Could not issue a coupon code.');
 }
 
+const couponFromRow = (r) => r && Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v]));
+
+/** Set a coupon's status. Returns { before, after } or null if it doesn't exist. */
+export async function setCouponStatus(id, status) {
+  if (!pool) {
+    const c = (mem.coupons ?? []).find((x) => x.id === id);
+    if (!c) return null;
+    const before = structuredClone(c);
+    Object.assign(c, { status, updatedAt: new Date() });
+    return { before, after: structuredClone(c) };
+  }
+  const before = (await pool.query('SELECT * FROM coupons WHERE id = $1', [id])).rows[0];
+  if (!before) return null;
+  const { rows } = await pool.query('UPDATE coupons SET status = $2, updated_at = now() WHERE id = $1 RETURNING *', [id, status]);
+  return { before: couponFromRow(before), after: couponFromRow(rows[0]) };
+}
+
+/** Remove a coupon and return what was removed (for the change log), or null. */
+export async function deleteCoupon(id) {
+  if (!pool) {
+    const i = (mem.coupons ?? []).findIndex((x) => x.id === id);
+    return i === -1 ? null : mem.coupons.splice(i, 1)[0];
+  }
+  const { rows } = await pool.query('DELETE FROM coupons WHERE id = $1 RETURNING *', [id]);
+  return couponFromRow(rows[0]) ?? null;
+}
+
 /** Every issued coupon with its customer details, newest first (Admin → Coupons). */
 export async function listCoupons(limit = 500) {
   if (!pool) return [...(mem.coupons ?? [])].reverse().slice(0, limit).map((c) => structuredClone(c));
   const { rows } = await pool.query('SELECT * FROM coupons ORDER BY created_at DESC LIMIT $1', [limit]);
-  return rows.map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v])));
+  return rows.map(couponFromRow);
 }
 
 /* ---------------- leads ---------------- */

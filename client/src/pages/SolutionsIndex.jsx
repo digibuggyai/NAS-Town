@@ -5,11 +5,12 @@ import Reveal from '../components/Reveal.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
 import { solutions } from '../data/site.js';
 import { solutions as home } from '../data/home.js';
+import Seo from '../components/Seo.jsx';
 
 export default function SolutionsIndex() {
   return (
     <>
-      <title>NAS Solutions | NASTOWN</title>
+      <Seo />
       <PageHero eyebrow={home.eyebrow} title="NAS for the Way You Work" intro={home.body.join(' ')} />
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 md:pb-28">
         <Reveal as="ul" className="rule-list border-y border-line">

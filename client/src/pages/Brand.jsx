@@ -5,6 +5,7 @@ import FinalCta from '../sections/FinalCta.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { brands } from '../data/site.js';
 import NotFound from './NotFound.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function Brand() {
   const { slug } = useParams();
@@ -14,7 +15,7 @@ export default function Brand() {
 
   return (
     <>
-      <title>{`${b.name} NAS | NASTOWN`}</title>
+      <Seo />
       <PageHero eyebrow={`Brands · ${b.name}`} title={b.h1} intro={b.intro}>
         <Link to="/services/installation" className="btn btn-primary">Get It Installed</Link>
         <Link to="/finder" className="btn btn-secondary">Find My NAS</Link>

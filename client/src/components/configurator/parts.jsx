@@ -5,8 +5,9 @@ import { lockScroll } from '../../lib/motion.js';
 export function Step({ n, title, hint, children, aside }) {
   return (
     <section className="glass rounded-xl p-5 sm:p-7">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-baseline gap-3">
+      {/* Phones: the step's toggle (if any) drops under the title instead of squeezing it. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 items-baseline gap-3">
           <span className="font-mono text-xs text-accent">{String(n).padStart(2, '0')}</span>
           <div>
             <h2 className="text-[1.05rem] font-medium tracking-tight">{title}</h2>

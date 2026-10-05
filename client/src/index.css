@@ -28,6 +28,7 @@
   --color-led: #22c55e;         /* status LEDs only */
   --color-warning: #b45309;
   --color-error: #dc2626;
+  --color-success: #15803d;     /* confirmations, e.g. "Deal done" in admin */
   --color-star: #f5b400;
 
   --animate-blink: blink 2.8s ease-in-out infinite;
@@ -39,6 +40,14 @@
 
 @layer base {
   html { background: var(--color-bg); color-scheme: light; -webkit-text-size-adjust: 100%; }
+  /* Nothing may widen the page sideways: on phones one wide element makes the browser
+     zoom the whole layout out, cutting text and the floating buttons off at the right. */
+  html, body { overflow-x: clip; max-width: 100%; }
+  img, svg, video, canvas, iframe { max-width: 100%; }
+  /* Long words, emails and URLs break instead of pushing the layout wider. */
+  h1, h2, h3, h4, p, li, dd, dt, a, span, label, td, th, figcaption, blockquote { overflow-wrap: break-word; }
+  h1, h2, h3 { hyphens: manual; }
+  input, select, textarea { min-width: 0; }
   /* Lenis smooth scroll */
   html.lenis, html.lenis body { height: auto; }
   .lenis.lenis-stopped { overflow: clip; }

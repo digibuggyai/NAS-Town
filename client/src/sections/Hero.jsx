@@ -46,7 +46,7 @@ export default function Hero() {
           <div className="overflow-hidden rounded-[24px] bg-[radial-gradient(120%_90%_at_60%_35%,#1e293b_0%,#0f172a_55%,#070b14_100%)] px-2 py-4 shadow-[0_24px_60px_-30px_rgb(15_23_42/0.6)] sm:px-6 sm:py-8">
             <NasHddAnimation />
           </div>
-          <figcaption className="mt-3 text-right text-xs text-subtle">
+          <figcaption className="mt-3 text-xs text-subtle sm:text-right">
             A 4-bay NAS: four drives, one box, every device connected.
           </figcaption>
         </figure>

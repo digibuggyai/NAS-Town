@@ -1,12 +1,13 @@
 import { useSearchParams } from 'react-router';
 import PageHero from '../components/PageHero.jsx';
 import Configurator from '../components/configurator/Configurator.jsx';
+import Seo from '../components/Seo.jsx';
 
 export default function ConfiguratorPage() {
   const [params] = useSearchParams();
   return (
     <>
-      <title>NAS Configurator | NASTOWN</title>
+      <Seo />
       <PageHero
         eyebrow="NAS Tools · Configurator"
         title="Build Your Perfect NAS Setup"
