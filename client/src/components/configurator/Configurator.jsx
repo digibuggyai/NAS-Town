@@ -194,7 +194,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </Step>
 
         {/* 03 Bays · 04 Brand · 05 Expand */}
-        <Step n={3} title="Drive bays, brand and room to grow">
+        <Step n={3} title="Drive bays, Brand and room to grow">
           <p className="mb-2 text-xs tracking-wide text-muted uppercase">Bays</p>
           <div className="flex flex-wrap gap-2">
             <Choice active={picked('bays') && a.bays == null} onClick={() => choose('bays', { bays: null })} sub="best value">Auto</Choice>

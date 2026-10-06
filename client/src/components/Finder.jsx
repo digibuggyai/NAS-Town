@@ -27,7 +27,7 @@ const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '50plus': 60 };
 /** Answers → the three best-value complete builds from the live price list. */
 function recommend(P, { storing, capacity, work_style }) {
   const targetTB = TARGET[capacity] ?? 10;
-  // Enterprise gets two-drive protection; small home setups may use a simple mirror.
+  // Enterprise gets two-drive protectionsg; small home setups may use a simple mirror.
   const raids = work_style === 'enterprise' ? ['RAID6'] : work_style === 'home' && targetTB <= 20 ? ['RAID1', 'RAID5'] : ['RAID5'];
   const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
   let builds = raids.flatMap((raid) => suggestBuilds({ targetTB, raid, ...catalogue }));

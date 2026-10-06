@@ -57,7 +57,7 @@ export function missingChoices(a) {
   const raid = a.storageMode === 'budget' ? a.raidAuto || a.raid != null : a.raid != null;
   return [
     !storage && 'Storage',
-    !raid && 'Protection (RAID)',
+    !raid && 'Raid Protection',
     !chosen.unit && 'Unit',
     !chosen.driveCap && 'Drive size',
     !chosen.driveLine && 'Drive line',
