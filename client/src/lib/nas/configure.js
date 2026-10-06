@@ -1,7 +1,4 @@
-/* Configurator answers → configuration. One Answers object in, one Derived
- * object out; the answers are never mutated, so state stays what the visitor
- * actually chose. Network speed is never stored: it is always read off the
- * unit currently chosen. */
+
 
 import {
   MAX_UNITS,
@@ -57,7 +54,7 @@ export function missingChoices(a) {
   const raid = a.storageMode === 'budget' ? a.raidAuto || a.raid != null : a.raid != null;
   return [
     !storage && 'Storage',
-    !raid && 'Raid Protection',
+    !raid && 'RAID Protection',
     !chosen.unit && 'Unit',
     !chosen.driveCap && 'Drive size',
     !chosen.driveLine && 'Drive line',
@@ -179,15 +176,6 @@ export function derive(a, P) {
   };
 }
 
-/* ---------------- which options can actually be built ---------------- */
-
-/**
- * Options worth offering, read off the same build pool as the recommendation.
- * Bays are computed as if no bay size were pinned, and only chassis sizes the
- * array actually fills are offered (or, where nothing fits exactly, the ones
- * wasting the fewest bays). Drive sizes are judged against the whole pool,
- * drive lines against the chosen size.
- */
 export function feasibleOptions(a, P, d) {
   const bayPool = a.bays == null ? d.builds : derive({ ...a, bays: null }, P).builds;
   const byCap = a.driveCap == null ? d.builds : d.builds.filter((b) => b.driveCap === a.driveCap);

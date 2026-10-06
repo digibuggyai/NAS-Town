@@ -167,7 +167,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </Step>
 
         {/* 02 RAID */}
-        <Step n={2} title="Protection (RAID)" hint={d.raid ? RAID_INFO[d.raid].blurb : 'How many drive failures your storage should survive.'}>
+        <Step n={2} title="RAID Protection" hint={d.raid ? RAID_INFO[d.raid].blurb : 'How many drive failures your storage should survive.'}>
           <div className="flex flex-wrap gap-2">
             {a.storageMode === 'budget' && (
               <Choice active={a.raidAuto} onClick={() => set({ raidAuto: true, raid: a.raid ?? 'RAID5' })} sub="most space, with protection">
@@ -502,7 +502,7 @@ function CopySummary({ text }) {
 }
 
 
-const ALL_CHOICES = ['Storage', 'Protection (RAID)', 'Unit', 'Drive size', 'Drive line'];
+const ALL_CHOICES = ['Storage', 'RAID Protection', 'Unit', 'Drive size', 'Drive line'];
 
 /** Estimate panel before the quote is complete: what's done and what's left. */
 function ChoicesLeft({ missing }) {
