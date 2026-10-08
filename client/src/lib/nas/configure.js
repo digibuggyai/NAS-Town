@@ -7,6 +7,7 @@
 import {
   MAX_UNITS,
   RAID_INFO,
+  autoBuildableSizes,
   bestBuildPerModel,
   buildableSizes,
   cheapestOutlay,
@@ -14,6 +15,7 @@ import {
   labelForSpeed,
   nearestBuildable,
   networkFor,
+  suggestAutoBuilds,
   suggestBudgetPlan,
   suggestBuilds,
   suggestBuildsForBudget,
@@ -21,7 +23,7 @@ import {
 } from './logic.js';
 
 /** Where every visitor starts: nothing chosen. Once a size or budget is picked, everything
- *  else is suggested (RAID 5, Auto bays, brand, unit and drives) and can then be changed.
+ *  else is suggested (RAID level by drive count, bays, brand, unit and drives) and can then be changed.
  *  Installation and AMC stay unticked until the customer adds them. */
 export const INITIAL_ANSWERS = {
   storageMode: 'capacity', // 'capacity' | 'budget'
@@ -30,7 +32,7 @@ export const INITIAL_ANSWERS = {
   brand: 'any',
   bays: null,
   raid: 'RAID5',
-  raidAuto: true, // budget mode only: let the tool choose the level
+  raidAuto: true, // "Let us choose": the level follows the drive count (logic.js advisedRaid)
   expandable: false,
   modelId: null,
   autoPick: true, // false once a unit is chosen by hand
@@ -58,7 +60,7 @@ export function pickBuild(a, builds) {
 }
 
 function unbuilt(a, mode, error, raid = a.raid) {
-  return { mode, error, pending: false, sizes: [], targetTB: a.targetTB, movedFrom: null, raid, redundant: true, builds: [], options: [], build: null, autoPick: a.autoPick };
+  return { mode, error, pending: false, auto: false, sizes: [], targetTB: a.targetTB, movedFrom: null, raid, redundant: true, builds: [], options: [], build: null, autoPick: a.autoPick };
 }
 
 /** What the customer pays on top of hardware: a budget covers the whole quote. */
@@ -117,7 +119,30 @@ export function derive(a, P) {
     }
 
     const picked = pickBuild(a, builds);
-    return { mode: 'budget', error: null, sizes: [], targetTB: picked.build ? picked.build.totalUsable : a.targetTB, movedFrom: null, raid, redundant, builds, ...picked };
+    // With "Let us choose" the builds mix levels, so the level is whatever the chosen build runs.
+    if (a.raidAuto && picked.build) raid = picked.build.raid;
+    return { mode: 'budget', error: null, auto: a.raidAuto, sizes: [], targetTB: picked.build ? picked.build.totalUsable : a.targetTB, movedFrom: null, raid, redundant, builds, ...picked };
+  }
+
+  if (a.raidAuto) {
+    const sizes = autoBuildableSizes(catalogue);
+    if (!sizes.length) return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand or bays.'), sizes };
+    if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, auto: true, pending: true }; // waiting for a size
+    const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
+    const builds = suggestAutoBuilds({ targetTB, ...catalogue });
+    const picked = pickBuild(a, builds);
+    return {
+      mode: 'capacity',
+      error: null,
+      auto: true,
+      sizes,
+      targetTB,
+      movedFrom: targetTB !== a.targetTB ? a.targetTB : null,
+      raid: picked.build?.raid ?? a.raid,
+      redundant: true,
+      builds,
+      ...picked,
+    };
   }
 
   const sizes = buildableSizes({ raid: a.raid, ...catalogue });
@@ -130,6 +155,7 @@ export function derive(a, P) {
   return {
     mode: 'capacity',
     error: null,
+    auto: false,
     sizes,
     targetTB,
     movedFrom: targetTB !== a.targetTB ? a.targetTB : null,
@@ -162,7 +188,11 @@ export function feasibleOptions(a, P, d) {
   const tightest = spare.size ? Math.min(...spare.values()) : 0;
 
   return {
-    bays: new Set([...spare].filter(([, empty]) => empty === tightest).map(([tier]) => tier)),
+    // "Let us choose" mixes levels (a 2-bay mirror, a 4-bay RAID 5…), so every tier that can be
+    // built is a fair offer; with a fixed level, only the tiers the array fills most tightly.
+    bays: d.auto
+      ? new Set(bayPool.map((b) => b.model.bays))
+      : new Set([...spare].filter(([, empty]) => empty === tightest).map(([tier]) => tier)),
     caps: new Set(d.builds.map((b) => b.driveCap)),
     lines: new Set((byCap.length ? byCap : d.builds).map((b) => b.driveLine)),
     bayPool,

@@ -21,13 +21,20 @@ import { IntroPopup, QuoteOfferPopup } from './OfferPopups.jsx';
 
 const SHORTLIST = 5;
 
+/** Why "Let us choose" landed on a level (the advice in logic.js advisedRaid, from QNAP and Synology). */
+const AUTO_REASON = {
+  RAID1: 'two drives are mirrored, the setup QNAP and Synology advise for a 2-drive NAS.',
+  RAID5: 'one drive of parity, the usual balance of space and protection for 3 to 5 drives.',
+  RAID6: 'two drives of parity. With 6 or more drives a rebuild takes long enough that a second failure is a real risk, so RAID 6 survives two.',
+};
+
 /** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5 */
 function initialAnswers(P, params) {
   const a = { ...INITIAL_ANSWERS };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
   const raid = params?.get('raid');
-  if (RAID_LEVELS.includes(raid)) a.raid = raid;
+  if (RAID_LEVELS.includes(raid)) Object.assign(a, { raid, raidAuto: false });
   const model = P.models.find((m) => m.slug === params?.get('model'));
   if (model) {
     a.modelId = model.id;
@@ -94,7 +101,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const mostBays = Math.max(0, ...P.models.map((m) => m.baysWithExpansion ?? 0));
   const bayHint = (tier) => {
     const b = can.bayPool.find((x) => x.model.bays === tier);
-    return b ? `${b.drivesPerUnit}× ${b.driveCap} TB${b.units > 1 ? ` · ${b.units} units` : ''}` : "Can't reach the target";
+    return b ? `${b.drivesPerUnit}× ${b.driveCap} TB${d.auto ? ` · ${RAID_INFO[b.raid].title}` : ''}${b.units > 1 ? ` · ${b.units} units` : ''}` : "Can't reach the target";
   };
   const ram = P.upgrades.filter((u) => u.category === 'RAM');
   const nic = P.upgrades.filter((u) => u.category === 'NIC');
@@ -156,15 +163,15 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                   {!started && <option value="" disabled>Select size</option>}
                   {d.sizes.map((s) => <option key={s} value={s}>{s} TB</option>)}
                 </select>
-                <span className="text-sm text-muted">{started ? <>usable at {RAID_INFO[a.raid].title}</> : 'Pick a size, or tap one below'}</span>
+                <span className="text-sm text-muted">{!started ? 'Pick a size, or tap one below' : d.auto ? 'usable, with RAID protection' : <>usable at {RAID_INFO[a.raid].title}</>}</span>
               </div>
               <div className="mt-3 grid grid-cols-4 gap-2">
                 {CAPACITY_PRESETS.map((tb) => <Tile key={tb} active={d.targetTB === tb} onClick={() => set({ targetTB: tb })} title={`${tb} TB`} className="justify-center text-center" />)}
               </div>
               {d.movedFrom != null ? (
-                <p className="mt-3 flex gap-2 text-sm text-warning"><Info className="mt-0.5 size-4 shrink-0" /> Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives at {RAID_INFO[a.raid].title}.</p>
+                <p className="mt-3 flex gap-2 text-sm text-warning"><Info className="mt-0.5 size-4 shrink-0" /> Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives{d.auto ? '' : <> at {RAID_INFO[a.raid].title}</>}.</p>
               ) : started && (
-                <p className="mt-3 text-xs text-subtle">{d.sizes.length} sizes can be built at {RAID_INFO[a.raid].title}. Other figures can't be made from whole drives.</p>
+                <p className="mt-3 text-xs text-subtle">{d.sizes.length} sizes can be built{d.auto ? ' with RAID protection' : <> at {RAID_INFO[a.raid].title}</>}. Other figures can't be made from whole drives.</p>
               )}
             </>
           ) : (
@@ -183,21 +190,19 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         {/* 2 RAID */}
         <StepCard n={++n} locked={!started} title="RAID Protection" hint="How drives are arranged: how much raw capacity is usable, and how many drive failures the array survives.">
           <div className="grid gap-2">
-            {a.storageMode === 'budget' && (
-              <Tile active={started && a.raidAuto} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Most space, with protection</span>} />
-            )}
+            <Tile active={started && a.raidAuto} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Matched to the drive count</span>} />
             {RAID_LEVELS.map((r) => (
               <Tile
                 key={r}
-                active={started && (a.storageMode === 'capacity' || !a.raidAuto) && a.raid === r}
+                active={started && !a.raidAuto && a.raid === r}
                 onClick={() => set({ raid: r, raidAuto: false })}
                 title={RAID_INFO[r].title}
                 aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">{RAID_INFO[r].sub}</span>}
               />
             ))}
           </div>
-          {a.storageMode === 'budget' && a.raidAuto && !d.error && (
-            <p className="mt-3 text-sm text-muted">We chose <span className="font-medium text-fg">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ', with protection.' : '.'}</p>
+          {d.auto && build && (
+            <p className="mt-3 text-sm text-muted">We chose <span className="font-medium text-fg">{RAID_INFO[d.raid].title}</span> for {build.drivesPerUnit} drives: {AUTO_REASON[d.raid]}</p>
           )}
           {d.raid === 'RAID0' && !d.error && (
             <p className="mt-3 flex items-start gap-2 text-sm text-warning"><AlertTriangle className="mt-0.5 size-4 shrink-0" /> RAID 0 has no redundancy: one failed drive loses all data.</p>
@@ -241,8 +246,10 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             <StepCard n={++n} wide title="Recommended NAS" hint="Worked out from your choices: unit, drives and drive count together, best value first.">
               <p className="mb-3 text-sm text-muted">
                 {d.mode === 'budget'
-                  ? <>The most storage {inr(a.budget)} buys at {RAID_INFO[d.raid].title}.</>
-                  : <>Our recommendation for {d.targetTB} TB at {RAID_INFO[d.raid].title}.</>} Pick another if you prefer.
+                  ? <>The most storage {inr(a.budget)} buys{d.auto ? ", with the RAID level that suits each unit's drive count" : <> at {RAID_INFO[d.raid].title}</>}.</>
+                  : d.auto
+                    ? <>Our recommendation for {d.targetTB} TB, each with the RAID level that suits its drive count.</>
+                    : <>Our recommendation for {d.targetTB} TB at {RAID_INFO[d.raid].title}.</>} Pick another if you prefer.
               </p>
               <ul className="grid gap-2">
                 {options.map((b, i) => {
@@ -270,7 +277,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                             <InfoHover label={`${b.model.brand} ${b.model.model} specifications`} specs={keySpecs(b.model)} onOpen={() => setDialog({ kind: 'model', item: b })} align="left" />
                           </p>
                           <p className="mt-1 text-sm text-muted">
-                            {b.units > 1 && `${b.units} units · `}{b.drivesPerUnit * b.units}× {b.driveCap} TB {b.driveLine} in {b.model.bays} bays · {b.totalUsable} TB usable · {b.spareBays * b.units} spare {b.spareBays * b.units === 1 ? 'bay' : 'bays'}
+                            {b.units > 1 && `${b.units} units · `}{b.drivesPerUnit * b.units}× {b.driveCap} TB {b.driveLine} in {b.model.bays} bays · {d.auto && `${RAID_INFO[b.raid].title} · `}{b.totalUsable} TB usable · {b.spareBays * b.units} spare {b.spareBays * b.units === 1 ? 'bay' : 'bays'}
                           </p>
                         </div>
                         <div className="sm:text-right">
@@ -464,7 +471,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           <>
             {dialog.item.model.summary && <p className="mb-3 text-sm text-muted">{dialog.item.model.summary}</p>}
             <p className="mb-1 text-xs font-semibold tracking-wide text-subtle uppercase">This configuration</p>
-            <SpecList specs={buildSpecs(dialog.item, d.raid)} />
+            <SpecList specs={buildSpecs(dialog.item)} />
             <p className="mt-5 mb-1 text-xs font-semibold tracking-wide text-subtle uppercase">The unit</p>
             <SpecList specs={modelSpecs(dialog.item.model)} />
             {dialog.item.model.specsUrl && <a href={dialog.item.model.specsUrl} target="_blank" rel="noopener" className="link mt-4 inline-block text-sm">Manufacturer's specifications</a>}
@@ -481,7 +488,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         )}
       </Dialog>
       <Dialog wide open={dialog?.kind === 'compare'} onClose={() => setDialog(null)} title="Compare units">
-        {dialog?.kind === 'compare' && <CompareTable builds={options.slice(0, 6)} raid={d.raid} selectedId={build?.model.id} onPick={(id) => { set({ modelId: id, autoPick: false }); setDialog(null); }} />}
+        {dialog?.kind === 'compare' && <CompareTable builds={options.slice(0, 6)} selectedId={build?.model.id} onPick={(id) => { set({ modelId: id, autoPick: false }); setDialog(null); }} />}
       </Dialog>
 
       {!sales && build && price && (
@@ -509,8 +516,8 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   );
 }
 
-function CompareTable({ builds, raid, selectedId, onPick }) {
-  const rows = compareRows(builds, raid);
+function CompareTable({ builds, selectedId, onPick }) {
+  const rows = compareRows(builds);
   return (
     <div className="-mx-6 overflow-x-auto px-6">
       <table className="w-full min-w-[40rem] text-left text-sm">

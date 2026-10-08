@@ -173,23 +173,60 @@ export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, mode
   return out.sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote || a.units - b.units);
 }
 
-// Most protective first, so a tie on usable space goes to the safer level (same order as DGB India).
-const REDUNDANT_BY_PROTECTION = ['RAID6', 'RAID10', 'RAID5', 'RAID1'];
+/* ---------------- "Let us choose": the RAID level follows the drive count ---------------- */
+
+/*
+ * The level QNAP and Synology advise for a number of drives in one unit:
+ *   2 drives    RAID 1  (QNAP: "recommended for NAS devices with two disks")
+ *   3–5 drives  RAID 5  (one drive of parity; QNAP: "a good balance between data protection,
+ *                        capacity, and speed"; Synology's SHR-1 is the same protection)
+ *   6+ drives   RAID 6  (two drives of parity; Synology's SHR-2 advice. With more and larger
+ *                        drives, a RAID 5 rebuild reads so much data that one unreadable
+ *                        sector or a second failure loses the array; RAID 6 survives both)
+ * RAID 10 is for databases and heavy random I/O, and RAID 0 has no protection, so neither
+ * is ever chosen for the customer; both stay one click away.
+ */
+export const AUTO_RAID_LEVELS = ['RAID1', 'RAID5', 'RAID6'];
+
+export function advisedRaid(drives) {
+  if (drives <= 2) return 'RAID1';
+  if (drives <= 5) return 'RAID5';
+  return 'RAID6';
+}
+
+export const followsRaidAdvice = (b) => advisedRaid(b.drivesPerUnit) === b.raid;
+
+/** Keep the builds that follow the advice (all of them if none can), then one box over several. */
+function preferAdvised(builds) {
+  const advised = builds.filter(followsRaidAdvice);
+  const pool = advised.length ? advised : builds;
+  const oneBox = pool.filter((b) => b.units === 1);
+  return oneBox.length ? oneBox : pool;
+}
+
+/** Sizes buildable at any level "Let us choose" may pick. */
+export function autoBuildableSizes(opts) {
+  return [...new Set(AUTO_RAID_LEVELS.flatMap((raid) => buildableSizes({ ...opts, raid })))].sort((a, b) => a - b);
+}
+
+/** Capacity mode, "Let us choose": every advised build that reaches the target, at whichever
+ *  level suits its drive count, cheapest first. Each build carries its own `raid`. */
+export function suggestAutoBuilds(opts) {
+  const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuilds({ ...opts, raid }));
+  return preferAdvised(all).sort(byPriceThenBoxesThenFit);
+}
 
 /**
- * Choose the RAID level for a budget. Maximising capacity across all levels
- * always lands on RAID 0, so RAID 0 is left out of the first pass. Among the
- * redundant levels, take the one that turns the budget into the most usable
- * space. Only if nothing redundant is affordable does it fall back to RAID 0.
+ * Budget mode, "Let us choose": the advised build that turns the budget into the most usable
+ * space, at whichever level suits its drive count. Only if nothing protected is affordable
+ * does it fall back to RAID 0.
  */
 export function suggestBudgetPlan(opts) {
-  let best = null;
-  for (const raid of REDUNDANT_BY_PROTECTION) {
-    const builds = suggestBuildsForBudget({ ...opts, raid });
-    if (!builds.length) continue;
-    if (!best || builds[0].totalUsable > best.builds[0].totalUsable) best = { raid, builds };
+  const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuildsForBudget({ ...opts, raid }));
+  if (all.length) {
+    const builds = preferAdvised(all).sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote || a.units - b.units);
+    return { raid: builds[0].raid, builds, redundant: true };
   }
-  if (best) return { ...best, redundant: true };
   const raid0 = suggestBuildsForBudget({ ...opts, raid: 'RAID0' });
   return raid0.length ? { raid: 'RAID0', builds: raid0, redundant: false } : null;
 }

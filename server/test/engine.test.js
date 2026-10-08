@@ -16,7 +16,8 @@ before(async () => {
 });
 
 const run = (over) => {
-  const a = { ...INITIAL_ANSWERS, includeInstall: true, ...over }; // the spec's examples include installation
+  // The spec's examples include installation; naming a level means the customer picked it.
+  const a = { ...INITIAL_ANSWERS, includeInstall: true, ...(over.raid ? { raidAuto: false } : {}), ...over };
   const d = derive(a, P);
   return { a, d, b: d.build, price: priceFor(d.build, a, P) };
 };
@@ -111,4 +112,33 @@ test('invariants: RAID 0 never 1 drive, RAID 1 always 2, per-brand drive ceiling
       }
     }
   }
+});
+
+// "Let us choose": the level follows the drive count (2 → RAID 1, 3–5 → RAID 5, 6+ → RAID 6),
+// as QNAP and Synology advise; RAID 0 and RAID 10 are never chosen for the customer.
+test('Let us choose: the RAID level always matches the drive count', () => {
+  const advised = (n) => (n <= 2 ? 'RAID1' : n <= 5 ? 'RAID5' : 'RAID6');
+  for (const targetTB of [4, 8, 10, 12, 16, 20, 24, 30, 40, 50, 60, 80, 100]) {
+    const { d, b } = run({ targetTB });
+    assert.ok(b, `${targetTB} TB builds`);
+    assert.equal(d.raid, b.raid);
+    assert.equal(b.raid, advised(b.drivesPerUnit), `${targetTB} TB: ${b.drivesPerUnit} drives at ${b.raid}`);
+    for (const o of d.options) assert.equal(o.raid, advised(o.drivesPerUnit), `${targetTB} TB option ${o.model.model}`);
+  }
+});
+
+test('Let us choose: 20 TB → RAID 5 on TS-433-4G 3 × 10 TB; 10 TB → RAID 1 pair; 100 TB → RAID 6 on 8 drives', () => {
+  assert.equal(describe(run({ targetTB: 20 }).b), 'TS-433-4G 3x10 IronWolf 20TB');
+  const ten = run({ targetTB: 10 });
+  assert.equal(ten.d.raid, 'RAID1');
+  assert.equal(ten.b.drivesPerUnit, 2);
+  const hundred = run({ targetTB: 100 });
+  assert.equal(hundred.d.raid, 'RAID6');
+  assert.ok(hundred.b.drivesPerUnit >= 6);
+});
+
+test('Let us choose: a 2-bay filter gives a RAID 1 mirror', () => {
+  const { d, b } = run({ targetTB: 20, bays: 2 });
+  assert.equal(d.raid, 'RAID1');
+  assert.equal(b.model.bays, 2);
 });

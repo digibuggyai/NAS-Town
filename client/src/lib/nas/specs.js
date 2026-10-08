@@ -140,7 +140,7 @@ export function driveNotes(model, line, drivesPerUnit) {
 }
 
 /** This configuration on that unit. */
-export function buildSpecs(build, raid) {
+export function buildSpecs(build, raid = build.raid) {
   return [
     { label: 'Usable capacity', value: `${build.totalUsable} TB` },
     { label: 'RAID level', value: RAID_INFO[raid].title },
@@ -154,7 +154,7 @@ export function buildSpecs(build, raid) {
 
 /** One row per specification, one column per shortlisted unit. Every cell is filled:
  *  a blank would read as a missing feature. */
-export function compareRows(builds, raid) {
+export function compareRows(builds) {
   const rows = [
     ['Brand', (b) => b.model.brand],
     ['Drive bays', (b) => `${b.model.bays}`],
@@ -168,7 +168,7 @@ export function compareRows(builds, raid) {
     ['Drives', (b) => `${b.drivesPerUnit * b.units} × ${b.driveCap} TB ${b.driveLine}`],
     ['Units', (b) => `${b.units}`],
     ['Spare bays', (b) => `${b.spareBays * b.units}`],
-    ['RAID level', () => RAID_INFO[raid].title],
+    ['RAID level', (b) => RAID_INFO[b.raid].title], // each build carries its own level ("Let us choose" mixes them)
     ['RAID supported', (b) => raidList(b.model) || '—'],
     ['Network ports', (b) => b.model.network || 'Not recorded'],
     ['Network upgrade', (b) => b.model.networkUpgrade || 'None'],
