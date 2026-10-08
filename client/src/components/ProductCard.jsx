@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
-import NasVisual from './NasVisual.jsx';
+import ProductPhoto, { useTilt } from './ProductPhoto.jsx';
 import { formatInr } from '../lib/api.js';
 import { brandName } from '../data/site.js';
 
@@ -18,10 +18,12 @@ function specLines(p) {
 /** A catalogue entry, not a card: figure, name, specs, price. The whole entry is one link target. */
 export default function ProductCard({ product: p }) {
   const bestFor = (p.best_for ?? '').split('•').map((s) => s.trim()).filter(Boolean);
+  // The whole entry is a link (it covers the plate), so the entry takes the pointer.
+  const { plateRef, handlers } = useTilt();
   return (
-    <article className="group relative flex flex-col">
-      <div className="plate border border-line bg-raised px-8 pt-8 pb-3 transition-colors group-hover:border-line-strong">
-        <NasVisual bays={p.bays} className="mx-auto h-32 w-auto" />
+    <article className="group relative flex flex-col" {...handlers}>
+      <div ref={plateRef} className="plate tilt grid h-52 place-items-center border border-line bg-raised px-6 py-6 transition-colors group-hover:border-line-strong">
+        <ProductPhoto model={p.shortModel ?? p.model} bays={p.bays} alt="" className="tilt-media h-36 w-full" />
       </div>
 
       <div className="mt-4 flex items-baseline justify-between gap-3">

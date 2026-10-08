@@ -4,7 +4,7 @@ import { ArrowRight, RotateCcw } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { RAID_INFO, bestBuildPerModel, inr, networkFor, suggestBuilds } from '../lib/nas/logic.js';
-import NasVisual from './NasVisual.jsx';
+import ProductPhoto from './ProductPhoto.jsx';
 
 const steps = [
   {
@@ -73,7 +73,7 @@ export default function Finder() {
             {result.builds.map((b, i) => (
               <article key={b.model.id} className="glass flex flex-col rounded-xl p-5">
                 <div className="rounded-lg bg-surface px-6 pt-5 pb-1">
-                  <NasVisual bays={b.model.bays} className="mx-auto h-32 w-auto" />
+                  <ProductPhoto model={b.model.model} bays={b.model.bays} alt="" className="mx-auto h-32 w-full" />
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="eyebrow !text-xs">{b.model.brand}</span>

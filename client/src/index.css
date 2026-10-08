@@ -197,6 +197,33 @@
   /* Soft backdrop behind product drawings. */
   .plate { background: var(--color-surface); border-radius: 20px; }
 
+  /* Product photo plate that follows the cursor (useTilt in components/ProductPhoto.jsx):
+     the photo tilts towards the pointer, lifts a little, and a soft light tracks it. */
+  .tilt { position: relative; overflow: hidden; perspective: 900px; isolation: isolate; }
+  .tilt::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 50%), rgb(58 103 255 / 0.14), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .tilt-media {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateX(var(--shift-x, 0px)) scale(1);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), filter 0.4s ease;
+    filter: drop-shadow(0 10px 14px rgb(15 23 42 / 0.12));
+    will-change: transform;
+  }
+  .tilt[data-tilting]::before { opacity: 1; }
+  .tilt[data-tilting] .tilt-media {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateX(var(--shift-x, 0px)) translateY(-4px) scale(1.05);
+    transition-duration: 0.15s, 0.4s;
+    filter: drop-shadow(0 18px 22px rgb(15 23 42 / 0.2));
+  }
+  @media (prefers-reduced-motion: reduce) { .tilt-media { transition: none; } }
+
   /* Photo frame: rounded image with thin guide ticks at the corners. */
   .frame { position: relative; padding: 12px; }
   .frame::before {

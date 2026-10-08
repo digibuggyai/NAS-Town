@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
-import NasVisual from '../components/NasVisual.jsx';
+import ProductPhoto, { useTilt } from '../components/ProductPhoto.jsx';
 import EnquiryForm from '../components/EnquiryForm.jsx';
 import Reveal from '../components/Reveal.jsx';
 import { api, formatInr } from '../lib/api.js';
@@ -14,6 +14,7 @@ import { preloaded } from '../lib/preload.js';
 export default function ProductDetail() {
   const { slug } = useParams();
   const [state, setState] = useState(() => ({ product: preloaded(`/products/${encodeURIComponent(slug)}`) ?? null, error: null }));
+  const { plateRef, handlers } = useTilt(); // photo follows the cursor
 
   useEffect(() => {
     setState({ product: null, error: null });
@@ -44,8 +45,11 @@ export default function ProductDetail() {
       <section className="mx-auto max-w-7xl px-4 pt-32 pb-20 sm:px-6 md:pt-40">
         <Link to="/products" className="-my-2 inline-flex items-center gap-2 py-2.5 text-sm text-muted hover:text-fg"><ArrowLeft className="size-4" /> All products</Link>
         <div className="mt-8 grid gap-10 lg:grid-cols-2">
-          <Reveal className="glass grid place-items-center rounded-xl p-10">
-            <NasVisual bays={p.bays} className="w-full max-w-md" />
+          {/* The photo stays in view while the specification list scrolls past (desktop). */}
+          <Reveal className="glass self-start overflow-hidden rounded-xl lg:sticky lg:top-28">
+            <div ref={plateRef} {...handlers} className="tilt grid h-80 place-items-center p-10 sm:h-[26rem]">
+              <ProductPhoto model={p.shortModel ?? p.model} bays={p.bays} alt={p.model} eager className="tilt-media h-full w-full max-w-md" />
+            </div>
           </Reveal>
           <Reveal delay={120}>
             <p className="eyebrow">{brandName(p.brand)} · {p.bays}-bay</p>

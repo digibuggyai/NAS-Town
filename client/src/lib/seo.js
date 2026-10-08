@@ -5,6 +5,7 @@
 //     HTML file so search engines and link previews (WhatsApp, LinkedIn…) see it without JavaScript.
 // Keep this file plain JS with no browser-only or Vite-only code, so Node can import it.
 import { brands, capacityPages, digibuggy, faqs, resources, services, solutions } from '../data/site.js';
+import { productPhoto } from '../data/productImages.js';
 
 export const SITE_NAME = 'NASTOWN';
 export const DEFAULT_IMAGE = '/og-image.jpg'; // 1200×630 social card
@@ -361,7 +362,7 @@ export function productMeta(p, siteUrl) {
         description: p.summary,
         brand: { '@type': 'Brand', name: brand },
         category: 'Network Attached Storage',
-        image: abs(DEFAULT_IMAGE, siteUrl),
+        image: abs(productPhoto(p.shortModel ?? p.model)?.src ?? DEFAULT_IMAGE, siteUrl), // the official product photo
         url: abs(path, siteUrl),
         ...(p.price_inr != null && {
           // Prices on the site include GST. No `availability`: stock isn't tracked, so it isn't claimed.
