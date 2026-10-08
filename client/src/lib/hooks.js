@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
+import { preloaded, productsPath } from './preload.js';
 
 // Adds the `in` class once the element scrolls into view.
 export function useReveal() {
@@ -24,7 +25,10 @@ export function useReveal() {
 
 export function useProducts(params) {
   const key = JSON.stringify(params ?? {});
-  const [state, setState] = useState({ data: null, error: null, loading: true });
+  const [state, setState] = useState(() => {
+    const data = preloaded(productsPath(params));
+    return data ? { data, error: null, loading: false } : { data: null, error: null, loading: true };
+  });
   useEffect(() => {
     let alive = true;
     setState((s) => ({ ...s, loading: true }));

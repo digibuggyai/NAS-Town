@@ -4,10 +4,11 @@ import { ChevronRight } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import PostCard from '../components/PostCard.jsx';
 import { api } from '../lib/api.js';
+import { blogPath, preloaded } from '../lib/preload.js';
 
 // Latest posts, managed in Admin → Blog. The newest is featured large, the next two beside it.
 export default function BlogSection() {
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState(() => preloaded(blogPath({ limit: 3 })) ?? null);
 
   useEffect(() => {
     let alive = true;

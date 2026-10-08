@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
@@ -26,6 +26,9 @@ const CapacityPage = lazy(() => import('./pages/CapacityPage.jsx'));
 const AdminApp = lazy(() => import('./pages/admin/AdminApp.jsx'));
 
 export default function App() {
+  // The page's HTML may hold a pre-rendered copy (scripts/prerender.mjs), hidden while the app
+  // loads. React has now replaced it, so show the page.
+  useEffect(() => document.getElementById('root')?.removeAttribute('data-prerendered'), []);
   return (
     <Routes>
       <Route path="admin/*" element={<Suspense fallback={null}><AdminApp /></Suspense>} />

@@ -4,23 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
+    <!-- Pages carry a pre-rendered copy for search engines and no-JavaScript visitors
+         (scripts/prerender.mjs). With JavaScript, keep it hidden until React draws the page. -->
+    <script>document.documentElement.classList.add('js');</script>
+    <style>html.js #root[data-prerendered] { visibility: hidden; }</style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <!-- Fonts load without blocking the first paint (display=swap shows the fallback font meanwhile). -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" onload="this.onload = null; this.rel = 'stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" /></noscript>
     <!-- Title, description, canonical, social card and structured data: filled per page by scripts/seo-plugin.mjs -->
     <!-- seo -->
   </head>
   <body>
+    <div id="root"></div>
     <noscript>
-      <p style="font-family: system-ui, sans-serif; padding: 1rem">
-        NASTOWN: NAS storage, setup and support in Nehru Place, New Delhi. Please enable JavaScript to use this site,
-        or WhatsApp us on +91 95601 11954.
+      <p style="font-family: system-ui, sans-serif; padding: 1rem; text-align: center">
+        The configurator, NAS finder and forms need JavaScript. You can also WhatsApp us on +91 95601 11954.
       </p>
     </noscript>
-    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

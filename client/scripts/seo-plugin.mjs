@@ -5,6 +5,8 @@
 //   dev + build: index.html's <!-- seo --> placeholder gets the home page tags.
 //   build only:  dist/<path>/index.html for every page (fixed pages, plus products and blog
 //                posts fetched from the API), dist/sitemap.xml and dist/robots.txt.
+//                Also dist/app.html (the empty app, for addresses that have no file of their
+//                own) and the page list scripts/prerender.mjs fills with content.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { headHtml, postMeta, productMeta, staticPages, abs } from '../src/lib/seo.js';
@@ -27,12 +29,14 @@ async function getJson(url) {
 
 export default function seoPlugin({ siteUrl, apiUrl }) {
   let outDir;
+  let root;
   let isBuild = false;
   return {
     name: 'nastown-seo',
     configResolved(config) {
+      root = config.root;
       outDir = path.resolve(config.root, config.build.outDir);
-      isBuild = config.command === 'build';
+      isBuild = config.command === 'build' && !config.build.ssr; // not the pre-render build
     },
     transformIndexHtml(html) {
       const site = siteUrl || 'http://localhost:5173';
@@ -45,6 +49,9 @@ export default function seoPlugin({ siteUrl, apiUrl }) {
         return;
       }
       const template = await fs.readFile(path.join(outDir, 'index.html'), 'utf8');
+      // Addresses with no page file of their own (admin, a product added since this build) get
+      // the empty app, not the home page's pre-rendered content (vercel.json rewrites to it).
+      await fs.writeFile(path.join(outDir, 'app.html'), template);
       const pages = Object.entries(staticPages(siteUrl)).map(([p, meta]) => ({ ...meta, path: p }));
 
       // Database pages. If the API can't be reached the build still succeeds: those pages
@@ -85,6 +92,10 @@ export default function seoPlugin({ siteUrl, apiUrl }) {
         path.join(outDir, 'robots.txt'),
         `User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ${siteUrl}/sitemap.xml\n`,
       );
+      const work = path.join(root, '.prerender');
+      await fs.mkdir(work, { recursive: true });
+      await fs.writeFile(path.join(work, 'pages.json'), JSON.stringify({ outDir, apiUrl: api, pages: pages.map((p) => ({ path: p.path })) }));
+
       console.log(`[seo] ${pages.length} pages pre-rendered, ${urls.length} in sitemap.xml (${siteUrl})`);
     },
   };

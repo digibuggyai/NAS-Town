@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
   "redirects": [{ "source": "/brands/other", "destination": "/brands/asustor", "permanent": true }],
-  "rewrites": [{ "source": "/((?!api/|assets/).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api/|assets/).*)", "destination": "/app.html" }]
 }

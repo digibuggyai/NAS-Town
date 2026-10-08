@@ -27,7 +27,7 @@ function BrandCard({ b, detail, hidden }) {
       </div>
       <p className="mt-4 text-sm text-body">{b.line}</p>
       <p className="mt-0.5 min-h-5 text-xs text-subtle">{detail}</p>
-      <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+      <p className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-strong">
         <BadgeCheck className="size-3.5" aria-hidden /> Authorized dealer
       </p>
     </>

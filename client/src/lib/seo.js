@@ -364,7 +364,15 @@ export function productMeta(p, siteUrl) {
         image: abs(DEFAULT_IMAGE, siteUrl),
         url: abs(path, siteUrl),
         ...(p.price_inr != null && {
-          offers: { '@type': 'Offer', price: p.price_inr, priceCurrency: 'INR', url: abs(path, siteUrl), seller: { '@id': `${siteUrl}/#store` } },
+          // Prices on the site include GST. No `availability`: stock isn't tracked, so it isn't claimed.
+          offers: {
+            '@type': 'Offer',
+            price: p.price_inr,
+            priceCurrency: 'INR',
+            priceSpecification: { '@type': 'UnitPriceSpecification', price: p.price_inr, priceCurrency: 'INR', valueAddedTaxIncluded: true },
+            url: abs(path, siteUrl),
+            seller: { '@id': `${siteUrl}/#store` },
+          },
         }),
       },
     ],

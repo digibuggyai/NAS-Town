@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import { headValues, jsonForScript, staticPages } from '../lib/seo.js';
 
 // Live site address for canonical links (set in vite.config.js); falls back to wherever the site is open.
-export const SITE_URL = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/+$/, '');
+export const SITE_URL = (import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/+$/, '');
 
 function setTag(selector, create, attr, value) {
   let el = document.head.querySelector(selector);

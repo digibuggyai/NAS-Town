@@ -9,10 +9,11 @@ import { brandName } from '../data/site.js';
 import NotFound from './NotFound.jsx';
 import Seo, { SITE_URL } from '../components/Seo.jsx';
 import { productMeta } from '../lib/seo.js';
+import { preloaded } from '../lib/preload.js';
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const [state, setState] = useState({ product: null, error: null });
+  const [state, setState] = useState(() => ({ product: preloaded(`/products/${encodeURIComponent(slug)}`) ?? null, error: null }));
 
   useEffect(() => {
     setState({ product: null, error: null });

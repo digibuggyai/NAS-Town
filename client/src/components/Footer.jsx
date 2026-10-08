@@ -60,14 +60,15 @@ export default function Footer() {
           <div>
             <Logo onDark />
             <p className="mt-3 text-[0.95rem] leading-snug text-fg">Smart Storage for Every Need.</p>
-            <dl className="mt-5 grid gap-2.5 text-[0.8125rem]">
-              <div>
+            {/* A <dl> may hold dt/dd or one level of <div>, so each group is its own list. */}
+            <div className="mt-5 grid gap-2.5 text-[0.8125rem]">
+              <dl>
                 <dt className="eyebrow !text-xs">Showroom</dt>
                 <dd className="mt-0.5 text-muted">
                   <a href={digibuggy.mapsHref} target="_blank" rel="noopener" className="hover:text-fg">{digibuggy.address}</a>
                 </dd>
-              </div>
-              <div className="flex flex-wrap gap-x-6 gap-y-2.5">
+              </dl>
+              <dl className="flex flex-wrap gap-x-6 gap-y-2.5">
                 <div>
                   <dt className="eyebrow !text-xs">WhatsApp</dt>
                   <dd className="mt-0.5"><a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link">{digibuggy.whatsapp}</a></dd>
@@ -76,8 +77,8 @@ export default function Footer() {
                   <dt className="eyebrow !text-xs">Email</dt>
                   <dd className="mt-0.5"><a href={`mailto:${digibuggy.email}`} className="link">{digibuggy.email}</a></dd>
                 </div>
-              </div>
-            </dl>
+              </dl>
+            </div>
           </div>
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-[repeat(6,auto)] lg:justify-between lg:gap-x-6">
@@ -100,7 +101,7 @@ export default function Footer() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
             <a href={digibuggy.site} target="_blank" rel="noopener" className="group inline-flex items-center gap-2.5 text-xs text-subtle">
               A company of
-              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
+              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" loading="lazy" decoding="async" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
             </a>
             <ul className="flex gap-1">
               {digibuggy.socials.map(({ label, href }) => {

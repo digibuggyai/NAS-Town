@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import PostCard from './PostCard.jsx';
 import { api } from '../lib/api.js';
+import { blogPath, preloaded } from '../lib/preload.js';
 
 // All published posts, newest first. Used on the Blog page.
 export default function BlogList() {
-  const [posts, setPosts] = useState(null);
+  const [posts, setPosts] = useState(() => preloaded(blogPath()) ?? null);
   const [error, setError] = useState(false);
 
   useEffect(() => {

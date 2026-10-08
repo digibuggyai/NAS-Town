@@ -8,10 +8,15 @@ import { api, formatPostDate, mediaUrl } from '../lib/api.js';
 import NotFound from './NotFound.jsx';
 import Seo, { SITE_URL } from '../components/Seo.jsx';
 import { abs, postMeta } from '../lib/seo.js';
+import { blogPath, preloaded } from '../lib/preload.js';
 
 export default function BlogPost() {
   const { slug } = useParams();
-  const [state, setState] = useState({ post: null, more: [], error: null });
+  const [state, setState] = useState(() => {
+    const post = preloaded(`/blog/${encodeURIComponent(slug)}`) ?? null;
+    const list = preloaded(blogPath({ limit: 4 })) ?? [];
+    return { post, more: list.filter((p) => p.slug !== slug).slice(0, 3), error: null };
+  });
 
   useEffect(() => {
     let alive = true;

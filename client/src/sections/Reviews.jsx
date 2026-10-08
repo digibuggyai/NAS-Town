@@ -4,6 +4,7 @@ import Reveal from '../components/Reveal.jsx';
 import { Stars, StarInput } from '../components/StarRating.jsx';
 import { Dialog } from '../components/configurator/parts.jsx';
 import { api } from '../lib/api.js';
+import { preloaded } from '../lib/preload.js';
 
 /* Customer reviews written on this site (or added by staff from real reviews received
  * elsewhere). Only reviews approved in Admin → Reviews appear here; nothing is invented.
@@ -14,7 +15,7 @@ const SOURCE = { google: 'Google review', whatsapp: 'Shared on WhatsApp', 'in-st
 const monthYear = (iso) => new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
 
 export default function Reviews() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(() => preloaded('/reviews') ?? null);
   const [writing, setWriting] = useState(false);
   const [all, setAll] = useState(false);
 
