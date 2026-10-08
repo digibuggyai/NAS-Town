@@ -38,6 +38,7 @@ const publicModel = (m) => ({
   m2Slots: m.m2Slots,
   maxDriveTb: m.maxDriveTb,
   baysWithExpansion: m.baysWithExpansion,
+  expansionNote: m.expansionNote,
   maxRawTb: m.maxRawTb,
   usbPorts: m.usbPorts,
   dimensions: m.dimensions,
@@ -53,11 +54,12 @@ const publicModel = (m) => ({
 });
 
 const publicLine = (l) => ({
+  sortOrder: l.sortOrder,
   id: l.id,
   name: l.name,
   brand: l.brand,
-  driveClass: l.driveClass,
-  madeForBrand: l.madeForBrand,
+  driveClass: String(l.driveClass ?? '').toLowerCase() === 'enterprise' ? 'enterprise' : 'nas',
+  madeForBrand: l.madeForBrand ?? '',
   series: l.series,
   rpm: l.rpm,
   cache: l.cache,

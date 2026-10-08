@@ -16,11 +16,11 @@ export const STORAGE_MAX = 200;
 export const RAID_LEVELS = ['RAID0', 'RAID1', 'RAID5', 'RAID6', 'RAID10'];
 
 export const RAID_INFO = {
-  RAID0: { title: 'RAID 0', min: 2, step: 1, tolerance: 0, blurb: 'Striped across every drive for full capacity and speed. No protection: one failed drive loses the whole array.' },
-  RAID1: { title: 'RAID 1', min: 2, step: 1, tolerance: 1, blurb: 'Two mirrored drives. The simplest protection; usable space is one drive.' },
-  RAID5: { title: 'RAID 5', min: 3, step: 1, tolerance: 1, blurb: 'Survives one drive failure. One drive’s worth of space goes to parity.' },
-  RAID6: { title: 'RAID 6', min: 4, step: 1, tolerance: 2, blurb: 'Survives two drive failures. Two drives’ worth of space goes to parity.' },
-  RAID10: { title: 'RAID 10', min: 4, step: 2, tolerance: 1, blurb: 'Mirrored pairs, striped. Fast rebuilds and good write speed; half the raw space is usable.' },
+  RAID0: { title: 'RAID 0', sub: 'Striping · no redundancy', min: 2, step: 1, tolerance: 0, blurb: 'Striped across every drive for full capacity and speed. No protection: one failed drive loses the whole array.' },
+  RAID1: { title: 'RAID 1', sub: 'Mirrored · 50% usable', min: 2, step: 1, tolerance: 1, blurb: 'Two mirrored drives. The simplest protection; usable space is one drive.' },
+  RAID5: { title: 'RAID 5', sub: 'Parity · survives 1 failure', min: 3, step: 1, tolerance: 1, blurb: 'Survives one drive failure. One drive’s worth of space goes to parity.' },
+  RAID6: { title: 'RAID 6', sub: 'Dual parity · survives 2', min: 4, step: 1, tolerance: 2, blurb: 'Survives two drive failures. Two drives’ worth of space goes to parity.' },
+  RAID10: { title: 'RAID 10', sub: 'Mirror + stripe · fast rebuild', min: 4, step: 2, tolerance: 1, blurb: 'Mirrored pairs, striped. Fast rebuilds and good write speed; half the raw space is usable.' },
 };
 
 /** Usable TB from n drives of c TB at a RAID level. */
@@ -173,8 +173,8 @@ export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, mode
   return out.sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote || a.units - b.units);
 }
 
-// Most protective first, so a tie on usable space goes to the safer level.
-const REDUNDANT_BY_PROTECTION = ['RAID6', 'RAID10', 'RAID1', 'RAID5'];
+// Most protective first, so a tie on usable space goes to the safer level (same order as DGB India).
+const REDUNDANT_BY_PROTECTION = ['RAID6', 'RAID10', 'RAID5', 'RAID1'];
 
 /**
  * Choose the RAID level for a budget. Maximising capacity across all levels
@@ -232,7 +232,20 @@ export function labelForSpeed(gbps) {
 
 /** Network is derived and displayed, never asked. */
 export function networkFor(model) {
-  return { speed: labelForSpeed(topSpeed(model.network)), ports: model.network, upgrade: model.networkUpgrade || null };
+  if (!model) return null;
+  const topGb = topSpeed(model.network);
+  const speed = labelForSpeed(topGb);
+  return { speed, quotable: speed === '—' ? null : speed, topGb, ports: model.network, builtIn: model.network || null, upgrade: model.networkUpgrade || null };
+}
+
+/** The fastest built-in network among a shortlist, e.g. for "need more throughput?" hints. */
+export function bestNetworkAmong(builds) {
+  let best = null;
+  for (const b of builds) {
+    const net = networkFor(b.model);
+    if (net && (!best || net.topGb > best.topGb)) best = { ...net, model: b.model };
+  }
+  return best;
 }
 
 export const inr = (n) =>

@@ -1,4 +1,8 @@
-
+/* Configurator answers → configuration. Same engine as the DGB India configurator
+ * (docs: nas-configurator-spec.md): one Answers object in, one Derived object out,
+ * re-derived on every change. No wizard state; the answers are never mutated —
+ * derive() returns the effective values (nearest buildable size, chosen RAID level,
+ * the unit actually picked) instead. */
 
 import {
   MAX_UNITS,
@@ -7,17 +11,22 @@ import {
   buildableSizes,
   cheapestOutlay,
   inr,
+  labelForSpeed,
   nearestBuildable,
   networkFor,
   suggestBudgetPlan,
   suggestBuilds,
   suggestBuildsForBudget,
+  topSpeed,
 } from './logic.js';
 
+/** Where every visitor starts: nothing chosen. Once a size or budget is picked, everything
+ *  else is suggested (RAID 5, Auto bays, brand, unit and drives) and can then be changed.
+ *  Installation and AMC stay unticked until the customer adds them. */
 export const INITIAL_ANSWERS = {
   storageMode: 'capacity', // 'capacity' | 'budget'
-  targetTB: 20,
-  budget: 200000,
+  targetTB: null, // null = not chosen yet
+  budget: null, // null = not chosen yet
   brand: 'any',
   bays: null,
   raid: 'RAID5',
@@ -29,42 +38,15 @@ export const INITIAL_ANSWERS = {
   driveLine: null, // null = Auto
   ramSku: null,
   nicSku: null,
-  includeInstall: true,
+  includeInstall: false,
   includeAMC: false,
 };
 
-/**
- * The public configurator starts blank: the customer picks storage, protection, unit and
- * drives themselves (see `missingChoices`). Staff keep INITIAL_ANSWERS for quick quotes.
- */
-export const PUBLIC_START = {
-  ...INITIAL_ANSWERS,
-  targetTB: null,
-  budget: null,
-  raid: null,
-  raidAuto: false,
-  includeInstall: false,
-  chosen: { unit: false, driveCap: false, driveLine: false },
-};
-
-/** What the customer still has to choose before the quote is final (public configurator). */
-export function missingChoices(a) {
-  const chosen = a.chosen ?? { unit: true, driveCap: true, driveLine: true };
-  const storage = a.storageMode === 'budget' ? a.budget > 0 : a.targetTB > 0;
-  const raid = a.storageMode === 'budget' ? a.raidAuto || a.raid != null : a.raid != null;
-  return [
-    !storage && 'Storage',
-    !raid && 'RAID Protection',
-    !chosen.unit && 'Unit',
-    !chosen.driveCap && 'Drive size',
-    !chosen.driveLine && 'Drive line',
-  ].filter(Boolean);
-}
-
-export const BUDGET_PRESETS =[100000, 150000, 200000, 300000, 500000];
+export const BUDGET_PRESETS = [100000, 150000, 200000, 300000, 500000];
 export const CAPACITY_PRESETS = [10, 20, 50, 100];
 
-/** Narrow by drive size first, then line, each falling back on its own; then settle on a unit. */
+/** Narrow by drive size first, then line, each falling back on its own; then settle on a unit.
+ *  Filtering on both at once let an impossible size swallow a perfectly good line. */
 export function pickBuild(a, builds) {
   const byCap = a.driveCap == null ? builds : builds.filter((b) => b.driveCap === a.driveCap);
   const capPool = byCap.length ? byCap : builds;
@@ -76,9 +58,10 @@ export function pickBuild(a, builds) {
 }
 
 function unbuilt(a, mode, error, raid = a.raid) {
-  return { mode, error, sizes: [], targetTB: a.targetTB, movedFrom: null, raid, redundant: true, builds: [], options: [], build: null, autoPick: a.autoPick };
+  return { mode, error, pending: false, sizes: [], targetTB: a.targetTB, movedFrom: null, raid, redundant: true, builds: [], options: [], build: null, autoPick: a.autoPick };
 }
 
+/** What the customer pays on top of hardware: a budget covers the whole quote. */
 export function extraCostFor(a, P) {
   return (hardware, units) =>
     (a.includeInstall ? P.install.quote * units : 0) + (a.includeAMC ? hardware * P.amcRate.quote : 0);
@@ -97,11 +80,8 @@ export function derive(a, P) {
 
   if (a.storageMode === 'budget') {
     const budget = a.budget;
-    // Not chosen yet (public configurator starts blank): incomplete, not an error.
-    if (budget == null || !(budget > 0) || (!a.raidAuto && a.raid == null)) return { ...unbuilt(a, 'budget', null), incomplete: true };
-
-    // A budget covers the whole quote, so anything ticked on top of the
-    // hardware comes out of it rather than surprising the customer later.
+    if (budget == null) return { ...unbuilt(a, 'budget', null), pending: true }; // waiting for a budget
+    if (!(budget > 0)) return unbuilt(a, 'budget', 'Enter a budget to size against.');
     const extraCost = extraCostFor(a, P);
 
     let raid = a.raid;
@@ -137,30 +117,14 @@ export function derive(a, P) {
     }
 
     const picked = pickBuild(a, builds);
-    return {
-      mode: 'budget',
-      error: null,
-      sizes: [],
-      targetTB: picked.build ? picked.build.totalUsable : a.targetTB,
-      movedFrom: null,
-      raid,
-      redundant,
-      builds,
-      ...picked,
-    };
-  }
-
-  if (a.raid == null || !(a.targetTB > 0)) {
-    // Sizes to offer before a RAID level is picked: what RAID 5 can build (the common case).
-    const sizes = buildableSizes({ raid: a.raid ?? 'RAID5', ...catalogue });
-    return { ...unbuilt(a, 'capacity', null), sizes, incomplete: true };
+    return { mode: 'budget', error: null, sizes: [], targetTB: picked.build ? picked.build.totalUsable : a.targetTB, movedFrom: null, raid, redundant, builds, ...picked };
   }
 
   const sizes = buildableSizes({ raid: a.raid, ...catalogue });
   if (!sizes.length) {
     return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand, bays or RAID level.'), sizes };
   }
-
+  if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, pending: true }; // waiting for a size
   const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
   const builds = suggestBuilds({ targetTB, raid: a.raid, ...catalogue });
   return {
@@ -176,6 +140,15 @@ export function derive(a, P) {
   };
 }
 
+/* ---------------- which options can actually be built ---------------- */
+
+/**
+ * The options worth offering, read off the same build pool the recommendation uses, so the
+ * pickers can't drift from the catalogue. Grey out what can't be built; never hide it.
+ * Bays are judged as if no size were pinned (or there'd be no way back), and only sizes the
+ * array actually fills are offered; where nothing fits exactly, the least wasteful ones are.
+ * Drive sizes are judged against the whole pool, lines against the chosen size.
+ */
 export function feasibleOptions(a, P, d) {
   const bayPool = a.bays == null ? d.builds : derive({ ...a, bays: null }, P).builds;
   const byCap = a.driveCap == null ? d.builds : d.builds.filter((b) => b.driveCap === a.driveCap);
@@ -198,19 +171,20 @@ export function feasibleOptions(a, P, d) {
 
 /* ---------------- pricing ---------------- */
 
-const findUpgrade = (P, sku, category) => (sku ? P.upgrades.find((u) => u.sku === sku && u.category === category) ?? null : null);
+/** The RAM / network card chosen, or null once it stops existing in the price list. */
+export const selectedUpgrade = (P, category, sku) => (sku ? P.upgrades.find((u) => u.sku === sku && u.category === category) ?? null : null);
 
 /**
- * The money for a build. Everything is GST inclusive. Installation is per
- * chassis; AMC is a percentage of hardware only. The floor is computed only
- * when both the unit and the drive carry a minimum (a partial floor misleads);
- * upgrades and installation fall back to their quote when they have none.
+ * The money for a build. Everything is GST inclusive. Installation is per chassis; AMC is a
+ * percentage of hardware only. The floor is computed only when both the unit and the drive
+ * carry a minimum (a partial floor misleads); upgrades and installation fall back to their
+ * quote when they have none. Floors only exist on the staff payload.
  */
 export function priceFor(build, a, P) {
   if (!build) return null;
   const { units, drivesPerUnit, model, drive } = build;
-  const ram = findUpgrade(P, a.ramSku, 'RAM');
-  const nic = findUpgrade(P, a.nicSku, 'NIC');
+  const ram = selectedUpgrade(P, 'RAM', a.ramSku);
+  const nic = selectedUpgrade(P, 'NIC', a.nicSku);
 
   const nas = model.quote * units;
   const hdd = drive.quote * drivesPerUnit * units;
@@ -233,40 +207,67 @@ export function priceFor(build, a, P) {
     floor = { nas: fNas, hdd: fHdd, ram: fRam, nic: fNic, hardware: fHardware, install: fInstall, amc: fAmc, total: fHardware + fInstall + fAmc };
   }
 
-  return { nas, hdd, ram: ramCost, nic: nicCost, hardware, install, amc, total, perTB: build.totalUsable ? total / build.totalUsable : null, floor, ramItem: ram, nicItem: nic };
+  return {
+    nas, hdd, ram: ramCost, nic: nicCost, hardware, install, amc, total,
+    totalDrives: drivesPerUnit * units,
+    perTB: build.totalUsable ? total / build.totalUsable : null,
+    floor, ramItem: ram, nicItem: nic,
+  };
 }
 
-/** Estimate rows for display and the lead, with the floor beside each when present. */
+/** What the build can do on the network, and the speed to quote (a network card can raise it). */
+export function speedFor(build, nic) {
+  const net = networkFor(build?.model);
+  const nicTopGb = nic ? topSpeed(`${nic.name} ${nic.spec ?? ''}`) : 0;
+  const topGb = Math.max(net?.topGb ?? 0, nicTopGb);
+  const label = labelForSpeed(topGb);
+  return { net, nicTopGb, topGb, speed: label === '—' ? (net?.quotable ?? null) : label };
+}
+
+/* ---------------- estimate & lead ---------------- */
+
+/** Estimate rows for display, PDF and the lead, with the floor beside each when present. */
 export function estimateLines(build, price, a, P) {
   if (!build || !price) return [];
   const f = price.floor;
   const u = build.units;
   const rows = [
-    { key: 'nas', label: 'NAS unit', basis: `${u} × ${inr(build.model.quote)}`, quote: price.nas, floor: f?.nas },
-    { key: 'hdd', label: 'Hard drives', basis: `${build.drivesPerUnit * u} × ${inr(build.drive.quote)}`, quote: price.hdd, floor: f?.hdd },
+    { key: 'nas', label: `${build.model.brand} ${build.model.model}`, detail: `${build.model.bays}-bay NAS${build.model.network ? ` · ${build.model.network}` : ''}`, basis: `${u} × ${inr(build.model.quote)}`, qty: u, rate: build.model.quote, quote: price.nas, floor: f?.nas },
+    { key: 'hdd', label: `${build.driveCap} TB ${build.driveLine}`, detail: `${build.drivesPerUnit} per unit, configured as ${RAID_INFO[build.raid].title}`, basis: `${build.drivesPerUnit * u} × ${inr(build.drive.quote)}`, qty: build.drivesPerUnit * u, rate: build.drive.quote, quote: price.hdd, floor: f?.hdd },
   ];
-  if (price.ramItem) rows.push({ key: 'ram', label: price.ramItem.name, basis: `${u} × ${inr(price.ramItem.quote)}`, quote: price.ram, floor: f?.ram });
-  if (price.nicItem) rows.push({ key: 'nic', label: price.nicItem.name, basis: `${u} × ${inr(price.nicItem.quote)}`, quote: price.nic, floor: f?.nic });
+  if (price.ramItem) rows.push({ key: 'ram', label: price.ramItem.name, detail: 'RAM upgrade', basis: `${u} × ${inr(price.ramItem.quote)}`, qty: u, rate: price.ramItem.quote, quote: price.ram, floor: f?.ram });
+  if (price.nicItem) rows.push({ key: 'nic', label: price.nicItem.name, detail: 'Network card', basis: `${u} × ${inr(price.nicItem.quote)}`, qty: u, rate: price.nicItem.quote, quote: price.nic, floor: f?.nic });
   rows.push({ key: 'hardware', label: 'Hardware', basis: '', quote: price.hardware, floor: f?.hardware, subtotal: true });
-  if (a.includeInstall) rows.push({ key: 'install', label: 'Installation & setup', basis: `${u} × ${inr(P.install.quote)}`, quote: price.install, floor: f?.install });
-  if (a.includeAMC) rows.push({ key: 'amc', label: 'AMC (1 year)', basis: `${Math.round(P.amcRate.quote * 100)}% of hardware`, quote: price.amc, floor: f?.amc });
+  if (a.includeInstall) rows.push({ key: 'install', label: 'Installation & setup', detail: 'Racking, RAID configuration, network setup', basis: `${u} × ${inr(P.install.quote)}`, qty: u, rate: P.install.quote, quote: price.install, floor: f?.install });
+  if (a.includeAMC) rows.push({ key: 'amc', label: 'Annual maintenance (AMC)', detail: `${Math.round(P.amcRate.quote * 100)}% of hardware value, first year`, basis: `${Math.round(P.amcRate.quote * 100)}% of hardware`, quote: price.amc, floor: f?.amc });
   rows.push({ key: 'total', label: 'Total', basis: 'GST inclusive', quote: price.total, floor: f?.total, total: true });
   return rows;
 }
 
-/** Plain-text summary of the configuration, filed with the lead. */
-export function leadSummary(build, price, a, d) {
-  if (!build) return '';
-  const net = networkFor(build.model);
-  const lines = [
-    `${build.model.brand} ${build.model.model} × ${build.units} (${build.model.bays}-bay)`,
-    `${build.drivesPerUnit * build.units} × ${build.driveCap} TB ${build.driveLine} · ${RAID_INFO[build.raid].title} · ${build.totalUsable} TB usable`,
-    `Network: ${net.ports}${net.upgrade ? ` (upgradable: ${net.upgrade})` : ''}`,
-  ];
-  if (price.ramItem) lines.push(`RAM: ${price.ramItem.name}`);
-  if (price.nicItem) lines.push(`Network card: ${price.nicItem.name}`);
-  lines.push(`Installation: ${a.includeInstall ? 'yes' : 'no'} · AMC: ${a.includeAMC ? 'yes' : 'no'}`);
-  lines.push(`Estimate: ${inr(price.total)} (hardware ${inr(price.hardware)}), GST inclusive`);
-  lines.push(d.mode === 'budget' ? `Sized by budget: ${inr(a.budget)}` : `Sized by capacity: ${d.targetTB} TB${d.movedFrom ? ` (asked ${d.movedFrom} TB)` : ''}`);
-  return lines.join('\n');
+/** A reference for the estimate and the lead, e.g. NT-NAS-20261008-K3F9. */
+export function estimateRef(now = new Date()) {
+  const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+  return `NT-NAS-${stamp}-${now.getTime().toString(36).slice(-4).toUpperCase()}`;
+}
+
+/** The configuration as plain text, filed with the lead so sales sees exactly what was configured. */
+export function leadSummary(d, build, price, speed, a, P, ref) {
+  if (!build || !price) return '';
+  const addons = [a.includeInstall ? 'Installation & setup' : null, a.includeAMC ? `AMC (${Math.round(P.amcRate.quote * 100)}%)` : null].filter(Boolean).join(', ');
+  return [
+    ref ? `NAS configurator request · ${ref}` : null,
+    ref ? '' : null,
+    `Unit: ${build.model.brand} ${build.model.model} (${build.model.bays}-bay)${build.units > 1 ? ` × ${build.units}` : ''}`,
+    `Drives: ${price.totalDrives} × ${build.driveCap} TB ${build.driveLine}`,
+    `RAID: ${RAID_INFO[d.raid].title}, ${build.totalUsable} TB usable`,
+    `Network: ${speed ?? 'Not specified'}${build.model.networkUpgrade ? ` (upgradable: ${build.model.networkUpgrade})` : ''}`,
+    price.ramItem ? `RAM upgrade: ${price.ramItem.name}` : null,
+    price.nicItem ? `Network card: ${price.nicItem.name}` : null,
+    `Add-ons: ${addons || 'None'}`,
+    '',
+    d.mode === 'budget' ? `Sized by budget: ${inr(a.budget)}` : `Sized by capacity: ${d.targetTB} TB${d.movedFrom ? ` (asked ${d.movedFrom} TB)` : ''}`,
+    `Preferences: brand ${a.brand === 'any' ? 'any' : a.brand} · bays ${a.bays ?? 'auto'} · expansion ${a.expandable ? 'required' : 'not required'}`,
+    '',
+    `Estimated total (incl. GST): ${inr(price.total)}`,
+  ].filter((line) => line !== null).join('\n');
 }

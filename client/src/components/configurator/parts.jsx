@@ -62,7 +62,7 @@ export function InfoButton({ onClick, label }) {
 }
 
 /** Modal built on <dialog>, for specifications. */
-export function Dialog({ open, onClose, title, children }) {
+export function Dialog({ open, onClose, title, children, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
     const d = ref.current;
@@ -81,7 +81,7 @@ export function Dialog({ open, onClose, title, children }) {
       data-lenis-prevent
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className="m-auto w-[min(92vw,34rem)] rounded-xl border border-line bg-raised p-0 text-fg shadow-2xl backdrop:bg-fg/40 backdrop:backdrop-blur-sm"
+      className={`m-auto ${wide ? 'w-[min(96vw,64rem)]' : 'w-[min(92vw,34rem)]'} rounded-xl border border-line bg-raised p-0 text-fg shadow-2xl backdrop:bg-fg/40 backdrop:backdrop-blur-sm`}
     >
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
         <h3 className="font-medium">{title}</h3>

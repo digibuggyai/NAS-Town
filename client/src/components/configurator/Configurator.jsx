@@ -1,19 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Check, Copy, Loader2, RotateCcw, Sparkles } from 'lucide-react';
+import { AlertTriangle, Check, CheckCircle2, Copy, Download, Info, Loader2, RotateCcw, Sparkles } from 'lucide-react';
 import { usePricing } from '../../lib/nas/usePricing.js';
-import { RAID_INFO, RAID_LEVELS, inr, networkFor } from '../../lib/nas/logic.js';
+import { RAID_INFO, RAID_LEVELS, bestNetworkAmong, inr } from '../../lib/nas/logic.js';
 import {
-  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, PUBLIC_START, derive, estimateLines, feasibleOptions, leadSummary, missingChoices, priceFor,
+  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, derive, estimateLines, estimateRef, feasibleOptions, leadSummary, priceFor, speedFor,
 } from '../../lib/nas/configure.js';
-import { compareRows, compatibilityNotes, driveLineRows, modelSpecRows } from '../../lib/nas/specs.js';
-import EnquiryForm from '../EnquiryForm.jsx';
+import {
+  buildSpecs, classLabel, compareRows, driveLineSpecs, driveNotes, expansionBadge, findLine, keyDriveSpecs, keySpecs, modelSpecs,
+} from '../../lib/nas/specs.js';
+import { openEstimatePdf } from '../../lib/nas/estimatePdf.js';
+import { api } from '../../lib/api.js';
+import { Dialog } from './parts.jsx';
+import { Badge, CheckTile, InfoHover, SpecList, StepCard, Tile } from './ui.jsx';
 import { IntroPopup, QuoteOfferPopup } from './OfferPopups.jsx';
-import { Choice, Dialog, InfoButton, SpecTable, Step, Toggle } from './parts.jsx';
 
-/** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5. The public tool starts blank. */
-function initialAnswers(P, params, sales) {
-  const start = sales ? INITIAL_ANSWERS : PUBLIC_START;
-  const a = { ...start, chosen: start.chosen && { ...start.chosen } };
+/* The NAS configurator: the same engine and question order as the DGB India configurator,
+ * in NASTOWN's design. One Answers object in, everything else derived on every change.
+ * `source="public"` reads the public price list; `source="sales"` (admin) reads the staff
+ * payload and shows the floor beside every line. */
+
+const SHORTLIST = 5;
+
+/** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5 */
+function initialAnswers(P, params) {
+  const a = { ...INITIAL_ANSWERS };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
   const raid = params?.get('raid');
@@ -22,7 +32,6 @@ function initialAnswers(P, params, sales) {
   if (model) {
     a.modelId = model.id;
     a.autoPick = false;
-    if (a.chosen) a.chosen.unit = true; // arrived from "Configure this NAS" on a product page
     if (!model.raid.includes(a.raid)) a.raid = model.bays >= 3 ? 'RAID5' : 'RAID1';
   }
   return a;
@@ -30,22 +39,22 @@ function initialAnswers(P, params, sales) {
 
 export default function Configurator({ source = 'public', params }) {
   const { pricing, error, loading, reload } = usePricing(source);
-  const [openedAt] = useState(() => Date.now()); // popup timings count from here, not from when prices load
+  const [openedAt] = useState(() => Date.now()); // popup timings count from page open
 
   if (loading) {
     return (
-      <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-        <div className="grid gap-4">{[0, 1, 2].map((i) => <div key={i} className="glass h-40 animate-pulse rounded-xl" />)}</div>
-        <div className="glass h-96 animate-pulse rounded-xl" />
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid gap-4 xl:grid-cols-2">{[0, 1, 2, 3].map((i) => <div key={i} className="h-48 animate-pulse rounded-2xl bg-surface" />)}</div>
+        <div className="h-[28rem] animate-pulse rounded-2xl bg-surface" />
       </div>
     );
   }
   if (error || !pricing) {
     return (
-      <div className="glass mx-auto max-w-lg rounded-xl p-8 text-center">
+      <div className="mx-auto max-w-lg rounded-2xl border border-line bg-raised p-8 text-center">
         <AlertTriangle className="mx-auto size-8 text-warning" />
-        <h2 className="mt-4 text-xl font-medium">Pricing is unavailable right now</h2>
-        <p className="mt-2 text-sm text-muted">{error?.status === 401 || error?.status === 403 ? 'Please sign in again.' :"We don't quote from old price lists. Try again in a moment, or talk to our team."}</p>
+        <h2 className="mt-4 text-xl font-semibold">Pricing is unavailable right now</h2>
+        <p className="mt-2 text-sm text-muted">{error?.status === 401 || error?.status === 403 ? 'Please sign in again.' : "We don't quote from old price lists. Try again in a moment, or talk to our team."}</p>
         <button onClick={reload} className="btn btn-primary mt-6"><RotateCcw className="size-4" /> Try again</button>
       </div>
     );
@@ -54,42 +63,48 @@ export default function Configurator({ source = 'public', params }) {
 }
 
 function ConfiguratorLoaded({ P, sales, params, openedAt }) {
-  const [a, setAnswers] = useState(() => initialAnswers(P, params, sales));
-  const set = (patch) => setAnswers((prev) => ({ ...prev, ...patch }));
-  // A step the customer has answered themselves (public tool: nothing is picked for them).
-  const choose = (key, patch) => setAnswers((prev) => ({ ...prev, ...patch, chosen: prev.chosen && { ...prev.chosen, [key]: true } }));
-  const picked = (key) => !a.chosen || a.chosen[key];
+  const [a, setAnswers] = useState(() => initialAnswers(P, params));
+  const [interacted, setInteracted] = useState(false);
+  const set = (patch) => { setAnswers((prev) => ({ ...prev, ...patch })); setInteracted(true); };
 
   const d = useMemo(() => derive(a, P), [a, P]);
   const price = useMemo(() => priceFor(d.build, a, P), [d.build, a, P]);
   const can = useMemo(() => feasibleOptions(a, P, d), [a, P, d]);
   const lines = useMemo(() => estimateLines(d.build, price, a, P), [d.build, price, a, P]);
-
-  const [dialog, setDialog] = useState(null); // { kind: 'model' | 'line', item }
-  const [compare, setCompare] = useState(false);
-  const [quoteOpen, setQuoteOpen] = useState(false);
-  const requestQuote = () => {
-    setQuoteOpen(true);
-    requestAnimationFrame(() => document.getElementById('quote-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-  };
-  const missing = sales ? [] : missingChoices(a);
-  const quoteReady = Boolean(d.build && price) && missing.length === 0;
-  // Offer popups (public only): see useOfferPopups below.
-  const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, quoteReady, quoteOpen, openedAt });
-
+  const { net, speed } = useMemo(() => speedFor(d.build, price?.nicItem), [d.build, price]);
+  const [ref] = useState(() => estimateRef());
   const build = d.build;
+  const started = !d.pending; // nothing is selected or priced until a size or budget is chosen
+  const summary = build && price ? leadSummary(d, build, price, speed, a, P, ref) : '';
+
+  const [dialog, setDialog] = useState(null); // { kind: 'model' | 'line' | 'compare', item }
+  const [showAll, setShowAll] = useState(false);
+  const [quoteSent, setQuoteSent] = useState(false);
+  const [pdfBlocked, setPdfBlocked] = useState(false);
+
   const brands = useMemo(() => [...new Set(P.models.map((m) => m.brand))].sort(), [P]);
   const bayTiers = useMemo(() => [...new Set(P.models.map((m) => m.bays))].sort((x, y) => x - y), [P]);
-  const pricedLines = useMemo(() => [...new Set(Object.values(P.hddPricing).flatMap((l) => Object.keys(l)))], [P]);
-  const lineSpec = (name) => P.driveLines.find((l) => l.name === name);
+  const pricedLines = useMemo(() => {
+    const priced = new Set(Object.values(P.hddPricing).flatMap((l) => Object.keys(l)));
+    const order = (name) => P.driveLines.find((l) => l.name === name)?.sortOrder ?? 999;
+    return [...priced].sort((x, y) => order(x) - order(y) || x.localeCompare(y));
+  }, [P]);
+  const lineSpec = (name) => findLine(P.driveLines, name);
+  const expandableCount = P.models.filter((m) => m.expandable).length;
+  const mostBays = Math.max(0, ...P.models.map((m) => m.baysWithExpansion ?? 0));
   const bayHint = (tier) => {
     const b = can.bayPool.find((x) => x.model.bays === tier);
-    return b ? `${b.drivesPerUnit}× ${b.driveCap} TB` : 'not for this target';
+    return b ? `${b.drivesPerUnit}× ${b.driveCap} TB${b.units > 1 ? ` · ${b.units} units` : ''}` : "Can't reach the target";
   };
   const ram = P.upgrades.filter((u) => u.category === 'RAM');
   const nic = P.upgrades.filter((u) => u.category === 'NIC');
+  const options = showAll ? d.options : d.options.slice(0, SHORTLIST);
+  const better = useMemo(() => {
+    const best = bestNetworkAmong(d.options);
+    return best && net && best.topGb > net.topGb ? best : null;
+  }, [d.options, net]);
 
-  // Mobile: a sticky bar appears once the estimate panel scrolls out of view.
+  // Mobile: a bar with the running total appears once the estimate panel is out of view.
   const panelRef = useRef(null);
   const [panelVisible, setPanelVisible] = useState(true);
   useEffect(() => {
@@ -100,21 +115,29 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
     return () => io.disconnect();
   }, []);
 
+  const [quoteOpen, setQuoteOpen] = useState(false); // the formal-quotation form, in a popup
+  const downloadPdf = () => {
+    if (!build || !price) return;
+    setPdfBlocked(!openEstimatePdf({ ref, build, price, lines, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
+  };
+
+  const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, interacted, quoteReady: Boolean(build && price), quoteSent, openedAt });
   const hasFloor = sales && price?.floor;
   const room = hasFloor ? price.total - price.floor.total : null;
+  let n = 0; // step numbers, so a hidden step doesn't leave a gap
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-      <div className="grid content-start gap-4">
-        {/* 01 Storage */}
-        <Step
-          n={1}
-          title="How much storage?"
-          hint={a.storageMode === 'capacity' ? 'Usable space after RAID protection.' : 'The budget covers the whole quote, including installation and AMC if ticked.'}
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid gap-4 xl:grid-cols-2">
+        {/* 1 Storage */}
+        <StepCard
+          n={++n}
+          title="How much storage do you need?"
+          hint={a.storageMode === 'capacity' ? 'Usable space after RAID protection.' : 'Your budget covers the whole quote, including installation and AMC if ticked.'}
           aside={
-            <div className="flex shrink-0 self-start rounded-full bg-surface p-1 text-xs ring-1 ring-line">
+            <div className="flex shrink-0 self-start rounded-full bg-surface p-1 text-xs ring-1 ring-line" role="group" aria-label="Size by">
               {[['capacity', 'By capacity'], ['budget', 'By budget']].map(([mode, label]) => (
-                <button key={mode} onClick={() => set({ storageMode: mode })} className={`min-h-9 whitespace-nowrap rounded-full px-3.5 py-1.5 transition-colors ${a.storageMode === mode ? 'bg-fg text-bg' : 'text-muted hover:text-fg'}`}>
+                <button key={mode} onClick={() => set({ storageMode: mode })} aria-pressed={a.storageMode === mode} className={`rounded-full px-3 py-1.5 font-medium whitespace-nowrap transition-colors ${a.storageMode === mode ? 'bg-fg text-white' : 'text-muted hover:text-fg'}`}>
                   {label}
                 </button>
               ))}
@@ -123,222 +146,208 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         >
           {a.storageMode === 'capacity' ? (
             <>
-              <div className="flex flex-wrap gap-2">
-                {CAPACITY_PRESETS.map((tb) => (
-                  <Choice key={tb} active={a.targetTB != null && d.targetTB === tb} onClick={() => set({ targetTB: tb })}>{tb} TB</Choice>
-                ))}
+              <div className="flex flex-wrap items-center gap-3">
                 <select
-                  aria-label="Exact usable size"
-                  value={a.targetTB != null && d.sizes.includes(d.targetTB) ? d.targetTB : ''}
+                  aria-label="Usable storage"
+                  value={d.sizes.includes(d.targetTB) ? d.targetTB : ''}
                   onChange={(e) => set({ targetTB: Number(e.target.value) })}
-                  className="field !w-auto !rounded-full !py-2 text-sm"
+                  className="field !w-auto min-w-36 !py-2.5 text-base font-semibold"
                 >
-                  <option value="" disabled>Other size</option>
+                  {!started && <option value="" disabled>Select size</option>}
                   {d.sizes.map((s) => <option key={s} value={s}>{s} TB</option>)}
                 </select>
+                <span className="text-sm text-muted">{started ? <>usable at {RAID_INFO[a.raid].title}</> : 'Pick a size, or tap one below'}</span>
               </div>
-              {d.movedFrom != null && (
-                <p className="mt-3 text-sm text-warning">
-                  Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives at {RAID_INFO[d.raid].title}.
-                </p>
+              <div className="mt-3 grid grid-cols-4 gap-2">
+                {CAPACITY_PRESETS.map((tb) => <Tile key={tb} active={d.targetTB === tb} onClick={() => set({ targetTB: tb })} title={`${tb} TB`} className="justify-center text-center" />)}
+              </div>
+              {d.movedFrom != null ? (
+                <p className="mt-3 flex gap-2 text-sm text-warning"><Info className="mt-0.5 size-4 shrink-0" /> Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives at {RAID_INFO[a.raid].title}.</p>
+              ) : started && (
+                <p className="mt-3 text-xs text-subtle">{d.sizes.length} sizes can be built at {RAID_INFO[a.raid].title}. Other figures can't be made from whole drives.</p>
               )}
             </>
           ) : (
             <>
-              <div className="flex flex-wrap gap-2">
-                {BUDGET_PRESETS.map((b) => (
-                  <Choice key={b} active={a.budget === b} onClick={() => set({ budget: b })}>{inr(b)}</Choice>
-                ))}
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 xl:grid-cols-3 2xl:grid-cols-5">
+                {BUDGET_PRESETS.map((b) => <Tile key={b} active={a.budget === b} onClick={() => set({ budget: b })} title={inr(b)} className="justify-center text-center" />)}
               </div>
               <label className="mt-3 flex max-w-xs items-center gap-2">
-                <span className="text-sm text-muted">₹</span>
-                <input
-                  type="number"
-                  min={0}
-                  step={5000}
-                  value={a.budget ?? ''}
-                  onChange={(e) => set({ budget: e.target.value === '' ? null : Number(e.target.value) })}
-                  className="field !py-2"
-                  aria-label="Budget in rupees"
-                />
+                <span className="text-sm whitespace-nowrap text-muted">Or enter ₹</span>
+                <input type="number" min={0} step={5000} value={a.budget ?? ''} onChange={(e) => set({ budget: e.target.value === '' ? null : Number(e.target.value) })} className="field !py-2" aria-label="Budget in rupees" />
               </label>
             </>
           )}
-        </Step>
+        </StepCard>
 
-        {/* 02 RAID */}
-        <Step n={2} title="RAID Protection" hint={d.raid ? RAID_INFO[d.raid].blurb : 'How many drive failures your storage should survive.'}>
-          <div className="flex flex-wrap gap-2">
+        {/* 2 RAID */}
+        <StepCard n={++n} locked={!started} title="RAID Protection" hint="How drives are arranged: how much raw capacity is usable, and how many drive failures the array survives.">
+          <div className="grid gap-2">
             {a.storageMode === 'budget' && (
-              <Choice active={a.raidAuto} onClick={() => set({ raidAuto: true, raid: a.raid ?? 'RAID5' })} sub="most space, with protection">
-                <span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>
-              </Choice>
+              <Tile active={started && a.raidAuto} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Most space, with protection</span>} />
             )}
             {RAID_LEVELS.map((r) => (
-              <Choice
+              <Tile
                 key={r}
-                active={(a.storageMode === 'capacity' || !a.raidAuto) && a.raid === r}
+                active={started && (a.storageMode === 'capacity' || !a.raidAuto) && a.raid === r}
                 onClick={() => set({ raid: r, raidAuto: false })}
-                sub={RAID_INFO[r].tolerance === 0 ? 'no protection' : RAID_INFO[r].tolerance === 2 ? 'survives 2 failures' : 'survives 1 failure'}
-              >
-                {RAID_INFO[r].title}
-              </Choice>
+                title={RAID_INFO[r].title}
+                aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">{RAID_INFO[r].sub}</span>}
+              />
             ))}
           </div>
-          {a.storageMode === 'budget' && a.raidAuto && !d.error && !d.incomplete && (
-            <p className="mt-3 text-sm text-muted">We chose <span className="text-fg">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ' with protection.' : '.'}</p>
+          {a.storageMode === 'budget' && a.raidAuto && !d.error && (
+            <p className="mt-3 text-sm text-muted">We chose <span className="font-medium text-fg">{RAID_INFO[d.raid].title}</span>: the most usable space this budget buys{d.redundant ? ', with protection.' : '.'}</p>
           )}
           {d.raid === 'RAID0' && !d.error && (
             <p className="mt-3 flex items-start gap-2 text-sm text-warning"><AlertTriangle className="mt-0.5 size-4 shrink-0" /> RAID 0 has no redundancy: one failed drive loses all data.</p>
           )}
-        </Step>
+        </StepCard>
 
-        {/* 03 Bays · 04 Brand · 05 Expand */}
-        <Step n={3} title="Drive bays, Brand and room to grow">
-          <p className="mb-2 text-xs tracking-wide text-muted uppercase">Bays</p>
-          <div className="flex flex-wrap gap-2">
-            <Choice active={picked('bays') && a.bays == null} onClick={() => choose('bays', { bays: null })} sub="best value">Auto</Choice>
+        {/* 3 Bays */}
+        <StepCard n={++n} locked={!started} title="Drive bays" hint="How many drives the unit holds. Auto picks the size that fits best.">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <Tile active={started && a.bays == null} onClick={() => set({ bays: null })} title="Auto" sub="Best fit" />
             {bayTiers.map((t) => (
-              <Choice key={t} active={a.bays === t} disabled={!d.incomplete && !can.bays.has(t)} onClick={() => choose('bays', { bays: t })} sub={d.incomplete ? undefined : bayHint(t)}>
-                {t}-bay
-              </Choice>
+              <Tile key={t} active={a.bays === t} disabled={started && !can.bays.has(t)} onClick={() => set({ bays: t })} title={`${t}-bay`} sub={started ? bayHint(t) : undefined} />
             ))}
           </div>
-          <p className="mt-5 mb-2 text-xs tracking-wide text-muted uppercase">Brand</p>
-          <div className="flex flex-wrap gap-2">
-            <Choice active={picked('brand') && a.brand === 'any'} onClick={() => choose('brand', { brand: 'any' })}>Any</Choice>
-            {brands.map((b) => <Choice key={b} active={a.brand === b} onClick={() => choose('brand', { brand: b })}>{b}</Choice>)}
-          </div>
-          <div className="mt-5 max-w-sm">
-            <Toggle checked={a.expandable} onChange={(v) => set({ expandable: v })} label="Room to expand" sub="Only units that take an expansion enclosure" />
-          </div>
-        </Step>
+        </StepCard>
 
-        {d.incomplete ? (
-          <div className="glass flex items-start gap-3 rounded-xl p-6 text-sm text-muted">
-            <Sparkles className="mt-0.5 size-5 shrink-0 text-accent" />
-            <p>Choose how much storage you need and how it should be protected, and we'll show the units that fit.</p>
+        {/* 4 Brand */}
+        <StepCard n={++n} locked={!started} title="Brand" hint="Leave it open unless you have a preference: it widens what we can recommend.">
+          <div className="grid grid-cols-3 gap-2">
+            <Tile active={started && a.brand === 'any'} onClick={() => set({ brand: 'any' })} title="Any" sub="Recommend from all" />
+            {brands.map((b) => <Tile key={b} active={a.brand === b} onClick={() => set({ brand: b })} title={b} sub={`${P.models.filter((m) => m.brand === b).length} units`} />)}
           </div>
-        ) : d.error ? (
-          <div className="glass flex items-start gap-3 rounded-xl p-6 text-sm">
+        </StepCard>
+
+        {/* 5 Room to expand */}
+        <StepCard n={++n} wide locked={!started} title="Room to expand" hint="Optional. Some units take an expansion enclosure for more drives later.">
+          <div className="grid items-center gap-3 sm:grid-cols-2">
+            <CheckTile checked={a.expandable} onChange={(v) => set({ expandable: v })} title="I want room to expand later" sub="Only recommend units that take an expansion unit" />
+            <p className="text-sm text-muted">{expandableCount} of {P.models.length} units take an expansion unit{mostBays ? <>, the largest growing to {mostBays} bays</> : null}.</p>
+          </div>
+        </StepCard>
+
+        {d.error ? (
+          <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-5 text-sm xl:col-span-2">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
             <p>{d.error}</p>
           </div>
-        ) : (
+        ) : build && (
           <>
-            {/* 06 Recommended unit */}
-            <Step
-              n={4}
-              title="Recommended unit"
-              hint="Best value first. Each option is the cheapest way that unit reaches your storage."
-              aside={d.options.length > 1 && (
-                <button onClick={() => setCompare((c) => !c)} className="-my-2 px-2 py-2.5 text-sm text-muted underline-offset-4 hover:text-fg hover:underline">
-                  {compare ? 'Hide comparison' : 'Compare'}
-                </button>
-              )}
-            >
+            {/* 6 Recommended unit */}
+            <StepCard n={++n} wide title="Recommended NAS" hint="Worked out from your choices: unit, drives and drive count together, best value first.">
+              <p className="mb-3 text-sm text-muted">
+                {d.mode === 'budget'
+                  ? <>The most storage {inr(a.budget)} buys at {RAID_INFO[d.raid].title}.</>
+                  : <>Our recommendation for {d.targetTB} TB at {RAID_INFO[d.raid].title}.</>} Pick another if you prefer.
+              </p>
               <ul className="grid gap-2">
-                {d.options.slice(0, 6).map((b, i) => {
-                  const selected = picked('unit') && build?.model.id === b.model.id;
+                {options.map((b, i) => {
+                  const selected = build.model.id === b.model.id;
+                  const exp = expansionBadge(b.model);
                   return (
                     <li key={b.model.id}>
                       <div
                         role="button"
                         tabIndex={0}
-                        onClick={() => choose('unit', { modelId: b.model.id, autoPick: false })}
-                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), choose('unit', { modelId: b.model.id, autoPick: false }))}
                         aria-pressed={selected}
-                        className={`flex cursor-pointer items-center gap-3 rounded-lg p-3.5 ring-1 transition-colors ${selected ? 'bg-surface ring-line' : 'ring-line hover:bg-surface'}`}
+                        onClick={() => set({ modelId: b.model.id, autoPick: false })}
+                        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), set({ modelId: b.model.id, autoPick: false }))}
+                        className={`flex cursor-pointer flex-col gap-3 rounded-xl p-4 ring-1 transition-colors sm:flex-row sm:items-center ${selected ? 'bg-accent-soft ring-2 ring-accent' : 'ring-line hover:bg-surface'}`}
                       >
-                        <span className={`grid size-5 shrink-0 place-items-center rounded-full ring-1 ${selected ? 'bg-fg text-bg ring-fg' : 'ring-line'}`}>
+                        <span className={`hidden size-5 shrink-0 place-items-center rounded-full ring-1 sm:grid ${selected ? 'bg-accent text-white ring-accent' : 'ring-line-strong'}`}>
                           {selected && <Check className="size-3" strokeWidth={3} />}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="flex flex-wrap items-center gap-2 font-medium">
-                            {b.model.brand} {b.model.model}
-                            {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">Best value</span>}
+                          <p className="flex flex-wrap items-center gap-1.5">
+                            <span className="font-semibold">{b.model.model}</span>
+                            <Badge>{b.model.brand}</Badge>
+                            {i === 0 && <Badge tone="accent">Recommended</Badge>}
+                            {exp && <Badge tone="tint">{exp}</Badge>}
+                            <InfoHover label={`${b.model.brand} ${b.model.model} specifications`} specs={keySpecs(b.model)} onOpen={() => setDialog({ kind: 'model', item: b })} align="left" />
                           </p>
-                          <p className="text-xs text-muted">
-                            {b.units > 1 ? `${b.units} units · ` : ''}{b.model.bays}-bay · {b.drivesPerUnit * b.units} × {b.driveCap} TB {b.driveLine} · {b.totalUsable} TB usable
+                          <p className="mt-1 text-sm text-muted">
+                            {b.units > 1 && `${b.units} units · `}{b.drivesPerUnit * b.units}× {b.driveCap} TB {b.driveLine} in {b.model.bays} bays · {b.totalUsable} TB usable · {b.spareBays * b.units} spare {b.spareBays * b.units === 1 ? 'bay' : 'bays'}
                           </p>
                         </div>
-                        <span className="text-sm font-medium whitespace-nowrap">{inr(b.totalQuote)}</span>
-                        <InfoButton label={`${b.model.model} specifications`} onClick={(e) => { e.stopPropagation(); setDialog({ kind: 'model', item: b.model }); }} />
+                        <div className="sm:text-right">
+                          <p className="text-lg font-semibold tabular-nums">{inr(b.totalQuote)}</p>
+                          <p className="text-xs text-subtle">Unit + drives, incl. GST</p>
+                        </div>
                       </div>
                     </li>
                   );
                 })}
               </ul>
-              {!d.autoPick && (
-                <button onClick={() => choose('unit', { autoPick: true, modelId: null })} className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg">
-                  <RotateCcw className="size-3" /> Back to the recommendation
-                </button>
-              )}
-              {compare && (
-                <div className="mt-4 overflow-x-auto rounded-lg ring-1 ring-line">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="border-b border-line">
-                        <th className="p-3 font-normal text-muted" />
-                        {d.options.slice(0, 4).map((b) => <th key={b.model.id} className="p-3 font-medium whitespace-nowrap">{b.model.model}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {compareRows(d.options.slice(0, 4), (b) => inr(b.totalQuote)).map(([label, ...vals]) => (
-                        <tr key={label} className="border-b border-line last:border-0">
-                          <td className="p-3 text-muted">{label}</td>
-                          {vals.map((v, i) => <td key={i} className="p-3">{v}</td>)}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </Step>
-
-            {/* 07 Network (shown, not asked) + 08 Drives */}
-            {build && picked('unit') && (
-              <Step n={5} title="Drives" hint={`Network on the ${build.model.model}: ${networkFor(build.model).ports}${build.model.networkUpgrade ? ` · upgradable: ${build.model.networkUpgrade}` : ''}`}>
-                <p className="mb-2 text-xs tracking-wide text-muted uppercase">Drive size</p>
-                <div className="flex flex-wrap gap-2">
-                  <Choice active={picked('driveCap') && a.driveCap == null} onClick={() => choose('driveCap', { driveCap: null })} sub="best fit">Auto</Choice>
-                  {P.capacities.map((c) => (
-                    <Choice key={c} active={picked('driveCap') && a.driveCap === c} disabled={!can.caps.has(c)} onClick={() => choose('driveCap', { driveCap: c })}>{c} TB</Choice>
-                  ))}
-                </div>
-                <p className="mt-5 mb-2 text-xs tracking-wide text-muted uppercase">Drive line</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Choice active={picked('driveLine') && a.driveLine == null} onClick={() => choose('driveLine', { driveLine: null })} sub="best fit">Auto</Choice>
-                  {pricedLines.map((l) => (
-                    <Choice key={l} active={picked('driveLine') && a.driveLine === l} disabled={!can.lines.has(l)} onClick={() => choose('driveLine', { driveLine: l })} sub={lineSpec(l)?.driveClass}>
-                      {l}
-                    </Choice>
-                  ))}
-                </div>
-                {!(picked('driveCap') && picked('driveLine')) ? (
-                  <p className="mt-5 text-sm text-muted">Choose a drive size and a drive line, or Auto for the best fit.</p>
-                ) : (
-                <div className="mt-5 rounded-lg bg-surface p-4 ring-1 ring-line">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm">
-                      <span className="font-medium">{build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine}</span>
-                      <span className="text-muted"> · {inr(build.drive.quote)} each</span>
-                    </p>
-                    {lineSpec(build.driveLine) && <InfoButton label={`${build.driveLine} specifications`} onClick={() => setDialog({ kind: 'line', item: lineSpec(build.driveLine) })} />}
-                  </div>
-                  <ul className="mt-2 grid gap-1.5">
-                    {compatibilityNotes(build, lineSpec(build.driveLine)).map((note) => (
-                      <li key={note} className="text-xs leading-relaxed text-muted">· {note}</li>
-                    ))}
-                  </ul>
-                </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+                {d.options.length > SHORTLIST && (
+                  <button onClick={() => setShowAll((v) => !v)} className="py-2 font-medium text-accent hover:underline">
+                    {showAll ? 'Show fewer units' : `Show ${d.options.length - SHORTLIST} more units`}
+                  </button>
                 )}
-              </Step>
-            )}
+                {options.length > 1 && (
+                  <button onClick={() => setDialog({ kind: 'compare' })} className="py-2 font-medium text-accent hover:underline">Compare {Math.min(options.length, 6)} units side by side</button>
+                )}
+                {!d.autoPick && (
+                  <button onClick={() => set({ autoPick: true, modelId: null })} className="inline-flex items-center gap-1.5 py-2 text-muted hover:text-fg"><RotateCcw className="size-3.5" /> Back to the recommendation</button>
+                )}
+              </div>
+            </StepCard>
 
-            {/* 09 Upgrades: hidden entirely when nothing is priced */}
+            {/* 7 Network: shown, never asked */}
+            <StepCard n={++n} title="Network speed" hint="What the recommended unit connects at out of the box.">
+              <p className="text-sm"><span className="font-medium">{build.model.model}</span> ships with <span className="font-medium">{build.model.network || 'no network ports on record'}</span>.</p>
+              {better && <p className="mt-1 text-sm text-muted">Need more throughput? The {better.model.model} has {better.builtIn} built in.</p>}
+              <div className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
+                <p className="text-xs font-semibold tracking-wide text-subtle uppercase">Connects at</p>
+                <p className="mt-1 text-2xl font-semibold tracking-tight">{speed ?? '—'}</p>
+                <p className="text-xs text-muted">{build.model.network} built in</p>
+                {build.model.networkUpgrade && <p className="mt-2 border-t border-line pt-2 text-xs text-muted">Can be upgraded: {build.model.networkUpgrade}</p>}
+              </div>
+            </StepCard>
+
+            {/* 8 Drives */}
+            <StepCard n={++n} title="Drives" hint="We pick these for you. Choose a size or drive line and the recommendation updates.">
+              <p className="text-sm">Recommended: <span className="font-medium">{price.totalDrives}× {build.driveCap} TB {build.driveLine}</span> <span className="text-muted">· {inr(build.drive.quote)} each</span></p>
+              <p className="mt-4 mb-2 text-xs font-semibold tracking-wide text-subtle uppercase">Drive size</p>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                <Tile active={a.driveCap == null} onClick={() => set({ driveCap: null })} title="Auto" />
+                {P.capacities.map((c) => <Tile key={c} active={a.driveCap === c} disabled={!can.caps.has(c)} onClick={() => set({ driveCap: c })} title={`${c} TB`} />)}
+              </div>
+              <p className="mt-5 mb-2 text-xs font-semibold tracking-wide text-subtle uppercase">Drive line</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Tile active={a.driveLine == null} onClick={() => set({ driveLine: null })} title="Auto" sub="Best value" />
+                {pricedLines.map((l) => {
+                  const spec = lineSpec(l);
+                  return (
+                    <Tile
+                      key={l}
+                      active={a.driveLine === l}
+                      disabled={!can.lines.has(l)}
+                      onClick={() => set({ driveLine: l })}
+                      title={l}
+                      sub={classLabel(spec) ?? undefined}
+                      aside={spec && <InfoHover label={`${l} specifications`} specs={keyDriveSpecs(spec)} onOpen={() => setDialog({ kind: 'line', item: spec })} />}
+                    />
+                  );
+                })}
+              </div>
+              <ul className="mt-4 grid gap-2">
+                {driveNotes(build.model, lineSpec(build.driveLine), build.drivesPerUnit).map((note) => (
+                  <li key={note.text} className={`flex gap-2 rounded-lg px-3 py-2 text-xs leading-relaxed ${note.tone === 'warn' ? 'bg-warning/10 text-warning' : 'bg-surface text-muted'}`}>
+                    {note.tone === 'warn' ? <AlertTriangle className="mt-0.5 size-3.5 shrink-0" /> : <Info className="mt-0.5 size-3.5 shrink-0" />}
+                    {note.text}
+                  </li>
+                ))}
+              </ul>
+            </StepCard>
+
+            {/* 9 Upgrades: hidden entirely when nothing is priced */}
             {P.upgrades.length > 0 && (
-              <Step n={6} title="RAM & network upgrades" hint="Charged per unit.">
+              <StepCard n={++n} title="RAM & network upgrades" hint="Charged per unit.">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[['RAM', ram, 'ramSku'], ['Network card', nic, 'nicSku']].map(([label, items, key]) => items.length > 0 && (
                     <label key={key}>
@@ -350,214 +359,297 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                     </label>
                   ))}
                 </div>
-              </Step>
+              </StepCard>
             )}
 
-            {/* 10 Services */}
-            <Step n={P.upgrades.length ? 7 : 6} title="Installation & support">
+            {/* 10 Installation & support */}
+            <StepCard n={++n} wide={P.upgrades.length === 0} title="Installation & support" hint="Both optional.">
               <div className="grid gap-2 sm:grid-cols-2">
-                <Toggle checked={a.includeInstall} onChange={(v) => set({ includeInstall: v })} label="Installation & setup" sub={`${inr(P.install.quote)} per unit`} />
-                <Toggle checked={a.includeAMC} onChange={(v) => set({ includeAMC: v })} label="AMC, first year" sub={`${Math.round(P.amcRate.quote * 100)}% of hardware`} />
+                <CheckTile checked={a.includeInstall} onChange={(v) => set({ includeInstall: v })} title="On-site installation & setup" sub="Racking, RAID configuration and network setup. Charged per NAS unit." price={inr(P.install.quote)} priceSub="per unit" />
+                <CheckTile checked={a.includeAMC} onChange={(v) => set({ includeAMC: v })} title="Annual maintenance (AMC)" sub="Ongoing support, charged on the hardware value. Installation isn't included." price={`${Math.round(P.amcRate.quote * 100)}%`} priceSub="of hardware" />
               </div>
-            </Step>
+            </StepCard>
+
           </>
         )}
       </div>
 
       {/* Estimate: sticky on desktop */}
-      <div className="lg:sticky lg:top-24 lg:self-start">
-        <div ref={panelRef} className="glass rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <p className="eyebrow">{sales ? 'Internal estimate' : 'Your estimate'}</p>
-            {sales && <span className="rounded-full bg-warning/10 px-2.5 py-1 text-xs text-warning">Floors visible</span>}
+      <aside ref={panelRef} className="lg:sticky lg:top-24" aria-label="Your estimate">
+        <div className="overflow-hidden rounded-2xl border border-line bg-raised shadow-[0_18px_40px_-24px_rgb(15_23_42/0.35)]">
+          <div className="bg-fg px-5 py-5 text-white">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold tracking-[0.14em] text-white/60 uppercase">{sales ? 'Internal estimate' : 'Your estimate'}</p>
+              {sales && <span className="rounded-full bg-warning px-2.5 py-0.5 text-[0.7rem] font-semibold text-white">Floors visible</span>}
+            </div>
+            {build && price ? (
+              <>
+                <p className="mt-2 font-display text-2xl leading-tight font-semibold text-white">{build.units > 1 ? `${build.units} × ` : ''}{build.model.model}</p>
+                <p className="text-sm text-white/70">{build.model.brand} · {build.model.bays}-bay NAS</p>
+              </>
+            ) : <p className="mt-2 text-sm text-white/70">{started ? 'Adjust your choices to see an estimate.' : 'Nothing selected yet.'}</p>}
           </div>
-          {build && price && quoteReady ? (
-            <>
-              <h3 className="mt-4 text-xl font-medium tracking-tight">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</h3>
-              <p className="mt-1 text-sm text-muted">
-                {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="text-fg">{build.totalUsable} TB usable</span>
-              </p>
-              <table className="mt-5 w-full text-sm">
+
+          {build && price ? (
+            <div className="p-5">
+              <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-line ring-1 ring-line">
+                {[['Usable', `${build.totalUsable} TB`], ['RAID', RAID_INFO[d.raid].title], ['Drives', `${price.totalDrives} × ${build.driveCap} TB`], ['Network', speed ?? '—']].map(([k, v]) => (
+                  <div key={k} className="bg-raised px-3 py-2.5">
+                    <dt className="text-[0.7rem] font-semibold tracking-wide text-subtle uppercase">{k}</dt>
+                    <dd className="text-sm font-semibold">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <table className="mt-4 w-full text-sm">
                 {hasFloor && (
-                  <thead>
-                    <tr className="text-xs text-subtle"><th /><th className="pb-2 text-right font-normal">Quote</th><th className="pb-2 text-right font-normal">Floor</th></tr>
-                  </thead>
+                  <thead><tr className="text-xs text-subtle"><th /><th className="pb-2 text-right font-normal">Quote</th><th className="pb-2 pl-3 text-right font-normal">Floor</th></tr></thead>
                 )}
                 <tbody>
-                  {lines.map((l) => (
-                    <tr key={l.key} className={l.total ? 'border-t border-line text-base font-medium' : l.subtotal ? 'border-t border-line' : ''}>
+                  {lines.filter((l) => !l.total).map((l) => (
+                    <tr key={l.key} className={l.subtotal ? 'border-t border-line' : ''}>
                       <td className="py-2 pr-3">
-                        <span className={l.subtotal || l.total ? '' : 'text-fg'}>{l.label}</span>
+                        <span className={l.subtotal ? 'text-muted' : 'font-medium'}>{l.key === 'nas' ? 'NAS unit' : l.key === 'hdd' ? 'Hard drives' : l.label}</span>
                         {l.basis && <span className="block text-xs text-subtle">{l.basis}</span>}
                       </td>
-                      <td className="py-2 text-right whitespace-nowrap">{inr(l.quote)}</td>
-                      {hasFloor && <td className="py-2 pl-3 text-right whitespace-nowrap text-warning">{inr(l.floor)}</td>}
+                      <td className="py-2 text-right whitespace-nowrap tabular-nums">{inr(l.quote)}</td>
+                      {hasFloor && <td className="py-2 pl-3 text-right whitespace-nowrap text-warning tabular-nums">{inr(l.floor)}</td>}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="mt-3 text-xs text-subtle">
-                {inr(price.perTB)} per usable TB · all prices GST inclusive
-              </p>
+              <div className="mt-2 flex items-baseline justify-between border-t-2 border-fg pt-3">
+                <span className="text-sm font-semibold">Total <span className="font-normal text-subtle">incl. GST</span></span>
+                <span className="font-display text-2xl font-semibold tabular-nums">{inr(price.total)}</span>
+              </div>
+              {hasFloor && <p className="mt-1 text-right text-xs text-warning tabular-nums">Floor {inr(price.floor.total)}</p>}
+              <p className="mt-1 text-xs text-subtle">{inr(price.perTB)} per usable TB</p>
+
               {hasFloor && (
-                <p className="mt-3 rounded-xl bg-warning/10 px-3 py-2 text-sm text-warning">
-                  Room to negotiate: <span className="font-medium">{inr(room)}</span> ({((room / price.total) * 100).toFixed(1)}%)
-                </p>
+                <p className="mt-3 rounded-xl bg-warning/10 px-3 py-2 text-sm text-warning">Room to negotiate: <span className="font-semibold">{inr(room)}</span> ({((room / price.total) * 100).toFixed(1)}%)</p>
               )}
-              {sales && !price.floor && (
-                <p className="mt-3 text-xs text-warning">No floor on record for this unit or drive, so no floor is shown.</p>
-              )}
-              {sales ? (
-                <CopySummary text={leadSummary(build, price, a, d)} />
-              ) : (
-                <button onClick={requestQuote} className="btn btn-primary mt-5 w-full">
-                  Request this quote
-                </button>
-              )}
-            </>
+              {sales && !price.floor && <p className="mt-3 text-xs text-warning">No floor on record for this unit or drive, so no floor is shown.</p>}
+
+              <div className="mt-5 grid gap-2">
+                {sales ? <CopySummary text={summary} /> : (
+                  <button onClick={() => setQuoteOpen(true)} className="btn btn-primary w-full">{quoteSent ? <><CheckCircle2 className="size-4" /> Quotation requested</> : 'Request formal quotation'}</button>
+                )}
+                <button onClick={downloadPdf} className="btn btn-secondary w-full"><Download className="size-4" /> Download estimate (PDF)</button>
+                {pdfBlocked && <p className="text-xs text-warning">Your browser blocked the estimate window. Allow pop-ups for this site and try again.</p>}
+              </div>
+              <p className="mt-4 text-xs leading-relaxed text-subtle">
+                Prices include GST and come from our live price list. This is an estimate: availability and final pricing are confirmed in your formal quotation. Ref {ref}.
+              </p>
+            </div>
           ) : (
-            d.error ? <p className="mt-4 text-sm text-muted">{d.error}</p> : <ChoicesLeft missing={missing} />
+            <p className="p-5 text-sm text-muted">{d.error ?? 'Choose how much storage you need, or your budget. We then suggest the NAS, drives and RAID level, and the price builds up here.'}</p>
           )}
         </div>
+      </aside>
 
-        {!sales && quoteOpen && build && (
-          <div id="quote-form" className="mt-4">
-            <EnquiryForm
-              type="configurator"
-              title="Get this quote"
-              submitLabel="Send Request"
-              payload={{
-                summary: leadSummary(build, price, a, d),
-                configuration: {
-                  model: build.model.model, brand: build.model.brand, units: build.units, drives: build.drivesPerUnit * build.units,
-                  driveCap: build.driveCap, driveLine: build.driveLine, raid: build.raid, usableTB: build.totalUsable,
-                  install: a.includeInstall, amc: a.includeAMC, ramSku: a.ramSku, nicSku: a.nicSku,
-                },
-                estimate: { hardware: price.hardware, total: Math.round(price.total) },
-              }}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Mobile bar when the estimate is off screen */}
-      {build && price && quoteReady && !panelVisible && (
-        <div className="glass fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-3 rounded-full py-2 pr-2 pl-5 lg:hidden">
+      {/* Mobile bar when the estimate panel is off screen */}
+      {build && price && !panelVisible && (
+        <div className="fixed bottom-3 left-3 right-[5.25rem] z-40 flex items-center justify-between gap-3 rounded-2xl bg-fg py-2.5 pr-2.5 pl-4 text-white shadow-2xl lg:hidden">
           <div className="min-w-0 text-sm">
-            <p className="truncate font-medium">{build.model.model} · {build.totalUsable} TB</p>
-            <p className="text-xs text-muted">{inr(price.total)} GST incl.</p>
+            <p className="truncate font-semibold">{build.model.model} · {build.totalUsable} TB</p>
+            <p className="text-xs text-white/70 tabular-nums">{inr(price.total)} incl. GST</p>
           </div>
-          <button onClick={() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })} className="btn btn-primary !py-2 !text-xs">View estimate</button>
+          <button onClick={() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn !bg-white !py-2 !text-xs !text-fg">View estimate</button>
         </div>
+      )}
+
+      {/* Specifications and comparison */}
+      <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.model.brand} ${dialog.item.model.model}` : ''}>
+        {dialog?.kind === 'model' && (
+          <>
+            {dialog.item.model.summary && <p className="mb-3 text-sm text-muted">{dialog.item.model.summary}</p>}
+            <p className="mb-1 text-xs font-semibold tracking-wide text-subtle uppercase">This configuration</p>
+            <SpecList specs={buildSpecs(dialog.item, d.raid)} />
+            <p className="mt-5 mb-1 text-xs font-semibold tracking-wide text-subtle uppercase">The unit</p>
+            <SpecList specs={modelSpecs(dialog.item.model)} />
+            {dialog.item.model.specsUrl && <a href={dialog.item.model.specsUrl} target="_blank" rel="noopener" className="link mt-4 inline-block text-sm">Manufacturer's specifications</a>}
+          </>
+        )}
+      </Dialog>
+      <Dialog open={dialog?.kind === 'line'} onClose={() => setDialog(null)} title={dialog?.kind === 'line' ? `${dialog.item.name} drives` : ''}>
+        {dialog?.kind === 'line' && (
+          <>
+            {dialog.item.bestFor && <p className="mb-3 text-sm text-muted">{dialog.item.bestFor}</p>}
+            <SpecList specs={driveLineSpecs(dialog.item)} />
+            {dialog.item.specsUrl && <a href={dialog.item.specsUrl} target="_blank" rel="noopener" className="link mt-4 inline-block text-sm">Manufacturer's specifications</a>}
+          </>
+        )}
+      </Dialog>
+      <Dialog wide open={dialog?.kind === 'compare'} onClose={() => setDialog(null)} title="Compare units">
+        {dialog?.kind === 'compare' && <CompareTable builds={options.slice(0, 6)} raid={d.raid} selectedId={build?.model.id} onPick={(id) => { set({ modelId: id, autoPick: false }); setDialog(null); }} />}
+      </Dialog>
+
+      {!sales && build && price && (
+        <Dialog open={quoteOpen} onClose={() => setQuoteOpen(false)} title="Get a formal quotation">
+          <div className="pb-2">
+            <p className="text-sm text-muted">Send us this configuration and our team will confirm availability and final pricing.</p>
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3 text-sm ring-1 ring-line">
+              <span className="min-w-0"><span className="font-semibold">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</span><span className="block text-xs text-muted">{price.totalDrives} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[d.raid].title} · {build.totalUsable} TB usable</span></span>
+              <span className="font-semibold whitespace-nowrap tabular-nums">{inr(price.total)}</span>
+            </div>
+            <div className="mt-5">
+              <QuoteForm refCode={ref} summary={summary} build={build} price={price} a={a} d={d} sent={quoteSent} onSent={() => setQuoteSent(true)} onDone={() => setQuoteOpen(false)} />
+            </div>
+          </div>
+        </Dialog>
       )}
 
       {!sales && (
         <>
           <IntroPopup open={popup === 'intro'} onClose={closePopup} offer={offer} onOffer={setOffer} />
-          <QuoteOfferPopup
-            open={popup === 'quote'}
-            onClose={closePopup}
-            build={build}
-            price={price}
-            summary={build && price ? leadSummary(build, price, a, d) : ''}
-            offer={offer}
-            onOffer={setOffer}
-          />
+          <QuoteOfferPopup open={popup === 'quote'} onClose={closePopup} build={build} price={price} summary={summary} offer={offer} onOffer={setOffer} />
         </>
       )}
-      <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.brand} ${dialog.item.model}` : ''}>
-        {dialog?.kind === 'model' && (
-          <>
-            {dialog.item.summary && <p className="mb-3 text-sm text-muted">{dialog.item.summary}</p>}
-            <SpecTable rows={modelSpecRows(dialog.item)} />
-          </>
-        )}
-      </Dialog>
-      <Dialog open={dialog?.kind === 'line'} onClose={() => setDialog(null)} title={dialog?.kind === 'line' ? dialog.item.name : ''}>
-        {dialog?.kind === 'line' && (
-          <>
-            {dialog.item.bestFor && <p className="mb-3 text-sm text-muted">Best for: {dialog.item.bestFor}</p>}
-            <SpecTable rows={driveLineRows(dialog.item)} />
-          </>
-        )}
-      </Dialog>
     </div>
+  );
+}
+
+function CompareTable({ builds, raid, selectedId, onPick }) {
+  const rows = compareRows(builds, raid);
+  return (
+    <div className="-mx-6 overflow-x-auto px-6">
+      <table className="w-full min-w-[40rem] text-left text-sm">
+        <thead>
+          <tr className="border-b border-line">
+            <th className="sticky left-0 bg-raised py-3 pr-4 font-normal text-subtle" />
+            {builds.map((b) => (
+              <th key={b.model.id} className="px-3 py-3 align-bottom">
+                <span className="block font-semibold">{b.model.model}</span>
+                <button onClick={() => onPick(b.model.id)} className={`mt-1.5 rounded-full px-2.5 py-1 text-xs ${b.model.id === selectedId ? 'bg-accent text-white' : 'text-accent ring-1 ring-accent/40 hover:bg-accent-soft'}`}>
+                  {b.model.id === selectedId ? 'Selected' : 'Choose this'}
+                </button>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.label} className="border-b border-line last:border-0">
+              <td className="sticky left-0 bg-raised py-2.5 pr-4 text-subtle">{r.label}</td>
+              {r.values.map((v, i) => <td key={i} className={`px-3 py-2.5 ${r.label === 'Unit + drives' ? 'font-semibold tabular-nums' : ''}`}>{v}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** The inline formal-quotation request: files a lead with the full configuration. */
+function QuoteForm({ refCode, summary, build, price, a, d, sent, onSent, onDone }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function submit(e) {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.currentTarget));
+    setBusy(true);
+    setError('');
+    try {
+      await api.enquire({
+        type: 'configurator',
+        name: f.name,
+        email: f.email,
+        phone: f.phone,
+        message: [f.company && `Company: ${f.company}`, f.city && `City: ${f.city}`].filter(Boolean).join('\n'),
+        payload: {
+          ref: refCode,
+          company: f.company || null,
+          city: f.city || null,
+          summary,
+          configuration: {
+            model: build.model.model, brand: build.model.brand, units: build.units, drives: price.totalDrives,
+            driveCap: build.driveCap, driveLine: build.driveLine, raid: d.raid, usableTB: build.totalUsable,
+            install: a.includeInstall, amc: a.includeAMC, ramSku: a.ramSku, nicSku: a.nicSku,
+          },
+          estimate: { hardware: Math.round(price.hardware), total: Math.round(price.total) },
+        },
+      });
+      onSent();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (sent) {
+    return (
+      <div role="status">
+        <div className="flex items-start gap-3 rounded-xl bg-success/10 p-4 text-sm">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" />
+          <p>Thank you. We've received your configuration (ref <span className="font-semibold">{refCode}</span>) and will send your formal quotation shortly.</p>
+        </div>
+        <button type="button" onClick={onDone} className="btn btn-secondary mt-4 w-full">Back to the configurator</button>
+      </div>
+    );
+  }
+  const field = 'field !py-2.5';
+  return (
+    <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
+      <label><span className="mb-1.5 block text-sm text-muted">Your name <span className="text-error">*</span></span><input name="name" required autoComplete="name" placeholder="Full name" className={field} /></label>
+      <label><span className="mb-1.5 block text-sm text-muted">Company</span><input name="company" autoComplete="organization" placeholder="Company name (optional)" className={field} /></label>
+      <label><span className="mb-1.5 block text-sm text-muted">Email <span className="text-error">*</span></span><input name="email" type="email" required autoComplete="email" placeholder="you@company.com" className={field} /></label>
+      <label><span className="mb-1.5 block text-sm text-muted">Phone</span><input name="phone" type="tel" autoComplete="tel" placeholder="Phone number" className={field} /></label>
+      <label className="sm:col-span-2"><span className="mb-1.5 block text-sm text-muted">City</span><input name="city" autoComplete="address-level2" placeholder="City" className={field} /></label>
+      {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <button disabled={busy} className="btn btn-primary">{busy && <Loader2 className="size-4 animate-spin" />}Request formal quotation</button>
+        <p className="text-xs text-subtle">Your configuration and estimate ({inr(price.total)}) are sent with the request.</p>
+      </div>
+    </form>
   );
 }
 
 function CopySummary({ text }) {
   const [state, setState] = useState('idle');
+  async function copy() {
+    try { await navigator.clipboard.writeText(text); setState('done'); } catch { setState('fail'); }
+    setTimeout(() => setState('idle'), 2000);
+  }
   return (
-    <button
-      onClick={async () => {
-        try { await navigator.clipboard.writeText(text); setState('done'); } catch { setState('fail'); }
-        setTimeout(() => setState('idle'), 2000);
-      }}
-      className="btn btn-secondary mt-5 w-full"
-    >
-      {state === 'done' ? <Check className="size-4" /> : state === 'fail' ? <Loader2 className="size-4" /> : <Copy className="size-4" />}
+    <button onClick={copy} className="btn btn-primary w-full">
+      {state === 'done' ? <Check className="size-4" /> : <Copy className="size-4" />}
       {state === 'done' ? 'Copied' : state === 'fail' ? 'Copy failed' : 'Copy summary for the customer'}
     </button>
   );
 }
 
-
-const ALL_CHOICES = ['Storage', 'RAID Protection', 'Unit', 'Drive size', 'Drive line'];
-
-/** Estimate panel before the quote is complete: what's done and what's left. */
-function ChoicesLeft({ missing }) {
-  return (
-    <div className="mt-4">
-      <p className="text-sm text-muted">Choose these to see your quote:</p>
-      <ul className="mt-3 grid gap-2 text-sm">
-        {ALL_CHOICES.map((c) => {
-          const done = !missing.includes(c);
-          return (
-            <li key={c} className={`flex items-center gap-2.5 ${done ? 'text-fg' : 'text-muted'}`}>
-              <span className={`grid size-5 place-items-center rounded-full ring-1 ${done ? 'bg-fg text-bg ring-fg' : 'ring-line-strong'}`}>
-                {done && <Check className="size-3" strokeWidth={3} />}
-              </span>
-              {c}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 /* Offer popups, at most two per visit:
- *   'intro': 10 s after the configurator opens, only if no quote has been built yet.
- *   'quote': 10 s after the quote is complete (restarts if they change it before then).
- * Neither opens once the visitor is already requesting the quote. */
+ *   'intro': 10 s after the configurator opens, if the visitor hasn't touched anything yet.
+ *   'quote': 10 s after they start configuring (it shows their own quote).
+ * Neither opens once they've requested the formal quotation. */
 const OFFER_DELAY_MS = 10000;
 
-function useOfferPopups({ enabled, quoteReady, quoteOpen, openedAt }) {
-  const [popup, setPopup] = useState(null); // 'intro' | 'quote' | null
-  const [offer, setOffer] = useState(null); // the issued coupon + contact details, shared by both popups
+function useOfferPopups({ enabled, interacted, quoteReady, quoteSent, openedAt }) {
+  const [popup, setPopup] = useState(null);
+  const [offer, setOffer] = useState(null);
   const shown = useRef(new Set());
   const now = useRef({});
-  now.current = { quoteReady, quoteOpen };
+  now.current = { interacted, quoteReady, quoteSent };
 
   const show = (kind) => {
-    if (shown.current.has(kind) || shown.current.size >= 2 || now.current.quoteOpen) return;
+    if (shown.current.has(kind) || shown.current.size >= 2 || now.current.quoteSent) return;
     shown.current.add(kind);
     setPopup(kind);
   };
 
   useEffect(() => {
     if (!enabled) return;
-    const t = setTimeout(() => !now.current.quoteReady && show('intro'), Math.max(0, OFFER_DELAY_MS - (Date.now() - openedAt)));
+    const t = setTimeout(() => !now.current.interacted && show('intro'), Math.max(0, OFFER_DELAY_MS - (Date.now() - openedAt)));
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   useEffect(() => {
-    if (!enabled || !quoteReady) return;
+    if (!enabled || !interacted) return;
     const t = setTimeout(() => now.current.quoteReady && show('quote'), OFFER_DELAY_MS);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, quoteReady]);
+  }, [enabled, interacted]);
 
   return { popup, closePopup: () => setPopup(null), offer, setOffer };
 }

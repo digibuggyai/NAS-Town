@@ -7,7 +7,7 @@ import pg from 'pg';
 import { COLLECTIONS, SETTINGS_FIELDS, camel, snake } from './collections.js';
 import * as catalogue from './catalogue.js';
 import { blogSeed } from './blog-seed.js';
-import { defaultPlacements } from '../placements.js';
+import { NEW_MODEL_PAGES, defaultPlacements } from '../placements.js';
 
 const url = process.env.DATABASE_URL;
 const pool = url
@@ -111,6 +111,94 @@ export async function init() {
     }
     console.log('[db] assigned default product pages');
   }
+  await applyCatalogueOnce(rows[0].n === 0);
+}
+
+/* ---------------- shared catalogue (catalogue.json) ---------------- */
+
+// Specifications that come from the DGB India catalogue. NASTOWN's own fields (summary,
+// best-for, featured, rentable, page placement, floors, active) are never touched here.
+const MODEL_SPEC_FIELDS = [
+  'brand', 'bays', 'raid', 'expandable', 'network', 'networkUpgrade', 'cpu', 'cpuCores', 'memory', 'memoryMax',
+  'm2Slots', 'maxDriveTb', 'baysWithExpansion', 'expansionNote', 'maxRawTb', 'usbPorts', 'dimensions', 'weightKg',
+  'warranty', 'specsUrl', 'quotePrice',
+];
+const LINE_SPEC_FIELDS = ['brand', 'driveClass', 'madeForBrand', 'series', 'rpm', 'cache', 'interface', 'recording', 'workloadTbYear', 'mtbf', 'warrantyYears', 'bestFor', 'extras', 'specsUrl', 'sortOrder'];
+const same = (a, b) => JSON.stringify(Array.isArray(a) ? a : a == null ? null : String(a)) === JSON.stringify(Array.isArray(b) ? b : b == null ? null : String(b));
+
+/**
+ * Bring the database in line with catalogue.json, once per version of that file (its
+ * exportedAt). Later edits in the admin panel are therefore never overwritten on restart;
+ * only a new catalogue file applies again. Every change is written to the change log.
+ */
+async function applyCatalogueOnce(freshlySeeded) {
+  const version = catalogue.exportedAt;
+  if (!version) return;
+  const applied = (await pool.query("SELECT value FROM app_meta WHERE key = 'catalogue_version'")).rows[0]?.value;
+  const remember = () => pool.query(
+    "INSERT INTO app_meta (key, value) VALUES ('catalogue_version', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [version],
+  );
+  if (freshlySeeded) { await remember(); return; } // seeded from this very file
+  if (applied === version) return;
+
+  const editor = `catalogue sync (${version.slice(0, 10)})`;
+  const log = [];
+  const record = (collection, row, label, before, after, fields) => {
+    for (const f of fields) if (!same(before[f], after[f])) log.push({ editor, collection, itemId: row.id, itemLabel: label, field: f, before: before[f] == null ? null : String(before[f]), after: after[f] == null ? null : String(after[f]) });
+  };
+
+  const models = await list('models');
+  for (const src of catalogue.models) {
+    const patch = Object.fromEntries(MODEL_SPEC_FIELDS.map((f) => [f, src[f] ?? null]));
+    const row = models.find((m) => m.model === src.model);
+    if (!row) {
+      const created = await insertRow('models', { ...src, pages: [...NEW_MODEL_PAGES] });
+      log.push({ editor, collection: 'models', itemId: created.id, itemLabel: src.model, field: '(created)', after: 'created' });
+      continue;
+    }
+    const changed = MODEL_SPEC_FIELDS.filter((f) => !same(row[f], patch[f]));
+    if (!changed.length) continue;
+    const { before, after } = await update('models', row.id, Object.fromEntries(changed.map((f) => [f, patch[f]])));
+    record('models', row, row.model, before, after, changed);
+  }
+
+  const drives = await list('drives');
+  for (const src of catalogue.drives) {
+    const row = drives.find((d) => d.capacityTb === src.capacityTb && d.line === src.line);
+    const label = `${src.capacityTb} TB ${src.line}`;
+    if (!row) {
+      const created = await insertRow('drives', src);
+      log.push({ editor, collection: 'drives', itemId: created.id, itemLabel: label, field: '(created)', after: String(src.quotePrice) });
+    } else if (!same(row.quotePrice, src.quotePrice)) {
+      const { before, after } = await update('drives', row.id, { quotePrice: src.quotePrice });
+      record('drives', row, label, before, after, ['quotePrice']);
+    }
+  }
+
+  const lines = await list('driveLines');
+  for (const src of catalogue.driveLines) {
+    const row = lines.find((l) => l.name === src.name);
+    if (!row) {
+      const created = await insertRow('driveLines', src);
+      log.push({ editor, collection: 'driveLines', itemId: created.id, itemLabel: src.name, field: '(created)', after: 'created' });
+      continue;
+    }
+    const changed = LINE_SPEC_FIELDS.filter((f) => !same(row[f], src[f] ?? null));
+    if (!changed.length) continue;
+    const { before, after } = await update('driveLines', row.id, Object.fromEntries(changed.map((f) => [f, src[f] ?? null])));
+    record('driveLines', row, row.name, before, after, changed);
+  }
+
+  const s = await getSettings();
+  const settingsPatch = Object.fromEntries(['installQuote', 'amcQuotePercent'].filter((f) => !same(s?.[f], catalogue.settings[f])).map((f) => [f, catalogue.settings[f]]));
+  if (Object.keys(settingsPatch).length) {
+    await updateSettings(settingsPatch);
+    for (const [f, v] of Object.entries(settingsPatch)) log.push({ editor, collection: 'settings', itemLabel: 'Installation & AMC', field: f, before: String(s?.[f] ?? ''), after: String(v) });
+  }
+
+  await logChanges(log);
+  await remember();
+  console.log(`[db] applied catalogue ${version}: ${log.length} change(s)`);
 }
 
 async function insertRow(key, data) {

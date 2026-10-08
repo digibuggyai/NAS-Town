@@ -16,7 +16,7 @@ before(async () => {
 });
 
 const run = (over) => {
-  const a = { ...INITIAL_ANSWERS, ...over };
+  const a = { ...INITIAL_ANSWERS, includeInstall: true, ...over }; // the spec's examples include installation
   const d = derive(a, P);
   return { a, d, b: d.build, price: priceFor(d.build, a, P) };
 };
@@ -29,18 +29,18 @@ test('public payload carries no floor prices', async () => {
   assert.ok(!/minPrice/.test(json));
 });
 
-test('20 TB RAID 5 → TS-433-4G + 3 × 10 TB IronWolf, ₹1,93,680 hw, ₹1,99,580 total', () => {
+test('20 TB RAID 5 → TS-433-4G + 3 × 10 TB IronWolf, ₹1,95,540 hw, ₹2,01,440 total', () => {
   const { b, price } = run({ targetTB: 20, raid: 'RAID5' });
   assert.equal(describe(b), 'TS-433-4G 3x10 IronWolf 20TB');
-  assert.equal(price.hardware, 193680);
-  assert.equal(price.total, 199580);
+  assert.equal(price.hardware, 195540);
+  assert.equal(price.total, 201440);
 });
 
-test('20 TB RAID 1 → one pair: TS-233-2G + 2 × 20 TB WD Ultrastar', () => {
+test('20 TB RAID 1 → one pair: TS-233-2G + 2 × 20 TB Exos', () => {
   const { b, price } = run({ targetTB: 20, raid: 'RAID1' });
-  assert.equal(describe(b), 'TS-233-2G 2x20 WD Ultrastar 20TB');
-  assert.equal(price.hardware, 225958);
-  assert.equal(price.total, 231858);
+  assert.equal(describe(b), 'TS-233-2G 2x20 Exos 20TB');
+  assert.equal(price.hardware, 229674);
+  assert.equal(price.total, 235574);
 });
 
 test('4 TB RAID 5 → TS-433-4G + 3 × 2 TB IronWolf (no 2-bay)', () => {
@@ -57,10 +57,10 @@ test('4 TB RAID 0 → 2 × 2 TB, never 1 × 4 TB', () => {
   assert.equal(price.total, 67814);
 });
 
-test('budget ₹2,00,000, RAID auto → RAID 5 at 20 TB', () => {
+test('budget ₹2,00,000, RAID auto → RAID 5 at 18 TB (not RAID 6 at 12 TB)', () => {
   const { d } = run({ storageMode: 'budget', budget: 200000, raidAuto: true });
   assert.equal(d.raid, 'RAID5');
-  assert.equal(d.build.totalUsable, 20);
+  assert.equal(d.build.totalUsable, 18);
 });
 
 test('budget ₹2,00,000, RAID 6 forced → TS-433-4G + 4 × 6 TB WD Ultrastar, 12 TB', () => {
@@ -78,14 +78,17 @@ test('budget ₹50,000 → no build, least is ₹67,814', () => {
 
 test('§7.6 worked quotations with install + AMC, including floors', () => {
   const cases = [
+    // DGB India spec §7.6, catalogue of 8 Oct 2026
     [{ targetTB: 10, raid: 'RAID5' }, 'TS-433-4G 4x4 IronWolf 12TB', 152438, 139481],
-    [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 IronWolf 20TB', 273464, 251600],
-    [{ targetTB: 50, raid: 'RAID5' }, 'TS-664-8G 6x10 IronWolf 50TB', 428696, 395536],
-    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 IronWolf 50TB', 585512, 540735],
-    [{ targetTB: 100, raid: 'RAID5' }, 'TS-664-8G 6x20 WD Ultrastar 100TB', 768061, 709923],
-    [{ storageMode: 'budget', budget: 150000 }, 'TS-233-2G 2x10 IronWolf 10TB', 141332, 129127],
-    [{ storageMode: 'budget', budget: 300000 }, 'TS-433-4G 4x10 IronWolf 30TB', 273464, 251600],
-    [{ storageMode: 'budget', budget: 500000 }, 'TS-433-4G 4x20 WD Ultrastar 60TB', 499708, 461191],
+    [{ targetTB: 20, raid: 'RAID5' }, 'TS-433-4G 3x10 IronWolf 20TB', 220994, 202990],
+    [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 IronWolf 20TB', 276192, 254125],
+    [{ targetTB: 20, raid: 'RAID1' }, 'TS-233-2G 2x20 Exos 20TB', 258541, 237711],
+    [{ targetTB: 50, raid: 'RAID5' }, 'TS-664-8G 6x10 IronWolf 50TB', 432788, 399324],
+    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 IronWolf 50TB', 590286, 545154],
+    [{ targetTB: 100, raid: 'RAID5' }, 'TS-664-8G 6x20 Exos 100TB', 780324, 721287],
+    [{ storageMode: 'budget', budget: 150000 }, 'TS-233-2G 2x10 IronWolf 10TB', 142696, 130390],
+    [{ storageMode: 'budget', budget: 300000 }, 'TS-433-4G 4x10 IronWolf 30TB', 276192, 254125],
+    [{ storageMode: 'budget', budget: 500000 }, 'TS-433-4G 4x18 WD Ultrastar 54TB', 447915, 413212],
   ];
   for (const [over, expected, total, floor] of cases) {
     const { b, price } = run({ ...over, includeAMC: true });

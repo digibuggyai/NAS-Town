@@ -225,3 +225,14 @@ CREATE TRIGGER change_log_no_edit BEFORE UPDATE OR DELETE ON nas_change_log
 DROP TRIGGER IF EXISTS change_log_no_truncate ON nas_change_log;
 CREATE TRIGGER change_log_no_truncate BEFORE TRUNCATE ON nas_change_log
   FOR EACH STATEMENT EXECUTE FUNCTION nas_change_log_is_permanent();
+
+-- Catalogue shared with DGB India (catalogue.json): cores are described in words
+-- ("4 cores / 8 threads, 2.2 GHz"), and units note how they expand.
+ALTER TABLE nas_models ALTER COLUMN cpu_cores TYPE TEXT USING cpu_cores::text;
+ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS expansion_note TEXT;
+
+-- Small key/value notes the server keeps about itself, e.g. which catalogue file it applied.
+CREATE TABLE IF NOT EXISTS app_meta (
+  key    TEXT PRIMARY KEY,
+  value  TEXT
+);
