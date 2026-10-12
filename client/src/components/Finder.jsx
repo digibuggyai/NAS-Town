@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowDown, ArrowRight, RotateCcw } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { RAID_INFO, bestBuildPerModel, inr, networkFor, suggestBuilds } from '../lib/nas/logic.js';
@@ -27,7 +27,7 @@ const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '50plus': 60 };
 /** Answers → the three best-value complete builds from the live price list. */
 function recommend(P, { storing, capacity, work_style }) {
   const targetTB = TARGET[capacity] ?? 10;
-  // Enterprise gets two-drive protectionsg; small home setups may use a simple mirror.
+  // Enterprise gets two-drive protection; small home setups may use a simple mirror.
   const raids = work_style === 'enterprise' ? ['RAID6'] : work_style === 'home' && targetTB <= 20 ? ['RAID1', 'RAID5'] : ['RAID5'];
   const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
   let builds = raids.flatMap((raid) => suggestBuilds({ targetTB, raid, ...catalogue }));
@@ -40,7 +40,8 @@ function recommend(P, { storing, capacity, work_style }) {
   return { targetTB, builds: bestBuildPerModel(builds).slice(0, 3) };
 }
 
-export default function Finder() {
+/** `onResult({ targetTB, build })` hands the answer to the savings section below it. */
+export default function Finder({ onResult }) {
   const { pricing, error: pricingError } = usePricing('public');
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
@@ -50,6 +51,7 @@ export default function Finder() {
     if (!pricing) return;
     const r = recommend(pricing, answers);
     setResult(r);
+    onResult?.({ targetTB: r.targetTB, build: r.builds[0] ?? null });
     api.logFinder({ ...answers, recommended: r.builds.map((b) => b.model.slug) }).catch(() => {});
   }
 
@@ -63,7 +65,7 @@ export default function Finder() {
           </div>
           <div className="flex gap-2">
             <button onClick={() => { setAnswers({}); setResult(null); }} className="btn btn-secondary"><RotateCcw className="size-4" /> Start over</button>
-            <Link to="/about#contact" className="btn btn-primary">Talk to an Expert</Link>
+            {onResult && <a href="#roi" className="btn btn-primary">See what you save <ArrowDown className="size-4" /></a>}
           </div>
         </div>
         {result.builds.length === 0 ? (
@@ -86,9 +88,9 @@ export default function Finder() {
                 <p className="text-sm text-muted">{b.totalUsable} TB usable · {networkFor(b.model).speed}</p>
                 <p className="mt-auto pt-4 text-xl font-medium">{inr(b.totalQuote)}</p>
                 <p className="text-xs text-subtle">Hardware, GST inclusive</p>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <Link to={`/products/${b.model.slug}`} className="btn btn-secondary !px-3 !py-2.5 !text-sm">Details</Link>
-                  <Link to={`/tools/configurator?model=${b.model.slug}&target=${result.targetTB}&raid=${b.raid}`} className="btn btn-primary !px-3 !py-2.5 !text-sm">Configure</Link>
+                <div className="mt-4 grid gap-2">
+                  <Link to={`/tools/configurator?model=${b.model.slug}&target=${result.targetTB}&raid=${b.raid}`} className="btn btn-primary btn-sm">Configure this NAS</Link>
+                  <Link to={`/products/${b.model.slug}`} className="btn btn-secondary btn-sm">View details</Link>
                 </div>
               </article>
             ))}
