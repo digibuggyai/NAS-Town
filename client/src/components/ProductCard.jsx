@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ArrowRight } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import ProductPhoto, { useTilt } from './ProductPhoto.jsx';
 import { formatInr } from '../lib/api.js';
 import { brandName } from '../data/site.js';
@@ -44,16 +44,20 @@ export default function ProductCard({ product: p }) {
         ))}
       </dl>
 
-      <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
-        {p.price_inr != null ? (
+      <div className="mt-auto border-t border-line pt-4">
+        {p.price_inr != null && (
           <p>
             <span className="mono block text-xs text-subtle">Diskless · GST incl.</span>
             <span className="text-lg font-medium">{formatInr(p.price_inr)}</span>
           </p>
-        ) : <span />}
-        <span className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors group-hover:text-fg">
-          View Details <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </span>
+        )}
+        {/* Above the card-wide link, so each button is its own target. */}
+        <div className="relative z-10 mt-3 grid grid-cols-2 gap-2">
+          <Link to={`/tools/configurator?model=${p.slug}`} className="btn btn-primary btn-sm">
+            <SlidersHorizontal className="size-3.5" aria-hidden /> Configure
+          </Link>
+          <Link to={`/products/${p.slug}`} className="btn btn-secondary btn-sm" aria-label={`Details: ${p.model}`}>Details</Link>
+        </div>
       </div>
     </article>
   );
@@ -61,11 +65,14 @@ export default function ProductCard({ product: p }) {
 
 export function ProductGridSkeleton({ count = 4 }) {
   return Array.from({ length: count }).map((_, i) => (
-    <div key={i} aria-hidden className="flex flex-col gap-3">
-      <div className="plate h-44 animate-pulse" />
-      <div className="h-4 w-1/3 animate-pulse rounded bg-surface" />
-      <div className="h-6 w-2/3 animate-pulse rounded bg-surface" />
-      <div className="h-16 animate-pulse rounded bg-surface" />
+    // Same height as a real card (photo plate, name, specs, price and buttons), so nothing jumps when products arrive.
+    <div key={i} aria-hidden className="flex flex-col">
+      <div className="plate h-52 animate-pulse" />
+      <div className="mt-4 h-4 w-1/3 animate-pulse rounded bg-surface" />
+      <div className="mt-2.5 h-7 w-2/3 animate-pulse rounded bg-surface" />
+      <div className="mt-2 h-5 w-1/2 animate-pulse rounded bg-surface" />
+      <div className="mt-4 h-[5.5rem] animate-pulse rounded bg-surface" />
+      <div className="mt-4 h-[7.25rem] animate-pulse rounded bg-surface" />
     </div>
   ));
 }

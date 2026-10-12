@@ -52,7 +52,7 @@ export default function ProductDetail() {
             </div>
           </Reveal>
           <Reveal delay={120}>
-            <p className="eyebrow">{brandName(p.brand)} · {p.bays}-bay</p>
+            <p className="eyebrow"><Link to={`/brands/${p.brand}`} className="hover:underline">{brandName(p.brand)}</Link> · {p.bays}-bay</p>
             <h1 className="heading mt-4 text-3xl sm:text-4xl">{p.model}</h1>
             <p className="mt-5 text-base text-muted">{p.summary}</p>
             <p className="mt-8 text-2xl font-semibold">{formatInr(p.price_inr)}</p>
