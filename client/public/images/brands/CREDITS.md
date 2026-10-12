@@ -1,14 +1,13 @@
 # Brand logos
 
-Official logos of the brands NASTOWN sells, shown to identify those products.
-All trademarks belong to their respective owners. SVGs from Wikimedia Commons (downloaded 26 Sep 2026):
+Official logos of the brands NASTOWN sells, shown in their original colours to identify those
+products. All trademarks belong to their respective owners.
 
 | File | Source |
 |---|---|
-| synology.svg | https://commons.wikimedia.org/wiki/File:Synology_Logo.svg |
-| qnap.svg | https://commons.wikimedia.org/wiki/File:Qnap_Logo_2004.svg |
-| seagate.svg | https://commons.wikimedia.org/wiki/File:Seagate_logo.svg |
-| wd.svg | https://commons.wikimedia.org/wiki/File:Western_Digital_logo.svg |
+| qnap.svg | qnap.com site header (https://www.qnap.com/assets/img/header/2025/qnap-logo.svg), 12 Oct 2026 |
+| synology.svg | synology.com site header, 12 Oct 2026. The header version is white (for a dark bar); this copy is the same mark in black for light backgrounds |
+| seagate.svg | Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Seagate_logo.svg (light-background version of the logo on seagate.com) |
+| wd.svg | westerndigital.com site header (wd-header-main-logo.svg), 12 Oct 2026 |
 
-On the site they are rendered in a single muted tone (CSS filter) to sit within the page palette.
-If a brand's partner guidelines require full-colour use, remove the filter for that logo.
+If a brand's partner guidelines ask for a specific version or clear space, swap the file here.

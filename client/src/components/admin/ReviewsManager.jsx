@@ -84,7 +84,7 @@ export default function ReviewsManager() {
                   <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-muted">{SOURCES[r.source] ?? r.source}</span>
                 </div>
                 <p className="mt-2 font-medium">
-                  {r.name}{r.city && <span className="font-normal text-muted">, {r.city}</span>}
+                  {r.name}{r.role && <span className="font-normal text-muted"> · {r.role}</span>}{r.city && <span className="font-normal text-muted">, {r.city}</span>}
                   {r.product && <span className="font-normal text-muted"> · {r.product}</span>}
                 </p>
                 <p className="mt-0.5 text-xs text-subtle">{when(r.createdAt)}{r.email && <> · <a href={`mailto:${r.email}`} className="link">{r.email}</a></>}</p>
@@ -147,13 +147,14 @@ function ReviewEditor({ review, onClose, onSaved }) {
     <Dialog open={review != null} onClose={onClose} title={isNew ? 'Add a review' : 'Edit review'}>
       {review && (
         <form key={review.id ?? 'new'} onSubmit={save} className="grid gap-3 pb-2 sm:grid-cols-2">
-          {isNew && <p className="rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning sm:col-span-2">Only add real reviews you've received, copied word for word, with the customer's real name.</p>}
+          {isNew && <p className="rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning sm:col-span-2">Only add real reviews you've received, copied word for word, with the customer's real name. The name is kept for our records; the site shows role, city and product instead.</p>}
           <div className="sm:col-span-2">
             <span className="mb-1 block text-xs text-muted">Rating *</span>
             <StarInput value={rating} onChange={setRating} name="edit-rating" />
           </div>
-          <label><span className="mb-1 block text-xs text-muted">Name *</span><input name="name" required maxLength={80} defaultValue={review.name ?? ''} className={field} /></label>
-          <label><span className="mb-1 block text-xs text-muted">City</span><input name="city" maxLength={60} defaultValue={review.city ?? ''} className={field} /></label>
+          <label><span className="mb-1 block text-xs text-muted">Name * <span className="opacity-70">(never shown on the site)</span></span><input name="name" required maxLength={80} defaultValue={review.name ?? ''} className={field} /></label>
+          <label><span className="mb-1 block text-xs text-muted">Role or business type <span className="opacity-70">(shown)</span></span><input name="role" maxLength={80} placeholder="e.g. Photographer, CA firm" defaultValue={review.role ?? ''} className={field} /></label>
+          <label><span className="mb-1 block text-xs text-muted">City <span className="opacity-70">(shown)</span></span><input name="city" maxLength={60} defaultValue={review.city ?? ''} className={field} /></label>
           <label className="sm:col-span-2"><span className="mb-1 block text-xs text-muted">Product or service</span><input name="product" maxLength={120} defaultValue={review.product ?? ''} className={field} /></label>
           <label className="sm:col-span-2"><span className="mb-1 block text-xs text-muted">Review *</span><textarea name="body" required minLength={10} maxLength={2000} rows={5} defaultValue={review.body ?? ''} className={`${field} resize-y`} /></label>
           <label><span className="mb-1 block text-xs text-muted">Where it came from</span>

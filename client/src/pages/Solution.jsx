@@ -8,6 +8,7 @@ import { useProducts } from '../lib/hooks.js';
 import { solutions } from '../data/site.js';
 import NotFound from './NotFound.jsx';
 import Seo from '../components/Seo.jsx';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 export default function Solution() {
   const { slug } = useParams();
@@ -56,6 +57,7 @@ export default function Solution() {
           ))}
         </div>
       </section>
+      <ConfiguratorBand className="pb-16" />
       <FinalCta />
     </>
   );

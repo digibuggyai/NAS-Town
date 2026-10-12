@@ -23,33 +23,29 @@ export const whatIsNas = {
   eyebrow: 'What is NAS?',
   title: 'More Than Storage.',
   body: [
-    'A NAS (Network Attached Storage) is a dedicated storage device connected to your network, giving you one central place for your files, backups, media and important data.',
+    'A NAS (Network Attached Storage) is a storage box on your network: one place for every file, backup and photo, reachable from every device.',
   ],
-  // Alternating feature rows: a photo with a small diagram card, then the story.
+  // Four compact cards (sections/FeatureRows.jsx): diagram, headline, two lines, link.
   points: [
     {
       key: 'store', title: 'Store', headline: 'Everything in one place.',
-      body: 'Keep every photo, video, project and document on one NAS instead of five external drives and three cloud accounts. When it fills up, add bigger drives or more bays, not another subscription.',
+      body: 'Every photo, video and document on one NAS, not five external drives and three cloud accounts. Running out? Add bigger drives, not another subscription.',
       link: { label: 'See NAS products', to: '/products' },
-      image: '/images/features/store.webp', alt: 'A 2-bay Synology NAS',
     },
     {
       key: 'protect', title: 'Protect', headline: 'One drive fails. Nothing is lost.',
-      body: 'RAID keeps your data safe when a drive dies. Snapshots roll files back after a mistake or a ransomware attack, and scheduled backups copy what matters somewhere else.',
+      body: 'RAID keeps your files available when a drive dies. Snapshots roll back mistakes and ransomware, and scheduled backups copy what matters off-site.',
       link: { label: 'How RAID setup works', to: '/services/raid-setup' },
-      image: '/images/features/protect.webp', alt: 'The inside of a hard drive',
     },
     {
       key: 'share', title: 'Share', headline: 'Share files. Stay in control.',
-      body: 'Give your team one shared set of folders, or send a client a link with a password and an expiry date. Switch it off when the job is done, with no email attachments and no version confusion.',
+      body: 'One set of shared folders for the team, or a client link with a password and an expiry date. No email attachments, no version confusion.',
       link: { label: 'NAS for business', to: '/solutions/business' },
-      image: '/images/features/share.webp', alt: 'Two colleagues working together at a laptop',
     },
     {
       key: 'access', title: 'Access', headline: 'Your files, wherever you are.',
-      body: 'Open your files from a phone, laptop or any browser, at home, in the office or on the road. A photographer can pull up a client gallery on site; a family can find a document while travelling.',
+      body: 'Open your files from a phone, laptop or browser, at home, in the office or on the road: a client gallery on a shoot, a document while travelling.',
       link: { label: 'NAS for home', to: '/solutions/home' },
-      image: '/images/features/access.webp', alt: 'Someone using a phone above a laptop keyboard',
     },
   ],
   cta: 'Learn About NAS',
@@ -84,7 +80,7 @@ export const why = {
   body: ['Choosing a NAS is only the first step. We help you pick it, set it up and keep it running.'],
   // `fact` is a concrete, checkable detail for each promise.
   points: [
-    { key: 'guidance', title: 'Expert Guidance', body: 'Help choosing a NAS for your storage, workflow and budget.', fact: 'On WhatsApp or at our Nehru Place showroom' },
+    { key: 'guidance', title: 'Expert Guidance', body: 'Help choosing a NAS for your storage, workflow and budget.', fact: 'On WhatsApp or at our Experience Zone in Nehru Place' },
     { key: 'install', title: 'Installation & Migration', body: 'Installed, configured, and your existing data moved across properly.', fact: 'Installation · RAID setup · Data migration' },
     { key: 'brands', title: 'Multiple Brands', body: 'Compare platforms and choose the one that fits.', fact: 'Synology · QNAP' },
     { key: 'support', title: 'Long-Term Support', body: 'Upgrades, troubleshooting and maintenance, long after the purchase.', fact: 'Remote from ₹2,000 + tax · On-site from ₹5,000 + tax' },

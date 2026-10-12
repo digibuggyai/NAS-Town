@@ -6,6 +6,7 @@ import NotFound from './NotFound.jsx';
 import BlogList from '../components/BlogList.jsx';
 import Accordion from '../components/Accordion.jsx';
 import Seo from '../components/Seo.jsx';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 export default function Resource() {
   const { slug } = useParams();
@@ -57,6 +58,7 @@ export default function Resource() {
           </div>
         </section>
       )}
+      <ConfiguratorBand className="py-16" />
     </>
   );
 }

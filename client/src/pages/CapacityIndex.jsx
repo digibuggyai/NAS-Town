@@ -8,6 +8,7 @@ import { capacityPages } from '../data/site.js';
 import { formatInr } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { cheapestFor } from '../lib/nas/capacity.js';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 // Hub for the capacity pages: "NAS storage by capacity", one row per size with a live starting price.
 export default function CapacityIndex() {
@@ -20,7 +21,7 @@ export default function CapacityIndex() {
         title="NAS Storage by *Capacity*"
         intro="Network attached storage is sized by usable space: what's left after RAID protection. Pick how much data you need to store, from 5TB for a home to 100TB for a business, and see real NAS builds with drives and GST-inclusive prices."
       >
-        <Link to="/tools/calculator" className="btn btn-secondary">Calculate how much you need</Link>
+        <Link to="/finder#roi" className="btn btn-secondary">Calculate how much you need</Link>
       </PageHero>
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 md:pb-28">
         <Reveal as="ul" className="rule-list border-y border-line">
@@ -42,6 +43,7 @@ export default function CapacityIndex() {
           })}
         </Reveal>
       </section>
+      <ConfiguratorBand className="pb-16" />
       <FinalCta />
     </>
   );

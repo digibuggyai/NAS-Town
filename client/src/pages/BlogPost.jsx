@@ -9,6 +9,7 @@ import NotFound from './NotFound.jsx';
 import Seo, { SITE_URL } from '../components/Seo.jsx';
 import { abs, postMeta } from '../lib/seo.js';
 import { blogPath, preloaded } from '../lib/preload.js';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -61,6 +62,7 @@ export default function BlogPost() {
           </div>
         </section>
       )}
+      <ConfiguratorBand className="pb-16" />
       <FinalCta />
     </>
   );

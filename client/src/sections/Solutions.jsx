@@ -26,6 +26,8 @@ export default function Solutions() {
                 <div className="overflow-hidden rounded-[20px] bg-white">
                   <img
                     src={image}
+                    srcSet={`${image.replace('.webp', '-480.webp')} 480w, ${image} 800w`}
+                    sizes="(min-width: 1024px) 400px, (min-width: 640px) 46vw, 92vw"
                     alt={alt}
                     width="800"
                     height="600"

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, PenLine } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Loader2, PenLine } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { Stars, StarInput } from '../components/StarRating.jsx';
 import { Dialog } from '../components/configurator/parts.jsx';
@@ -8,23 +8,29 @@ import { preloaded } from '../lib/preload.js';
 
 /* Customer reviews written on this site (or added by staff from real reviews received
  * elsewhere). Only reviews approved in Admin → Reviews appear here; nothing is invented.
- * With none published yet, the section simply invites the first review. */
+ * With none published yet, the section simply invites the first review.
+ * Names are never shown (the API doesn't send them): a review reads as
+ * "Photographer, Delhi · Synology DS925+". More than three become a carousel. */
 
-const SHOWN = 6;
+const CAROUSEL_FROM = 4;
 const SOURCE = { google: 'Google review', whatsapp: 'Shared on WhatsApp', 'in-store': 'In person', email: 'By email', website: 'NASTOWN customer' };
 const monthYear = (iso) => new Date(iso).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
 
 export default function Reviews() {
   const [data, setData] = useState(() => preloaded('/reviews') ?? null);
   const [writing, setWriting] = useState(false);
-  const [all, setAll] = useState(false);
+  const track = useRef(null);
+  const scrollBy = (dir) => {
+    const el = track.current;
+    if (el) el.scrollBy({ left: dir * (el.firstElementChild?.offsetWidth ?? 320) * 1.05, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     api.reviews().then(setData).catch(() => setData({ reviews: [], count: 0, average: null }));
   }, []);
 
   const reviews = data?.reviews ?? [];
-  const shown = all ? reviews : reviews.slice(0, SHOWN);
+  const carousel = reviews.length >= CAROUSEL_FROM;
 
   return (
     <section className="bg-surface">
@@ -32,7 +38,7 @@ export default function Reviews() {
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="eyebrow mb-4">Customer reviews</p>
-            <h2 className="h-section">What our customers say.</h2>
+            <h2 className="h-section">What our customers say about NAS</h2>
             {data?.count > 0 && (
               <p className="mt-4 flex flex-wrap items-center gap-3 text-muted">
                 <span className="text-3xl font-medium tracking-tight text-fg">{data.average.toFixed(1)}</span>
@@ -57,23 +63,33 @@ export default function Reviews() {
           </Reveal>
         ) : (
           <>
-            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {shown.map((r, i) => (
-                <Reveal as="figure" key={r.id} delay={(i % 3) * 80} className="flex flex-col rounded-2xl bg-raised p-6 ring-1 ring-line">
-                  <Stars value={r.rating} size="size-4" />
-                  <blockquote className="mt-4 leading-relaxed whitespace-pre-line">“{r.body}”</blockquote>
-                  <figcaption className="mt-auto pt-5 text-sm">
-                    <span className="font-medium">{r.name}</span>{r.city && <span className="text-muted">, {r.city}</span>}
-                    <span className="mt-0.5 block text-xs text-subtle">
-                      {[r.product, SOURCE[r.source] ?? 'Customer', monthYear(r.createdAt)].filter(Boolean).join(' · ')}
-                    </span>
-                  </figcaption>
-                </Reveal>
+            {/* Up to three: a grid. More: a swipeable carousel with arrows. */}
+            <ul
+              ref={track}
+              data-lenis-prevent-wheel
+              className={carousel
+                ? '-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6'
+                : 'mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3'}
+              aria-label="Customer reviews"
+            >
+              {reviews.map((r, i) => (
+                <li key={r.id} className={carousel ? 'w-[85%] shrink-0 snap-start sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.85rem)]' : ''}>
+                  <Reveal as="figure" delay={(i % 3) * 80} className="flex h-full flex-col rounded-2xl bg-raised p-6 ring-1 ring-line">
+                    <Stars value={r.rating} size="size-4" />
+                    <blockquote className="mt-4 leading-relaxed whitespace-pre-line">“{r.body}”</blockquote>
+                    <figcaption className="mt-auto pt-5 text-sm">
+                      <span className="font-medium">{[r.role, r.city].filter(Boolean).join(', ') || 'NASTOWN customer'}</span>
+                      {r.product && <span className="text-muted"> · {r.product}</span>}
+                      <span className="mt-0.5 block text-xs text-subtle">{[SOURCE[r.source] ?? 'Customer', monthYear(r.createdAt)].join(' · ')}</span>
+                    </figcaption>
+                  </Reveal>
+                </li>
               ))}
-            </div>
-            {reviews.length > SHOWN && (
-              <div className="mt-8 text-center">
-                <button onClick={() => setAll((v) => !v)} className="btn btn-secondary">{all ? 'Show fewer' : `Show all ${reviews.length} reviews`}</button>
+            </ul>
+            {carousel && (
+              <div className="mt-6 flex justify-end gap-2">
+                <button type="button" onClick={() => scrollBy(-1)} aria-label="Previous reviews" className="grid size-11 place-items-center rounded-full bg-raised ring-1 ring-line-strong hover:text-accent hover:ring-accent"><ChevronLeft className="size-5" /></button>
+                <button type="button" onClick={() => scrollBy(1)} aria-label="Next reviews" className="grid size-11 place-items-center rounded-full bg-raised ring-1 ring-line-strong hover:text-accent hover:ring-accent"><ChevronRight className="size-5" /></button>
               </div>
             )}
           </>
@@ -119,8 +135,12 @@ function WriteReview({ open, onClose }) {
             <StarInput value={rating} onChange={setRating} />
           </div>
           <label>
-            <span className="mb-1.5 block text-sm text-muted">Your name <span className="text-error">*</span></span>
+            <span className="mb-1.5 block text-sm text-muted">Your name <span className="text-error">*</span> <span className="text-subtle">(not published)</span></span>
             <input name="name" required maxLength={80} autoComplete="name" className="field !py-2.5" />
+          </label>
+          <label>
+            <span className="mb-1.5 block text-sm text-muted">What you do <span className="text-subtle">(optional)</span></span>
+            <input name="role" maxLength={80} placeholder="e.g. Photographer, CA firm" className="field !py-2.5" />
           </label>
           <label>
             <span className="mb-1.5 block text-sm text-muted">City</span>
@@ -143,7 +163,7 @@ function WriteReview({ open, onClose }) {
           {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
             <button disabled={state === 'sending'} className="btn btn-primary">{state === 'sending' && <Loader2 className="size-4 animate-spin" />}Submit review</button>
-            <p className="text-xs text-subtle">Reviews are checked before they appear.</p>
+            <p className="text-xs text-subtle">Reviews are checked before they appear. We publish your role, city and product, never your name.</p>
           </div>
         </form>
       )}

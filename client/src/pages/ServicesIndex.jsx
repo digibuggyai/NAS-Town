@@ -3,9 +3,11 @@ import { ArrowUpRight } from 'lucide-react';
 import PageHero from '../components/PageHero.jsx';
 import Reveal from '../components/Reveal.jsx';
 import FinalCta from '../sections/FinalCta.jsx';
+import HowItWorks from '../sections/HowItWorks.jsx';
 import { services } from '../data/site.js';
 import { why } from '../data/home.js';
 import Seo from '../components/Seo.jsx';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 export default function ServicesIndex() {
   return (
@@ -32,6 +34,8 @@ export default function ServicesIndex() {
           ))}
         </Reveal>
       </section>
+      <HowItWorks />
+      <ConfiguratorBand className="pb-16" title="Installation is one tick in the configurator" body="Build your NAS, tick installation or AMC, and see the full GST-inclusive price before you talk to us." />
       <FinalCta />
     </>
   );

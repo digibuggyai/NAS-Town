@@ -1,17 +1,17 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, MessageCircle } from 'lucide-react';
+import { ArrowRight, CalendarCheck, MessageCircle } from 'lucide-react';
 import SplitHeading from '../components/SplitHeading.jsx';
 import NasHddAnimation from '../components/NasHddAnimation.jsx';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 import { hero } from '../data/home.js';
-import { digibuggy } from '../data/site.js';
+import { digibuggy, waLink } from '../data/site.js';
+import { experienceZone } from '../config/siteContent.js';
 
 // The things that make someone comfortable buying storage online, answered up front.
 const facts = [
   ['Prices', 'GST-inclusive, published'],
   ['Setup', 'Installed & configured by our team'],
-  ['Showroom', digibuggy.addressShort],
 ];
 
 export default function Hero() {
@@ -36,8 +36,8 @@ export default function Hero() {
             {hero.body.map((p) => <p key={p}>{p}</p>)}
           </div>
           <div className="hero-fade mt-9 flex flex-wrap items-center gap-3">
-            <Link to="/finder" className="btn btn-primary">Find My NAS <ArrowRight className="size-4" /></Link>
-            <Link to="/tools/configurator" className="btn btn-secondary">Build My NAS</Link>
+            <Link to="/tools/configurator" className="btn btn-primary">Build your NAS <ArrowRight className="size-4" /></Link>
+            <Link to="/finder" className="btn btn-secondary">Help me choose</Link>
           </div>
         </div>
 
@@ -60,6 +60,15 @@ export default function Hero() {
             <dd className="mt-1 font-medium text-fg">{v}</dd>
           </div>
         ))}
+        <div className="sm:pr-6">
+          <dt className="text-xs font-semibold tracking-wide text-subtle uppercase">{experienceZone.name}</dt>
+          <dd className="mt-1">
+            <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="font-medium text-fg hover:text-accent">{digibuggy.addressShort}</a>
+            <a href={waLink(experienceZone.bookVisitText)} target="_blank" rel="noopener noreferrer" className="link mt-0.5 flex items-center gap-1.5 text-sm">
+              <CalendarCheck className="size-3.5" aria-hidden /> Book a visit
+            </a>
+          </dd>
+        </div>
         <div>
           <dt className="text-xs font-semibold tracking-wide text-subtle uppercase">Talk to a person</dt>
           <dd className="mt-1">

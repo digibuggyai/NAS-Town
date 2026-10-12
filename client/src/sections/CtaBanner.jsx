@@ -4,7 +4,9 @@ import Reveal from '../components/Reveal.jsx';
 
 // Blue banner before the footer, in the reference's style: deep blue with soft
 // translucent petal shapes and one white pill button.
-export default function CtaBanner({ title = 'See how NASTOWN fits your life and work', cta = 'Explore NAS Solutions', to = '/solutions', children }) {
+/** `to` for a page on the site, or `href` for an outside link such as a WhatsApp chat. */
+export default function CtaBanner({ title = 'See how NASTOWN fits your life and work', cta = 'Explore NAS Solutions', to = '/solutions', href, children }) {
+  const cls = 'btn mt-8 border border-white bg-white text-[#3730e0] hover:bg-white/90';
   return (
     <section className="mx-auto max-w-7xl px-4 pt-8 pb-16 sm:px-6 md:pb-24">
       <Reveal className="relative isolate overflow-hidden rounded-[28px] bg-[#3730e0] px-6 py-14 text-center sm:px-12 md:py-16">
@@ -21,9 +23,9 @@ export default function CtaBanner({ title = 'See how NASTOWN fits your life and 
         </div>
         <h2 className="mx-auto max-w-2xl font-display text-[clamp(1.7rem,3vw,2.4rem)] leading-tight font-semibold tracking-tight text-white">{title}</h2>
         {children && <div className="mx-auto mt-4 max-w-xl text-white/85">{children}</div>}
-        <Link to={to} className="btn mt-8 border border-white bg-white text-[#3730e0] hover:bg-white/90">
-          {cta} <ArrowRight className="size-4" />
-        </Link>
+        {href
+          ? <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{cta}</a>
+          : <Link to={to} className={cls}>{cta} <ArrowRight className="size-4" /></Link>}
       </Reveal>
     </section>
   );

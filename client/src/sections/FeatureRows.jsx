@@ -4,58 +4,33 @@ import Reveal from '../components/Reveal.jsx';
 import MiniDiagram from '../components/MiniDiagram.jsx';
 import { whatIsNas } from '../data/home.js';
 
-// "What is NAS?" as alternating feature rows: framed photo with a floating diagram
-// card on one side, the story and a blue link on the other, a pastel wash behind.
+// "What is NAS?" in one compact row: four cards (store, protect, share, access), each with
+// its small diagram, one headline, two lines and a link. It used to be four large photo rows.
 export default function FeatureRows() {
   return (
-    <section id="what-is-nas" className="relative mx-auto max-w-7xl scroll-mt-20 px-4 py-12 sm:px-6 md:py-20">
+    <section id="what-is-nas" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-12 sm:px-6 md:py-16">
       <Reveal className="max-w-2xl">
         <p className="eyebrow mb-3">{whatIsNas.eyebrow}</p>
         <h2 className="h-section">{whatIsNas.title}</h2>
-        <p className="mt-4 text-lg leading-relaxed">{whatIsNas.body[0]}</p>
+        <p className="mt-3 text-lg leading-relaxed">{whatIsNas.body[0]}</p>
       </Reveal>
 
-      <div className="mt-6 grid gap-20 md:mt-10 md:gap-28">
-        {whatIsNas.points.map((pt, i) => {
-          const imageFirst = i % 2 === 0;
-          return (
-            <div key={pt.key} className="relative grid items-center gap-10 md:grid-cols-2 md:gap-16 lg:gap-24">
-              {/* Photo + overlapping diagram card */}
-              <Reveal className={`relative mx-auto w-full max-w-[480px] ${imageFirst ? '' : 'md:order-2'}`}>
-                <div className="frame">
-                  <img
-                    src={pt.image}
-                    alt={pt.alt}
-                    width="900"
-                    height="900"
-                    loading="lazy"
-                    decoding="async"
-                    className="aspect-square w-full rounded-[28px] object-cover"
-                  />
-                </div>
-                <div
-                  className={`float-card absolute top-[30%] w-[40%] min-w-32 p-4 ${
-                    imageFirst ? 'right-0 md:-right-14 lg:-right-20' : 'left-0 md:-left-14 lg:-left-20'
-                  }`}
-                >
-                  <MiniDiagram kind={pt.key} />
-                </div>
-              </Reveal>
-
-              {/* Story */}
-              <Reveal delay={100} className={`relative ${imageFirst ? '' : 'md:order-1'}`}>
-                <div className="wash -inset-10 -z-10" aria-hidden />
-                <p className="eyebrow">{pt.title}</p>
-                <h3 className="h-section mt-3">{pt.headline}</h3>
-                <p className="mt-5 max-w-xl leading-relaxed">{pt.body}</p>
-                <Link to={pt.link.to} className="link mt-7 inline-flex items-center gap-1">
-                  {pt.link.label} <ChevronRight className="size-4" />
-                </Link>
-              </Reveal>
+      {/* Phones: one swipeable row. Tablets: 2 × 2. Desktop: one row of four. */}
+      <ul data-lenis-prevent-wheel className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+        {whatIsNas.points.map((pt, i) => (
+          <Reveal as="li" key={pt.key} delay={i * 70} className="flex w-[78%] shrink-0 snap-start flex-col rounded-2xl border border-line bg-raised p-5 sm:w-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-14 shrink-0 rounded-xl bg-surface p-1.5"><MiniDiagram kind={pt.key} /></div>
+              <p className="eyebrow">{pt.title}</p>
             </div>
-          );
-        })}
-      </div>
+            <h3 className="mt-4 text-lg leading-snug font-semibold">{pt.headline}</h3>
+            <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">{pt.body}</p>
+            <Link to={pt.link.to} className="link mt-auto inline-flex items-center gap-1 pt-4 text-sm">
+              {pt.link.label} <ChevronRight className="size-4" />
+            </Link>
+          </Reveal>
+        ))}
+      </ul>
     </section>
   );
 }

@@ -31,7 +31,7 @@ function cleanReview(b, { partial = false, staff = false } = {}) {
     if (!body || body.length < 10) throw new Error('Please write at least a sentence (10+ characters).');
     out.body = body;
   }
-  for (const [k, max] of [['city', 60], ['product', 120]]) {
+  for (const [k, max] of [['city', 60], ['role', 80], ['product', 120]]) {
     if (b[k] !== undefined) out[k] = text(b[k], max) || null;
   }
   if (b.email !== undefined) {
@@ -52,8 +52,9 @@ function cleanReview(b, { partial = false, staff = false } = {}) {
   return out;
 }
 
-// What the public site may see: never the email.
-const publicView = ({ id, name, city, product, rating, body, source, createdAt }) => ({ id, name, city, product, rating, body, source, createdAt });
+// What the public site may see. Never the email, and not the name either: reviews are shown
+// as "Photographer, Delhi · Synology DS925+". Names stay stored for moderation in admin.
+const publicView = ({ id, role, city, product, rating, body, source, createdAt }) => ({ id, role, city, product, rating, body, source, createdAt });
 
 /* ---------------- public ---------------- */
 

@@ -211,6 +211,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status, created_at DESC);
+-- What the reviewer does ("Photographer", "CA firm"): shown publicly instead of their name.
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS role TEXT;
 
 -- The change log is permanent. Entries can only be added: any UPDATE, DELETE or TRUNCATE on
 -- the table is refused by the database itself, whatever code or tool sends it.

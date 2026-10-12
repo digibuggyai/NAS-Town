@@ -10,6 +10,7 @@ import { RAID_INFO } from '../lib/nas/logic.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { capacityOptions, recommended, whatFits } from '../lib/nas/capacity.js';
 import NotFound from './NotFound.jsx';
+import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 const unitName = (m) => `${brandName(m.brand)} ${m.model}`;
 const drivesText = (b) => `${b.drivesPerUnit * b.units} × ${b.driveCap} TB ${b.driveLine}`;
@@ -194,9 +195,10 @@ export default function CapacityPage() {
           {capacityPages.filter((c) => c.tb !== tb).map((c) => (
             <Link key={c.tb} to={`/nas/${c.tb}tb`} className="chip">{c.tb}TB NAS</Link>
           ))}
-          <Link to="/tools/calculator" className="chip">Not sure? Calculate your storage</Link>
+          <Link to="/finder#roi" className="chip">Not sure? Calculate your storage</Link>
         </div>
       </section>
+      <ConfiguratorBand className="pb-16" title={`Build your ${tb}TB NAS`} body="Start from this size and change anything: the unit, drives, RAID level, installation and AMC, priced with GST as you go." query={`?target=${tb}`} />
       <FinalCta />
     </>
   );

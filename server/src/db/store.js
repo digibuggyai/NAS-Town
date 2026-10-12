@@ -493,7 +493,7 @@ export async function listCoupons(limit = 500) {
 
 /* ---------------- customer reviews ---------------- */
 
-const REVIEW_FIELDS = ['name', 'email', 'city', 'product', 'rating', 'body', 'source', 'status'];
+const REVIEW_FIELDS = ['name', 'email', 'city', 'role', 'product', 'rating', 'body', 'source', 'status'];
 const rowObj = (r) => r && Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v]));
 
 /** Reviews newest first. `publishedOnly` for the public site. */
@@ -512,7 +512,7 @@ export async function createReview(data) {
   const row = Object.fromEntries(REVIEW_FIELDS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]]));
   if (!pool) {
     mem.reviews ??= [];
-    const r = { id: nextId('reviews'), email: null, city: null, product: null, source: 'website', status: 'pending', ...row, createdAt: new Date(), updatedAt: new Date() };
+    const r = { id: nextId('reviews'), email: null, city: null, role: null, product: null, source: 'website', status: 'pending', ...row, createdAt: new Date(), updatedAt: new Date() };
     mem.reviews.push(r);
     return structuredClone(r);
   }
