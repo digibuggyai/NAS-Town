@@ -144,10 +144,9 @@ export function buildSpecs(build, raid = build.raid) {
   return [
     { label: 'Usable capacity', value: `${build.totalUsable} TB` },
     { label: 'RAID level', value: RAID_INFO[raid].title },
-    { label: 'Drives', value: `${build.drivesPerUnit * build.units} × ${build.driveCap} TB ${build.driveLine}` },
+    { label: 'Drives', value: `${build.drivesPerUnit} × ${build.driveCap} TB ${build.driveLine}` },
     { label: 'Bays used', value: `${build.drivesPerUnit} of ${build.model.bays} per unit` },
-    { label: 'Units', value: `${build.units}` },
-    { label: 'Spare bays', value: `${build.spareBays * build.units}` },
+    { label: 'Spare bays', value: `${build.spareBays}` },
     { label: 'Unit + drives', value: inr(build.totalQuote) },
   ];
 }
@@ -165,9 +164,8 @@ export function compareRows(builds) {
     ['M.2 NVMe slots', (b) => (b.model.m2Slots == null ? 'Not recorded' : b.model.m2Slots ? `${b.model.m2Slots}` : 'None')],
     ['Largest drive supported', (b) => (b.model.maxDriveTb ? `${b.model.maxDriveTb} TB` : 'Not recorded')],
     ['Usable capacity', (b) => `${b.totalUsable} TB`],
-    ['Drives', (b) => `${b.drivesPerUnit * b.units} × ${b.driveCap} TB ${b.driveLine}`],
-    ['Units', (b) => `${b.units}`],
-    ['Spare bays', (b) => `${b.spareBays * b.units}`],
+    ['Drives', (b) => `${b.drivesPerUnit} × ${b.driveCap} TB ${b.driveLine}`],
+    ['Spare bays', (b) => `${b.spareBays}`],
     ['RAID level', (b) => RAID_INFO[b.raid].title], // each build carries its own level ("Let us choose" mixes them)
     ['RAID supported', (b) => raidList(b.model) || '—'],
     ['Network ports', (b) => b.model.network || 'Not recorded'],

@@ -95,7 +95,7 @@ export default function Savings({ preset }) {
   }, [P, preset, needTb, years, cloudPerTb]);
 
   const rows = r ? [
-    { key: 'nas', label: 'NAS + drives', note: r.build ? `${r.build.units > 1 ? `${r.build.units} × ` : ''}${r.build.model.brand} ${r.build.model.model}, ${r.build.drivesPerUnit * r.build.units} × ${r.build.driveCap} TB, ${RAID_INFO[r.build.raid].title} · one-time, GST incl.` : 'Beyond what we quote online', value: r.nas },
+    { key: 'nas', label: 'NAS + drives', note: r.build ? `$${r.build.model.brand} ${r.build.model.model}, ${r.build.drivesPerUnit} × ${r.build.driveCap} TB, ${RAID_INFO[r.build.raid].title} · one-time, GST incl.` : 'Beyond what we quote online', value: r.nas },
     { key: 'cloud', label: 'Cloud subscription', note: `${formatInr(r.cloudMonthly)}/month for ${years} ${years > 1 ? 'years' : 'year'}, at your price per TB`, value: r.cloud },
     { key: 'ext', label: 'External drives', note: `Two copies of ${needTb} TB at ${formatInr(Math.round(r.perTb))}/TB (our drive list); no RAID, no remote access`, value: r.external },
   ] : [];

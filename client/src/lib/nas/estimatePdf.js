@@ -47,7 +47,7 @@ export function openEstimatePdf({ ref, build, price, lines, raid, speed, mode, t
     <img src="${origin}/nastown-logo-full.png" alt="NASTOWN">
     <div class="meta"><strong>Estimate ${esc(ref)}</strong><br>${esc(date)}<br>Subject to availability</div>
   </div>
-  <h1>${esc(build.units > 1 ? `${build.units} × ` : '')}${esc(build.model.brand)} ${esc(build.model.model)}</h1>
+  <h1>${esc(build.model.brand)} ${esc(build.model.model)}</h1>
   <div class="muted">${esc(build.model.bays)}-bay NAS · ${mode === 'budget' ? `sized for a budget of ${inr(budget)}` : `sized for ${esc(targetTB)} TB usable`}</div>
   <div class="grid">
     <div><b>Usable</b><span>${esc(build.totalUsable)} TB</span></div>

@@ -3,13 +3,19 @@
  * A "build" is a complete proposal:
  *   { model, raid, driveCap, driveLine, drive: { quote, min? }, drivesPerUnit,
  *     units, totalUsable, spareBays, totalQuote }
- * where totalQuote is hardware only (units + drives), GST inclusive.
+ * where totalQuote is hardware only (the unit + drives), GST inclusive.
+ *
+ * ONE NAS, ALWAYS. A build is exactly one unit: never two, three or four boxes added together.
+ * The search only ever fills the bays of a single chassis; `units` is always 1 and stays in
+ * the build only so prices and summaries read it the same way everywhere. A need bigger than
+ * one box can hold is reported (configure.js tooBig), never split across boxes.
  *
  * Nothing here reads a floor price; floors travel inside `drive` and `model`
  * only when the staff payload supplied them, and only priceFor() uses them. */
 
 export const MAX_BAYS = 8;
-export const MAX_UNITS = 4;
+// Kept for code that reads it; there is no multi-unit search left to switch on.
+export const MAX_UNITS = 1;
 export const STORAGE_MIN = 2;
 export const STORAGE_MAX = 200;
 
@@ -45,23 +51,14 @@ export function driveCounts(raid, bays) {
   return out;
 }
 
-/** Drives and chassis needed to reach a target. Returns units: Infinity when the chassis can't host the array. */
+/** The fewest drives of `driveTB` that reach `targetTB` in ONE chassis of `maxBays`, or null
+ *  if this chassis can't get there at this level. RAID 1 is always one mirrored pair. */
 export function computeDrives(raid, driveTB, targetTB, maxBays) {
-  const { min, step } = RAID_INFO[raid];
-  if (maxBays < min) return { drivesPerUnit: 0, units: Infinity, totalUsable: 0 };
-  if (raid === 'RAID1') {
-    const units = Math.max(1, Math.ceil(targetTB / driveTB));
-    return { drivesPerUnit: 2, units, totalUsable: units * driveTB };
-  }
-  for (let n = min; n <= maxBays; n += step) {
+  for (const n of driveCounts(raid, maxBays)) {
     const usable = usableForN(raid, n, driveTB);
     if (usable >= targetTB) return { drivesPerUnit: n, units: 1, totalUsable: usable };
   }
-  // Doesn't fit in one box: fill it, then gang more boxes.
-  const fullest = step === 2 ? maxBays - (maxBays % 2) : maxBays;
-  const perUnit = usableForN(raid, fullest, driveTB);
-  const units = perUnit > 0 ? Math.ceil(targetTB / perUnit) : Infinity;
-  return { drivesPerUnit: fullest, units, totalUsable: perUnit * units };
+  return null;
 }
 
 export function modelMatches(m, { raid, brand = 'any', bays = null, expandableOnly = false }) {
@@ -79,7 +76,7 @@ export function capsFor(model, capacities) {
   return capacities.filter((c) => !model.maxDriveTb || c <= model.maxDriveTb);
 }
 
-function makeBuild(model, raid, cap, line, drive, drivesPerUnit, units, totalUsable) {
+function makeBuild(model, raid, cap, line, drive, drivesPerUnit, totalUsable) {
   return {
     model,
     raid,
@@ -87,30 +84,29 @@ function makeBuild(model, raid, cap, line, drive, drivesPerUnit, units, totalUsa
     driveLine: line,
     drive,
     drivesPerUnit,
-    units,
+    units: 1, // always one NAS
     totalUsable,
     spareBays: model.bays - drivesPerUnit,
-    totalQuote: model.quote * units + drive.quote * drivesPerUnit * units,
+    totalQuote: model.quote + drive.quote * drivesPerUnit,
   };
 }
 
-const byPriceThenBoxesThenFit = (a, b) => a.totalQuote - b.totalQuote || a.units - b.units || a.totalUsable - b.totalUsable;
+const byPriceThenFit = (a, b) => a.totalQuote - b.totalQuote || a.totalUsable - b.totalUsable;
 
-/** Every build that reaches targetTB, cheapest first. */
-export function suggestBuilds({ targetTB, raid, models, hddPricing, capacities, brand, bays, expandableOnly, maxUnits = MAX_UNITS }) {
+/** Every single-NAS build that reaches targetTB, cheapest first. */
+export function suggestBuilds({ targetTB, raid, models, hddPricing, capacities, brand, bays, expandableOnly }) {
   const out = [];
   for (const model of models) {
     if (!modelMatches(model, { raid, brand, bays, expandableOnly })) continue;
     for (const cap of capsFor(model, capacities)) {
-      const lines = hddPricing[cap] ?? {};
-      for (const [line, drive] of Object.entries(lines)) {
-        const calc = computeDrives(raid, cap, targetTB, model.bays);
-        if (calc.units > maxUnits) continue;
-        out.push(makeBuild(model, raid, cap, line, drive, calc.drivesPerUnit, calc.units, calc.totalUsable));
+      const calc = computeDrives(raid, cap, targetTB, model.bays);
+      if (!calc) continue; // this chassis can't hold it with these drives
+      for (const [line, drive] of Object.entries(hddPricing[cap] ?? {})) {
+        out.push(makeBuild(model, raid, cap, line, drive, calc.drivesPerUnit, calc.totalUsable));
       }
     }
   }
-  return out.sort(byPriceThenBoxesThenFit);
+  return out.sort(byPriceThenFit);
 }
 
 /** Keep the first (best) build per model, preserving order. */
@@ -119,19 +115,16 @@ export function bestBuildPerModel(builds) {
   return builds.filter((b) => (seen.has(b.model.id) ? false : (seen.add(b.model.id), true)));
 }
 
-/** Usable capacities that whole drives can actually deliver at this level. */
-export function buildableSizes({ raid, models, capacities, hddPricing, brand, bays, expandableOnly, maxUnits = MAX_UNITS }) {
+/** Usable capacities that whole drives can deliver at this level in ONE NAS. */
+export function buildableSizes({ raid, models, capacities, hddPricing, brand, bays, expandableOnly }) {
   const sizes = new Set();
   for (const model of models) {
     if (!modelMatches(model, { raid, brand, bays, expandableOnly })) continue;
     for (const cap of capsFor(model, capacities)) {
       if (!hddPricing[cap] || !Object.keys(hddPricing[cap]).length) continue;
       for (const n of driveCounts(raid, model.bays)) {
-        const perUnit = usableForN(raid, n, cap);
-        for (let units = 1; units <= maxUnits; units++) {
-          const total = perUnit * units;
-          if (total >= STORAGE_MIN && total <= STORAGE_MAX && Number.isInteger(total)) sizes.add(total);
-        }
+        const total = usableForN(raid, n, cap);
+        if (total >= STORAGE_MIN && total <= STORAGE_MAX && Number.isInteger(total)) sizes.add(total);
       }
     }
   }
@@ -150,27 +143,22 @@ export function nearestBuildable(target, sizes) {
   return best;
 }
 
-/** Every build whose complete quote (hardware + extraCost) fits the budget, most usable space first. */
-export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, models, hddPricing, capacities, brand, bays, expandableOnly, maxUnits = MAX_UNITS }) {
+/** Every single-NAS build whose complete quote (hardware + extraCost) fits the budget, most usable space first. */
+export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, models, hddPricing, capacities, brand, bays, expandableOnly }) {
   const out = [];
   for (const model of models) {
     if (!modelMatches(model, { raid, brand, bays, expandableOnly })) continue;
     for (const cap of capsFor(model, capacities)) {
       for (const [line, drive] of Object.entries(hddPricing[cap] ?? {})) {
         for (const n of driveCounts(raid, model.bays)) {
-          const perUnit = usableForN(raid, n, cap);
-          const unitHardware = model.quote + drive.quote * n;
-          for (let units = 1; units <= maxUnits; units++) {
-            const hardware = unitHardware * units;
-            // Each extra unit only costs more, so stop at the first overrun.
-            if (hardware + extraCost(hardware, units) > budget) break;
-            out.push(makeBuild(model, raid, cap, line, drive, n, units, perUnit * units));
-          }
+          const hardware = model.quote + drive.quote * n;
+          if (hardware + extraCost(hardware, 1) > budget) break; // more drives only cost more
+          out.push(makeBuild(model, raid, cap, line, drive, n, usableForN(raid, n, cap)));
         }
       }
     }
   }
-  return out.sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote || a.units - b.units);
+  return out.sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote);
 }
 
 /* ---------------- "Let us choose": the RAID level follows the drive count ---------------- */
@@ -196,12 +184,10 @@ export function advisedRaid(drives) {
 
 export const followsRaidAdvice = (b) => advisedRaid(b.drivesPerUnit) === b.raid;
 
-/** Keep the builds that follow the advice (all of them if none can), then one box over several. */
+/** Keep the builds that follow the advice (all of them if none can). */
 function preferAdvised(builds) {
   const advised = builds.filter(followsRaidAdvice);
-  const pool = advised.length ? advised : builds;
-  const oneBox = pool.filter((b) => b.units === 1);
-  return oneBox.length ? oneBox : pool;
+  return advised.length ? advised : builds;
 }
 
 /** Sizes buildable at any level "Let us choose" may pick. */
@@ -213,7 +199,7 @@ export function autoBuildableSizes(opts) {
  *  level suits its drive count, cheapest first. Each build carries its own `raid`. */
 export function suggestAutoBuilds(opts) {
   const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuilds({ ...opts, raid }));
-  return preferAdvised(all).sort(byPriceThenBoxesThenFit);
+  return preferAdvised(all).sort(byPriceThenFit);
 }
 
 /**
@@ -224,7 +210,7 @@ export function suggestAutoBuilds(opts) {
 export function suggestBudgetPlan(opts) {
   const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuildsForBudget({ ...opts, raid }));
   if (all.length) {
-    const builds = preferAdvised(all).sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote || a.units - b.units);
+    const builds = preferAdvised(all).sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote);
     return { raid: builds[0].raid, builds, redundant: true };
   }
   const raid0 = suggestBuildsForBudget({ ...opts, raid: 'RAID0' });

@@ -154,9 +154,9 @@ export function QuoteOfferPopup({ open, onClose, build, price, summary, offer, o
     <Dialog open={open} onClose={onClose} title={`Your quote is ready: ${inr(COUPON_INR)} off`}>
       <div className="pb-2">
         <div className="rounded-xl bg-surface p-4 ring-1 ring-line">
-          <p className="font-medium">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</p>
+          <p className="font-medium">{build.model.brand} {build.model.model}</p>
           <p className="mt-1 text-sm text-muted">
-            {build.drivesPerUnit * build.units} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="whitespace-nowrap">{build.totalUsable} TB usable</span>
+            {build.drivesPerUnit} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="whitespace-nowrap">{build.totalUsable} TB usable</span>
           </p>
           <dl className="mt-3 grid gap-1 border-t border-line pt-3 text-sm">
             <div className="flex justify-between gap-3"><dt className="text-muted">Your quote</dt><dd>{inr(price.total)}</dd></div>

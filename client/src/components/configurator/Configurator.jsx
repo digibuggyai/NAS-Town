@@ -10,6 +10,7 @@ import {
 } from '../../lib/nas/specs.js';
 import { openEstimatePdf } from '../../lib/nas/estimatePdf.js';
 import { api } from '../../lib/api.js';
+import { waLink } from '../../data/site.js';
 import { Dialog } from './parts.jsx';
 import { Badge, CheckTile, InfoHover, SpecList, StepCard, Tile } from './ui.jsx';
 import { IntroPopup, QuoteOfferPopup } from './OfferPopups.jsx';
@@ -104,7 +105,9 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const mostBays = Math.max(0, ...P.models.map((m) => m.baysWithExpansion ?? 0));
   const bayHint = (tier) => {
     const b = can.bayPool.find((x) => x.model.bays === tier);
-    return b ? `${b.drivesPerUnit}× ${b.driveCap} TB${d.auto ? ` · ${RAID_INFO[b.raid].title}` : ''}${b.units > 1 ? ` · ${b.units} units` : ''}` : "Can't reach the target";
+    if (b) return `${b.drivesPerUnit}× ${b.driveCap} TB${d.auto ? ` · ${RAID_INFO[b.raid].title}` : ''}`;
+    const max = can.limits?.bays[tier];
+    return max ? `Up to ${max} TB` : 'Not with these choices';
   };
   const ram = P.upgrades.filter((u) => u.category === 'RAM');
   const nic = P.upgrades.filter((u) => u.category === 'NIC');
@@ -164,6 +167,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                   className="field !w-auto min-w-36 !py-2.5 text-base font-semibold"
                 >
                   {!started && <option value="" disabled>Select size</option>}
+                  {d.tooBig && <option value="" disabled>{d.tooBig.asked} TB: too big for one NAS</option>}
                   {d.sizes.map((s) => <option key={s} value={s}>{s} TB</option>)}
                 </select>
                 <span className="text-sm text-muted">{!started ? 'Pick a size, or tap one below' : d.auto ? 'usable, with RAID protection' : <>usable at {RAID_INFO[a.raid].title}</>}</span>
@@ -173,8 +177,8 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </div>
               {d.movedFrom != null ? (
                 <p className="mt-3 flex gap-2 text-sm text-warning"><Info className="mt-0.5 size-4 shrink-0" /> Showing {d.targetTB} TB: {d.movedFrom} TB can't be built from whole drives{d.auto ? '' : <> at {RAID_INFO[a.raid].title}</>}.</p>
-              ) : started && (
-                <p className="mt-3 text-xs text-subtle">{d.sizes.length} sizes can be built{d.auto ? ' with RAID protection' : <> at {RAID_INFO[a.raid].title}</>}. Other figures can't be made from whole drives.</p>
+              ) : started && can.limits?.max > 0 && (
+                <p className="mt-3 text-xs text-subtle">Always one NAS: with these choices it holds up to {can.limits.max} TB usable{d.auto ? ', with RAID protection' : <> at {RAID_INFO[a.raid].title}</>}. Sizes are what whole drives can make.</p>
               )}
             </>
           ) : (
@@ -193,14 +197,15 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         {/* 2 RAID */}
         <StepCard n={++n} locked={!started} title="RAID Protection" hint="How drives are arranged: how much raw capacity is usable, and how many drive failures the array survives.">
           <div className="grid gap-2">
-            <Tile active={started && a.raidAuto} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Matched to the drive count</span>} />
+            <Tile active={started && a.raidAuto} disabled={started && !can.reaches(can.limits?.auto)} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Matched to the drive count</span>} />
             {RAID_LEVELS.map((r) => (
               <Tile
                 key={r}
                 active={started && !a.raidAuto && a.raid === r}
+                disabled={started && !can.reaches(can.limits?.raid[r])}
                 onClick={() => set({ raid: r, raidAuto: false })}
                 title={RAID_INFO[r].title}
-                aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">{RAID_INFO[r].sub}</span>}
+                aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">{started && !can.reaches(can.limits?.raid[r]) ? (can.limits.raid[r] ? `Up to ${can.limits.raid[r]} TB in one NAS` : 'Not with these choices') : RAID_INFO[r].sub}</span>}
               />
             ))}
           </div>
@@ -226,7 +231,10 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         <StepCard n={++n} locked={!started} title="Brand" hint="Leave it open unless you have a preference: it widens what we can recommend.">
           <div className="grid grid-cols-3 gap-2">
             <Tile active={started && a.brand === 'any'} onClick={() => set({ brand: 'any' })} title="Any" sub="Recommend from all" />
-            {brands.map((b) => <Tile key={b} active={a.brand === b} onClick={() => set({ brand: b })} title={b} sub={`${P.models.filter((m) => m.brand === b).length} units`} />)}
+            {brands.map((b) => {
+              const fits = can.reaches(can.limits?.brands[b]);
+              return <Tile key={b} active={a.brand === b} disabled={started && !fits} onClick={() => set({ brand: b })} title={b} sub={started && !fits ? (can.limits.brands[b] ? `Up to ${can.limits.brands[b]} TB` : 'Not with these choices') : `${P.models.filter((m) => m.brand === b).length} units`} />;
+            })}
           </div>
         </StepCard>
 
@@ -239,9 +247,21 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </StepCard>
 
         {d.error ? (
-          <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-5 text-sm xl:col-span-2">
+          <div role="alert" className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-5 text-sm xl:col-span-2">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
-            <p>{d.error}</p>
+            <div className="min-w-0">
+              <p>{d.error}</p>
+              {d.tooBig && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {d.tooBig.fixes.map((f) => (
+                    <button key={f.label} type="button" onClick={() => set(f.patch)} className="btn btn-secondary btn-sm">{f.label}</button>
+                  ))}
+                  {d.tooBig.expansion && (
+                    <a href={waLink(`Hi NASTOWN, I need about ${d.tooBig.asked} TB in one NAS. Can you quote it with an expansion unit?`)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp btn-sm">Ask about expansion units</a>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ) : build && (
           <>
@@ -280,7 +300,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                             <InfoHover label={`${b.model.brand} ${b.model.model} specifications`} specs={keySpecs(b.model)} onOpen={() => setDialog({ kind: 'model', item: b })} align="left" />
                           </p>
                           <p className="mt-1 text-sm text-muted">
-                            {b.units > 1 && `${b.units} units · `}{b.drivesPerUnit * b.units}× {b.driveCap} TB {b.driveLine} in {b.model.bays} bays · {d.auto && `${RAID_INFO[b.raid].title} · `}{b.totalUsable} TB usable · {b.spareBays * b.units} spare {b.spareBays * b.units === 1 ? 'bay' : 'bays'}
+                            {b.drivesPerUnit}× {b.driveCap} TB {b.driveLine} in {b.model.bays} bays · {d.auto && `${RAID_INFO[b.raid].title} · `}{b.totalUsable} TB usable · {b.spareBays} spare {b.spareBays === 1 ? 'bay' : 'bays'}
                           </p>
                         </div>
                         <div className="sm:text-right">
@@ -346,7 +366,12 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                 })}
               </div>
               <ul className="mt-4 grid gap-2">
-                {driveNotes(build.model, lineSpec(build.driveLine), build.drivesPerUnit).map((note) => (
+                {[
+                  ...driveNotes(build.model, lineSpec(build.driveLine), build.drivesPerUnit),
+                  ...(build.model.brand === 'Synology' && build.totalUsable > 108
+                    ? [{ tone: 'info', text: `Synology's largest single volume on this unit is 108 TB with standard memory, so ${build.totalUsable} TB is set up as more than one volume, all in this one NAS.` }]
+                    : []),
+                ].map((note) => (
                   <li key={note.text} className={`flex gap-2 rounded-lg px-3 py-2 text-xs leading-relaxed ${note.tone === 'warn' ? 'bg-warning/10 text-warning' : 'bg-surface text-muted'}`}>
                     {note.tone === 'warn' ? <AlertTriangle className="mt-0.5 size-3.5 shrink-0" /> : <Info className="mt-0.5 size-3.5 shrink-0" />}
                     {note.text}
@@ -394,7 +419,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             </div>
             {build && price ? (
               <>
-                <p className="mt-2 font-display text-2xl leading-tight font-semibold text-white">{build.units > 1 ? `${build.units} × ` : ''}{build.model.model}</p>
+                <p className="mt-2 font-display text-2xl leading-tight font-semibold text-white">{build.model.model}</p>
                 <p className="text-sm text-white/70">{build.model.brand} · {build.model.bays}-bay NAS</p>
               </>
             ) : <p className="mt-2 text-sm text-white/70">{started ? 'Adjust your choices to see an estimate.' : 'Nothing selected yet.'}</p>}
@@ -499,7 +524,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           <div className="pb-2">
             <p className="text-sm text-muted">Send us this configuration and our team will confirm availability and final pricing.</p>
             <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3 text-sm ring-1 ring-line">
-              <span className="min-w-0"><span className="font-semibold">{build.units > 1 ? `${build.units} × ` : ''}{build.model.brand} {build.model.model}</span><span className="block text-xs text-muted">{price.totalDrives} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[d.raid].title} · {build.totalUsable} TB usable</span></span>
+              <span className="min-w-0"><span className="font-semibold">{build.model.brand} {build.model.model}</span><span className="block text-xs text-muted">{price.totalDrives} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[d.raid].title} · {build.totalUsable} TB usable</span></span>
               <span className="font-semibold whitespace-nowrap tabular-nums">{inr(price.total)}</span>
             </div>
             <div className="mt-5">

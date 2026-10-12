@@ -7,7 +7,7 @@ delete process.env.DATABASE_URL;
 const store = await import('../src/db/store.js');
 const { toPublicPricing, toSalesPricing } = await import('../src/pricing.js');
 const { derive, priceFor, INITIAL_ANSWERS } = await import('../../client/src/lib/nas/configure.js');
-const { suggestBuilds } = await import('../../client/src/lib/nas/logic.js');
+const { suggestBuilds, RAID_LEVELS } = await import('../../client/src/lib/nas/logic.js');
 
 let P;
 before(async () => {
@@ -141,4 +141,55 @@ test('Let us choose: a 2-bay filter gives a RAID 1 mirror', () => {
   const { d, b } = run({ targetTB: 20, bays: 2 });
   assert.equal(d.raid, 'RAID1');
   assert.equal(b.model.bays, 2);
+});
+
+// One customer, one NAS: never several boxes. A size one NAS can't hold is an error with fixes,
+// never a smaller quote and never more units.
+test('every recommendation is a single NAS', () => {
+  for (const over of [{ targetTB: 24, driveCap: 6 }, { targetTB: 24, bays: 2 }, { targetTB: 100 }, { targetTB: 168 }, { targetTB: 30, raid: 'RAID1' }, { storageMode: 'budget', budget: 2000000 }]) {
+    const { d } = run(over);
+    assert.ok(d.builds.every((b) => b.units === 1), `${JSON.stringify(over)} has a multi-unit build`);
+  }
+});
+
+test('24 TB on 6 TB drives fits one NAS (not four 2-bay units)', () => {
+  const { b } = run({ targetTB: 24, driveCap: 6 });
+  assert.equal(b.units, 1);
+  assert.ok(b.drivesPerUnit * b.driveCap >= 24);
+});
+
+test('too big for one NAS with these choices: an error with fixes, no smaller quote', () => {
+  const { d } = run({ targetTB: 50, bays: 2 });
+  assert.equal(d.build, null);
+  assert.equal(d.tooBig.max, 24);
+  assert.ok(d.tooBig.fixes.some((f) => f.label === 'Any number of bays'));
+});
+
+test('bigger than any single NAS listed: points to expansion units', () => {
+  const { d } = run({ targetTB: 200 });
+  assert.equal(d.build, null);
+  assert.equal(d.tooBig.expansion, true);
+});
+
+// The rule, across every kind of choice: sizes, budgets, each RAID choice, bay count, brand,
+// "room to expand" and installation. Not one suggestion may be more than one NAS.
+test('sweep: no choice ever produces more than one NAS', () => {
+  const raids = [{ raidAuto: true }, ...RAID_LEVELS.map((raid) => ({ raidAuto: false, raid }))];
+  const bays = [null, ...new Set(P.models.map((m) => m.bays))];
+  const brands = ['any', ...new Set(P.models.map((m) => m.brand))];
+  let checked = 0;
+  for (const r of raids) for (const bay of bays) for (const brand of brands) for (const expandable of [false, true]) {
+    const answers = [];
+    for (let targetTB = 2; targetTB <= 200; targetTB += 3) answers.push({ storageMode: 'capacity', targetTB });
+    for (let budget = 50000; budget <= 2000000; budget += 75000) answers.push({ storageMode: 'budget', budget, includeInstall: budget % 2 === 0 });
+    for (const over of answers) {
+      const { d } = run({ ...over, bays: bay, brand, expandable, ...r });
+      for (const b of [...d.builds, ...d.options, d.build].filter(Boolean)) {
+        checked++;
+        assert.equal(b.units, 1, `${JSON.stringify({ ...over, bay, brand, expandable, ...r })}: ${b.model.model} × ${b.units}`);
+        assert.ok(b.drivesPerUnit <= b.model.bays, `${b.model.model}: ${b.drivesPerUnit} drives in ${b.model.bays} bays`);
+      }
+    }
+  }
+  assert.ok(checked > 100000, `only ${checked} suggestions checked`);
 });

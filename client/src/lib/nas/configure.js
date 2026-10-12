@@ -7,6 +7,7 @@
 import {
   MAX_UNITS,
   RAID_INFO,
+  RAID_LEVELS,
   autoBuildableSizes,
   bestBuildPerModel,
   buildableSizes,
@@ -69,16 +70,48 @@ export function extraCostFor(a, P) {
     (a.includeInstall ? P.install.quote * units : 0) + (a.includeAMC ? hardware * P.amcRate.quote : 0);
 }
 
+const catalogueFor = (a, P) => ({
+  models: P.models,
+  hddPricing: P.hddPricing,
+  capacities: P.capacities,
+  brand: a.brand,
+  bays: a.bays,
+  expandableOnly: a.expandable,
+  maxUnits: MAX_UNITS,
+});
+
+/** The most usable space ONE NAS can give with these answers (capacity mode), 0 if none. */
+export function singleBoxMax(a, P) {
+  const catalogue = catalogueFor(a, P);
+  const sizes = a.raidAuto ? autoBuildableSizes(catalogue) : buildableSizes({ raid: a.raid, ...catalogue });
+  return sizes.length ? sizes[sizes.length - 1] : 0;
+}
+
+/**
+ * The asked-for size doesn't fit in one NAS with these choices. We never split it across
+ * several boxes, and never quietly quote a smaller one: say so, and offer the changes that
+ * would make it fit (each a patch to the answers), or the largest size that does.
+ */
+function tooBig(a, P, sizes, max) {
+  const asked = a.targetTB;
+  const fits = (patch) => singleBoxMax({ ...a, ...patch }, P) >= asked;
+  const fixes = [];
+  if (a.bays != null && fits({ bays: null })) fixes.push({ label: 'Any number of bays', patch: { bays: null } });
+  if (a.brand !== 'any' && fits({ brand: 'any' })) fixes.push({ label: 'Any brand', patch: { brand: 'any' } });
+  if (!a.raidAuto && fits({ raidAuto: true })) fixes.push({ label: 'Let us choose the RAID level', patch: { raidAuto: true } });
+  if (a.expandable && fits({ expandable: false })) fixes.push({ label: 'Drop "room to expand"', patch: { expandable: false } });
+  const open = { bays: null, brand: 'any', raidAuto: true, expandable: false };
+  const absolute = singleBoxMax({ ...a, ...open }, P);
+  if (!fixes.length && absolute >= asked) fixes.push({ label: 'Open up bays, brand and RAID', patch: open });
+  if (max) fixes.push({ label: `Use ${max} TB instead`, patch: { targetTB: max } });
+  const error = absolute < asked
+    ? `${asked} TB is more than any single NAS on our list can hold: the most is ${absolute} TB. For more, an expansion unit adds bays to the same NAS. Our team quotes those.`
+    : `${asked} TB doesn't fit in one NAS with these choices. The most one unit can hold here is ${max} TB.`;
+  return { ...unbuilt(a, 'capacity', error), sizes, auto: a.raidAuto, tooBig: { asked, max, absolute, fixes, expansion: absolute < asked } };
+}
+
 export function derive(a, P) {
-  const catalogue = {
-    models: P.models,
-    hddPricing: P.hddPricing,
-    capacities: P.capacities,
-    brand: a.brand,
-    bays: a.bays,
-    expandableOnly: a.expandable,
-    maxUnits: MAX_UNITS,
-  };
+  const catalogue = catalogueFor(a, P);
 
   if (a.storageMode === 'budget') {
     const budget = a.budget;
@@ -128,6 +161,7 @@ export function derive(a, P) {
     const sizes = autoBuildableSizes(catalogue);
     if (!sizes.length) return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand or bays.'), sizes };
     if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, auto: true, pending: true }; // waiting for a size
+    if (a.targetTB > sizes[sizes.length - 1]) return tooBig(a, P, sizes, sizes[sizes.length - 1]);
     const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
     const builds = suggestAutoBuilds({ targetTB, ...catalogue });
     const picked = pickBuild(a, builds);
@@ -150,6 +184,7 @@ export function derive(a, P) {
     return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand, bays or RAID level.'), sizes };
   }
   if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, pending: true }; // waiting for a size
+  if (a.targetTB > sizes[sizes.length - 1]) return tooBig(a, P, sizes, sizes[sizes.length - 1]);
   const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
   const builds = suggestBuilds({ targetTB, raid: a.raid, ...catalogue });
   return {
@@ -187,12 +222,28 @@ export function feasibleOptions(a, P, d) {
   }
   const tightest = spare.size ? Math.min(...spare.values()) : 0;
 
+  // How much one NAS can hold for each choice, so the pickers can grey out what can't reach the
+  // size asked for and say "Up to N TB" (capacity mode, once a size is chosen).
+  const limits = a.storageMode === 'capacity' && a.targetTB != null ? {
+    max: singleBoxMax(a, P),
+    bays: Object.fromEntries([...new Set(P.models.map((m) => m.bays))].map((t) => [t, singleBoxMax({ ...a, bays: t }, P)])),
+    brands: Object.fromEntries(['any', ...new Set(P.models.map((m) => m.brand))].map((b) => [b, singleBoxMax({ ...a, brand: b }, P)])),
+    raid: Object.fromEntries(RAID_LEVELS.map((r) => [r, singleBoxMax({ ...a, raid: r, raidAuto: false }, P)])),
+    auto: singleBoxMax({ ...a, raidAuto: true }, P),
+  } : null;
+  const reaches = (limit) => !limits || limit >= a.targetTB;
+
   return {
     // "Let us choose" mixes levels (a 2-bay mirror, a 4-bay RAID 5…), so every tier that can be
     // built is a fair offer; with a fixed level, only the tiers the array fills most tightly.
-    bays: d.auto
-      ? new Set(bayPool.map((b) => b.model.bays))
-      : new Set([...spare].filter(([, empty]) => empty === tightest).map(([tier]) => tier)),
+    // When the size doesn't fit at all, offer every tier that could hold it.
+    bays: d.tooBig
+      ? new Set(Object.entries(limits?.bays ?? {}).filter(([, max]) => max >= a.targetTB).map(([t]) => Number(t)))
+      : d.auto
+        ? new Set(bayPool.map((b) => b.model.bays))
+        : new Set([...spare].filter(([, empty]) => empty === tightest).map(([tier]) => tier)),
+    limits,
+    reaches,
     caps: new Set(d.builds.map((b) => b.driveCap)),
     lines: new Set((byCap.length ? byCap : d.builds).map((b) => b.driveLine)),
     bayPool,
@@ -287,7 +338,7 @@ export function leadSummary(d, build, price, speed, a, P, ref) {
   return [
     ref ? `NAS configurator request · ${ref}` : null,
     ref ? '' : null,
-    `Unit: ${build.model.brand} ${build.model.model} (${build.model.bays}-bay)${build.units > 1 ? ` × ${build.units}` : ''}`,
+    `Unit: ${build.model.brand} ${build.model.model} (${build.model.bays}-bay)`,
     `Drives: ${price.totalDrives} × ${build.driveCap} TB ${build.driveLine}`,
     `RAID: ${RAID_INFO[d.raid].title}, ${build.totalUsable} TB usable`,
     `Network: ${speed ?? 'Not specified'}${build.model.networkUpgrade ? ` (upgradable: ${build.model.networkUpgrade})` : ''}`,

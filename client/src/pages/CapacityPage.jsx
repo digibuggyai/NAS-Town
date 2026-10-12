@@ -13,7 +13,7 @@ import NotFound from './NotFound.jsx';
 import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 const unitName = (m) => `${brandName(m.brand)} ${m.model}`;
-const drivesText = (b) => `${b.drivesPerUnit * b.units} × ${b.driveCap} TB ${b.driveLine}`;
+const drivesText = (b) => `${b.drivesPerUnit} × ${b.driveCap} TB ${b.driveLine}`;
 const configureHref = (b, target) => `/tools/configurator?target=${target}&raid=${b.raid}&model=${b.model.slug}`;
 
 // "NAS for 50TB" / "50TB NAS price" landing page: real builds and prices for one capacity.
@@ -73,7 +73,7 @@ export default function CapacityPage() {
                 <p className="eyebrow !text-xs">{i === 0 ? 'Best value' : `${b.model.bays}-bay option`}</p>
                 <h3 className="mt-3 text-xl">
                   <Link to={`/products/${b.model.slug}`} className="hover:text-accent">{unitName(b.model)}</Link>
-                  {b.units > 1 && <span className="text-muted"> × {b.units}</span>}
+                  
                 </h3>
                 <ul className="mt-4 grid gap-2 text-sm">
                   {[drivesText(b), `${RAID_INFO[b.raid].title}: ${b.totalUsable} TB usable`, `${b.model.bays} bays${b.spareBays > 0 ? `, ${b.spareBays} free to grow` : ''}`].map((t) => (

@@ -81,9 +81,9 @@ export default function Finder({ onResult }) {
                   <span className="eyebrow !text-xs">{b.model.brand}</span>
                   {i === 0 && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">Best value</span>}
                 </div>
-                <h4 className="mt-2 text-lg font-medium">{b.units > 1 ? `${b.units} × ` : ''}{b.model.model}</h4>
+                <h4 className="mt-2 text-lg font-medium">{b.model.model}</h4>
                 <p className="mt-1 text-sm text-muted">
-                  {b.drivesPerUnit * b.units} × {b.driveCap} TB {b.driveLine} · {RAID_INFO[b.raid].title}
+                  {b.drivesPerUnit} × {b.driveCap} TB {b.driveLine} · {RAID_INFO[b.raid].title}
                 </p>
                 <p className="text-sm text-muted">{b.totalUsable} TB usable · {networkFor(b.model).speed}</p>
                 <p className="mt-auto pt-4 text-xl font-medium">{inr(b.totalQuote)}</p>
