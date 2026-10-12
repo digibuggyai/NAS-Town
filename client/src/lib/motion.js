@@ -44,7 +44,12 @@ export function scrollToTop() {
 }
 
 export function scrollToEl(el) {
-  if (lenis) lenis.scrollTo(el, { offset: NAV_OFFSET, duration: 1.2 });
+  if (lenis) {
+    // Straight after a page load Lenis may not have measured the page yet and would clamp
+    // the jump to the top (e.g. opening /finder#roi directly). Measure first.
+    lenis.resize();
+    lenis.scrollTo(el, { offset: NAV_OFFSET, duration: 1.2, force: true });
+  }
   else el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 

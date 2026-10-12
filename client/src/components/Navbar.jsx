@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { ChevronDown, Menu, MessageCircle, X } from 'lucide-react';
-import { digibuggy, nav } from '../data/site.js';
+import { MapPin, Menu, MessageCircle, SlidersHorizontal, X } from 'lucide-react';
+import { digibuggy, nav, waLink } from '../data/site.js';
+import { experienceZone, quoteText } from '../config/siteContent.js';
 import { gsap, lockScroll, reducedMotion, useGSAP } from '../lib/motion.js';
 
 /** NASTOWN mark (house of drives) + wordmark. The mark is a transparent PNG; on dark
@@ -74,45 +75,31 @@ export default function Navbar() {
         <Logo />
 
         <nav aria-label="Main" className="hidden xl:block">
-          <ul className="flex items-center">
-            {nav.map(({ label, to, children }) => (
-              <li key={label} className="group relative">
+          {/* Flat links, no dropdowns. The Configurator is drawn as a pill: it's where people get a price. */}
+          <ul className="flex items-center gap-0.5">
+            {nav.map(({ label, to, highlight }) => (
+              <li key={to}>
                 <NavLink
                   to={to}
+                  end={to === '/products'}
                   className={({ isActive }) =>
-                    `flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2 text-[0.875rem] transition-colors hover:bg-accent-soft hover:text-fg ${isActive ? 'text-fg' : 'text-muted'}`
+                    highlight
+                      ? 'nav-glow mx-1 inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 text-[0.875rem] font-medium transition-colors'
+                      : `inline-flex whitespace-nowrap rounded-full px-2.5 py-2 text-[0.875rem] transition-colors hover:bg-accent-soft hover:text-fg ${isActive ? 'font-medium text-fg' : 'text-muted'}`
                   }
                 >
+                  {highlight && <SlidersHorizontal className="size-3.5" aria-hidden />}
                   {label}
-                  {children && <ChevronDown className="size-3.5 opacity-60 transition-transform duration-200 group-hover:rotate-180" />}
                 </NavLink>
-                {children && (
-                  <div className="invisible absolute top-full left-0 min-w-56 translate-y-1 pt-2 opacity-0 transition-all duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                    <ul className="rounded-lg border border-line bg-raised p-1.5 shadow-[0_12px_32px_-12px_rgb(27_27_25/0.25)]">
-                      {children.map((c) => (
-                        <li key={c.to}>
-                          <Link to={c.to} className="block rounded-md px-3 py-2 text-[0.875rem] text-muted transition-colors hover:bg-surface hover:text-fg">
-                            {c.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Primary action: talk to a person on WhatsApp (WhatsApp's own green, so it's instantly recognisable). */}
-          <a
-            href={digibuggy.whatsappHref}
-            target="_blank"
-            rel="noopener"
-            className="btn hidden !min-h-10 !py-2 !text-[0.875rem] border border-[#1fb855] bg-[#25d366] text-white shadow-[0_6px_18px_-8px_rgb(37_211_102/0.7)] hover:bg-[#1fb855] sm:inline-flex"
-          >
-            <MessageCircle className="size-4" /> WhatsApp us
+          {/* Primary action: a quote from a person, on WhatsApp. */}
+          <a href={waLink(quoteText)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp hidden !min-h-10 !py-2 !text-[0.875rem] sm:inline-flex">
+            <MessageCircle className="size-4" /> Get a quote
           </a>
           <button
             onClick={() => setOpen((o) => !o)}
@@ -128,31 +115,23 @@ export default function Navbar() {
       
       {open && (
         <div id="mobile-menu" ref={menu} className="mx-auto mt-2 max-h-[calc(100svh-6rem)] max-w-7xl overflow-y-auto rounded-3xl border border-line bg-raised px-5 pb-8 shadow-[0_16px_40px_-16px_rgb(15_23_42/0.3)] xl:hidden">
+          {/* With no dropdowns, the phone menu is one flat list. */}
           <ul className="rule-list">
-            {nav.map(({ label, to, children }) => (
-              <li key={label}>
-                {children ? (
-                  <details className="group">
-                    <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-lg">
-                      {label}
-                      <ChevronDown className="size-5 text-subtle transition-transform group-open:rotate-180" />
-                    </summary>
-                    <ul className="grid pb-4">
-                      {children.map((c) => (
-                        <li key={c.to}><Link to={c.to} className="block py-2 text-muted hover:text-fg">{c.label}</Link></li>
-                      ))}
-                    </ul>
-                  </details>
-                ) : (
-                  <Link to={to} className="block py-4 text-lg">{label}</Link>
-                )}
+            {nav.map(({ label, to, highlight }) => (
+              <li key={to}>
+                <Link to={to} className={highlight ? 'nav-glow my-2 flex min-h-12 items-center justify-center gap-2 px-5 py-3 text-lg font-medium' : 'flex min-h-12 items-center gap-2 py-3 text-lg'}>
+                  {highlight && <SlidersHorizontal className="size-4" aria-hidden />}
+                  {label}
+                </Link>
               </li>
             ))}
           </ul>
           <div className="menu-cta mt-6 grid gap-2">
-            <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="btn border border-[#1fb855] bg-[#25d366] text-white hover:bg-[#1fb855]"><MessageCircle className="size-4" /> WhatsApp {digibuggy.whatsapp}</a>
+            <a href={waLink(quoteText)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp"><MessageCircle className="size-4" /> Get a free quote on WhatsApp</a>
           </div>
-          <p className="mt-6 text-sm text-subtle">Showroom: {digibuggy.addressShort}</p>
+          <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="mt-6 flex items-center gap-2 text-sm text-subtle hover:text-fg">
+            <MapPin className="size-4" aria-hidden /> {experienceZone.name}: {digibuggy.addressShort}
+          </a>
         </div>
       )}
     </header>

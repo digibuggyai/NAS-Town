@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import PageHero from '../components/PageHero.jsx';
-import { nav } from '../data/site.js';
+import { siteMap } from '../data/site.js';
 import Seo from '../components/Seo.jsx';
 
 export default function SitemapPage() {
@@ -12,16 +12,14 @@ export default function SitemapPage() {
         <div className="glass rounded-xl p-6">
           <Link to="/" className="font-medium">Home</Link>
         </div>
-        {nav.map((item) => (
-          <div key={item.label} className="glass rounded-xl p-6">
-            <Link to={item.to} className="font-medium">{item.label}</Link>
-            {item.children && (
-              <ul className="mt-3 grid gap-1.5">
-                {item.children.map((c) => (
-                  <li key={c.to}><Link to={c.to} className="text-sm text-muted hover:text-fg">{c.label}</Link></li>
-                ))}
-              </ul>
-            )}
+        {siteMap.map(([title, items]) => (
+          <div key={title} className="glass rounded-xl p-6">
+            <h2 className="font-medium">{title}</h2>
+            <ul className="mt-3 grid gap-1.5">
+              {items.map(([label, to]) => (
+                <li key={label}><Link to={to} className="text-sm text-muted hover:text-fg">{label}</Link></li>
+              ))}
+            </ul>
           </div>
         ))}
       </section>

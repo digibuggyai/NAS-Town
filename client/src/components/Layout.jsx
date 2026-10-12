@@ -1,14 +1,24 @@
-import { Suspense, useRef } from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, SlidersHorizontal } from 'lucide-react';
 import { digibuggy } from '../data/site.js';
 import { gsap, reducedMotion, scrollToEl, scrollToTop, ScrollTrigger, useGSAP } from '../lib/motion.js';
 
 export default function Layout() {
   const { pathname, hash } = useLocation();
   const main = useRef(null);
+
+  // The phones' floating "Build your NAS" button appears after the first screen.
+  const [scrolledPast, setScrolledPast] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolledPast(window.scrollY > 560);
+    on();
+    window.addEventListener('scroll', on, { passive: true });
+    return () => window.removeEventListener('scroll', on);
+  }, []);
+  const showBuild = scrolledPast && !pathname.startsWith('/tools/configurator');
 
   // On route change: go to the top (or the #hash), fade the new page in, re-measure scroll triggers.
   useGSAP(() => {
@@ -43,6 +53,16 @@ export default function Layout() {
         </Suspense>
       </main>
       <Footer />
+      {/* Phones: once the hero's buttons have scrolled away, "Build your NAS" stays one tap away
+          (not on the configurator itself, which has its own price bar). */}
+      {showBuild && (
+        <Link
+          to="/tools/configurator"
+          className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-accent px-5 text-[0.9375rem] font-medium text-white shadow-[0_12px_28px_-10px_rgb(58_103_255/0.75)] lg:hidden"
+        >
+          <SlidersHorizontal className="size-4" aria-hidden /> Build your NAS
+        </Link>
+      )}
       {/* Floating WhatsApp, always one tap from a person. */}
       <a
         href={digibuggy.whatsappHref}

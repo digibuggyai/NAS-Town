@@ -3,7 +3,6 @@ import {
   Camera, Clapperboard, Sparkles, Briefcase, Home, Cctv, Building2,
   Wrench, ArrowRightLeft, Stethoscope, ArrowUpCircle, Layers, ShieldCheck, Headset, Truck, LifeBuoy,
   Cloud, HardDriveDownload, Share2, Globe, Tv, Users, Lock,
-  HardDrive, Boxes, BadgeCheck, CalendarClock, SlidersHorizontal, BookOpen,
 } from 'lucide-react';
 
 export const solutions = [
@@ -60,13 +59,13 @@ export const solutions = [
 
 export const brands = [
   {
-    slug: 'synology', name: 'Synology', filter: 'synology',
+    slug: 'synology', name: 'Synology', filter: 'synology', logo: { src: '/images/brands/synology.svg', size: [131, 34] },
     tagline: 'Intuitive DSM software, rock-solid reliability.',
     h1: 'Synology NAS: Trusted Storage, Expertly Set Up',
     intro: 'Known for its intuitive DSM software and rock-solid reliability, Synology is a go-to choice for users who want powerful storage without a steep learning curve. Browse the range and get it installed and configured by our team.',
   },
   {
-    slug: 'qnap', name: 'QNAP', filter: 'qnap',
+    slug: 'qnap', name: 'QNAP', filter: 'qnap', logo: { src: '/images/brands/qnap.svg', size: [138, 24] },
     tagline: 'More power under the hood.',
     h1: 'QNAP NAS: Performance-Driven Storage Solutions',
     intro: 'QNAP systems are built for users who want more power under the hood, from multimedia and virtualization to heavy-duty enterprise workloads. Explore the lineup and let our team handle the setup.',
@@ -181,14 +180,27 @@ export const resources = [
   { slug: 'faq', name: 'FAQ', h1: 'Frequently Asked Questions', intro: 'Got questions about NAS storage, rentals, or our services? Find quick answers here, or reach out to our team directly.' },
 ];
 
+// NASTOWN FAQs, supplied 12 Oct 2026. The first five also appear on the homepage; all of them
+// are on /resources/faq with FAQPage structured data (lib/seo.js).
 export const faqs = [
-  { q: 'What is a NAS?', a: 'A NAS (Network Attached Storage) is a dedicated storage device connected to your network. Every device at home or in the office can store, share and back up files to it, like a private cloud that you own.' },
-  { q: 'How is a NAS different from an external hard drive?', a: 'An external drive connects to one computer at a time and has no protection if it fails. A NAS is shared over the network, runs automatic backups, can be reached remotely, and uses RAID so a single drive failure does not lose your data.' },
-  { q: 'Is RAID a backup?', a: 'No. RAID protects against drive failure, but not against accidental deletion, ransomware, theft or fire. A proper setup combines RAID with snapshots and an off-site or cloud backup.' },
-  { q: 'How much storage do I need?', a: 'It depends on what you store and how fast it grows. Try the NAS Calculator for an estimate, or let the NAS Finder recommend a system.' },
-  { q: 'Can I rent a NAS instead of buying one?', a: 'Yes. Rent a NAS for short-term projects, data migrations, events or temporary storage, with support included and no large upfront investment.' },
-  { q: 'Do you install and configure the NAS for me?', a: 'Yes. We offer installation, RAID setup, migration, upgrades, repairs and annual maintenance contracts, both remotely and on-site.' },
-  { q: 'How much does support cost?', a: 'Remote support starts from ₹2,000 + tax and on-site support starts from ₹5,000 + tax. AMC plans are quoted based on your setup.' },
+  { q: 'How many drive bays do I need in a NAS?', a: 'For most homes, a 2-bay NAS is enough: two mirrored drives (RAID 1) keep a copy of every file if one drive fails. Creators and small businesses usually do better with 4 bays or more, which allow RAID 5 or RAID 6, more usable capacity and room to add drives later. Choose for the storage you expect to need in the next few years, not just today, because running out of bays means buying a new NAS or an expansion unit.' },
+  { q: 'How much usable storage do I get after RAID?', a: 'Usable storage is always less than the total capacity of your drives, because RAID sets space aside for protection. For example, four 8 TB drives give 32 TB of raw capacity: RAID 5 leaves about 24 TB, while RAID 6 or RAID 10 leaves about 16 TB. Two drives in RAID 1 give the capacity of one drive. The operating system and file system use a little more. Use the NASTOWN NAS Configurator to see the usable space for any setup before you buy.' },
+  { q: 'Do NAS devices come with hard drives?', a: 'Most NAS devices are sold diskless, which means the hard drives are bought separately. This lets you choose the capacity and drive type that suit your budget and workload. Check the product page to see whether drives are included. If you would rather not choose drives yourself, our team can recommend compatible drives, install them and set up RAID for you.' },
+  { q: 'Can I use any hard drive in a NAS?', a: "Not every hard drive is suitable. Use NAS-rated drives, such as WD Red Plus or Seagate IronWolf, that are built for always-on use and listed on your NAS maker's compatibility list for your exact model. Avoid SMR (shingled) drives in RAID, as they can slow down badly under heavy writes and make rebuilds much longer. Desktop drives may physically fit but are not designed for 24/7 RAID workloads. SSD cache drives often have their own, stricter compatibility list." },
+  { q: 'Can I use non-Synology hard drives in a Synology NAS?', a: "Yes, on most models. Synology NAS released before 2025 are not affected by Synology's newer drive policy and work with third-party NAS drives. On 2025 DiskStation Plus models running DSM 7.3 or later, third-party hard drives that are not on Synology's list can create storage pools, although DSM labels them “Unverified”. Some other 2025 series and M.2 SSD cache have stricter rules, so check Synology's compatibility list for your exact model before buying drives." },
+  { q: 'Can I mix hard drives of different sizes in a NAS?', a: 'Yes, but standard RAID treats every drive as the size of the smallest one, so extra space on larger drives is wasted. Synology Hybrid RAID (SHR), available on most Synology models, avoids most of this waste while still protecting against one drive failure (SHR-1) or two (SHR-2). On NAS systems that use standard RAID, matching drive sizes gives you the best use of capacity.' },
+  { q: 'Will setting up a NAS erase my existing hard drives?', a: "Usually, yes. When a NAS initialises drives during setup, it formats them and deletes everything on them. Before inserting drives that already hold files, copy the data to another drive or computer and check that the copy opens. Moving drives from an older NAS of the same brand is different: a supported migration can keep your data, but only if you follow the manufacturer's migration steps instead of a fresh setup." },
+  { q: 'What happens if a hard drive fails in my NAS?', a: 'With RAID 1, RAID 5 or SHR-1, your NAS keeps running after one drive fails and your files stay accessible, but the storage is “degraded” until you replace the drive. Swap in a healthy drive of equal or larger capacity and start the repair. RAID 6 and SHR-2 can survive two drive failures. If more drives fail than your RAID level allows, data can be lost, so replace failed drives promptly and always keep a separate backup.' },
+  { q: 'How do I protect my NAS from ransomware?', a: "Start by keeping your NAS off the open internet: disable port forwarding and UPnP, and use your brand's secure remote access service or a VPN instead. Turn on 2-step verification, disable the default admin account and install firmware updates promptly. Then schedule snapshots, which let you restore files to their state before an attack, and keep a separate off-site or offline backup. On supported models, immutable snapshots add protection against deletion." },
+  { q: 'How do I back up my NAS to the cloud?', a: 'Use the backup app built into your NAS, such as Hybrid Backup Sync on QNAP or Hyper Backup on Synology. Choose a cloud destination, select the folders to protect and set a schedule. You can keep multiple versions of files and decide how long each is kept. A cloud copy gives you the off-site backup in the 3-2-1 backup rule. Cloud storage is billed by the provider, and the first upload can take a long time on slower connections.' },
+  { q: 'Do I need a UPS for my NAS?', a: "Yes, we strongly recommend one. A sudden power cut can interrupt data being written and put your files at risk. Connect a compatible UPS to the NAS by USB and the NAS will detect an outage and shut down safely after a delay you set. Some NAS can also signal other devices on the same network to shut down. Check your NAS brand's UPS compatibility list before you buy." },
+  { q: 'How do I access my NAS remotely?', a: "The easiest way is your NAS brand's remote access service: Synology QuickConnect, QNAP myQNAPcloud Link or ASUSTOR EZ-Connect. These work without router changes and connect through a web browser or mobile app, although relayed connections can be slower. For faster and more secure access, set up a VPN. Avoid opening router ports (port forwarding) to your NAS, because internet-exposed NAS devices are a common target for attacks." },
+  { q: 'Why is my NAS transfer speed slow?', a: 'Your slowest link sets the speed. A 1 Gigabit (1GbE) connection tops out at about 125 MB/s in theory and a little less in practice, so check that your computer, switch, cables and NAS all support the speed you expect. Wi-Fi is usually slower than a wired connection. Drive type, RAID level and copying many small files can also reduce speed. Upgrading the NAS to 2.5GbE or 10GbE only helps if your computer and switch support it too.' },
+  { q: 'Is a NAS good for video editing?', a: 'Yes. A NAS lets editors store projects in one place and edit directly over the network. Smooth playback depends mostly on network speed: 1GbE can handle lighter HD or proxy workflows, while 4K and multi-camera editing generally need 2.5GbE, 10GbE or faster, plus enough drives for the throughput. SSD cache helps with repeated random access but will not necessarily speed up large video transfers. Test with your own editing software and footage before you commit.' },
+  { q: 'Can I upgrade my NAS storage without losing data?', a: 'Yes, in most cases. If you have empty bays, add drives and expand the existing storage pool. If all bays are full, replace drives one at a time with larger ones, letting the NAS rebuild after each swap; the extra capacity appears once enough drives are upgraded. The exact steps depend on your NAS model and RAID type, and each rebuild can take hours or days, so back up your data before you start.' },
+  { q: 'Can I move my hard drives to a new NAS?', a: 'Usually, if both NAS units are the same brand. Synology and QNAP let you move drives from an old unit into a new one and keep your data and settings, provided both models support migration. Update the new NAS firmware first, then insert the drives in the same order. Some combinations are not supported, such as QNAP QTS to QuTS hero. Moving drives between different brands is not supported, so copy the data over the network instead.' },
+  { q: 'Is a NAS better than cloud storage for a business?', a: 'It depends on how your team works. A NAS gives fast local access, full control of your data and no ongoing per-user storage fees, but it needs an upfront purchase, power, maintenance and a backup plan. Cloud storage offers easy access from anywhere and managed infrastructure for a monthly fee. Many businesses use both: a NAS for daily work and the cloud as an off-site backup.' },
+  { q: 'How do I choose a NAS for a small business?', a: 'Start with the number of users, how much data you store and how fast it grows, and the types of files you work with. Choose at least 4 bays so you can use RAID 5 or RAID 6 and expand later. For several users or large files, look for a stronger processor, more memory and 2.5GbE or 10GbE ports. Check support for user permissions and Active Directory, and decide who will manage updates and backups.' },
 ];
 
 // "NAS for 50TB" landing pages (/nas/50tb). Builds and prices on each page come live from
@@ -246,21 +258,32 @@ export const productLinks = [
   { label: 'NAS by Capacity', to: '/nas' },
 ];
 
+// Main navigation: flat links, no dropdowns. The Configurator is the main conversion tool,
+// so the navbar draws it as a highlighted pill. Brands stay out of the nav on purpose: their
+// pages remain live and are linked from the footer and product pages.
 export const nav = [
-  { label: 'NAS Products', icon: HardDrive, to: '/products', children: productLinks },
-  { label: 'Solutions', icon: Boxes, to: '/solutions', children: solutions.map((s) => ({ label: `NAS for ${s.name}`, to: `/solutions/${s.slug}` })) },
-  { label: 'Brands', icon: BadgeCheck, to: '/brands/synology', children: brands.map((b) => ({ label: b.name, to: `/brands/${b.slug}` })) },
-  { label: 'Rent a NAS', icon: CalendarClock, to: '/rent' },
-  { label: 'Services', icon: Wrench, to: '/services', children: services.map((s) => ({ label: s.name, to: `/services/${s.slug}` })) },
-  {
-    label: 'NAS Tools', icon: SlidersHorizontal, to: '/tools/configurator', children: [
-      { label: 'NAS ROI Calculator', to: '/tools/calculator' },
-      { label: 'NAS Configurator', to: '/tools/configurator' },
-      { label: 'NAS Finder', to: '/finder' },
-    ],
-  },
-  { label: 'Resources', icon: BookOpen, to: '/resources/guides', children: resources.map((r) => ({ label: r.name, to: `/resources/${r.slug}` })) },
+  { label: 'Products', to: '/products' },
+  { label: 'Solutions', to: '/solutions' },
+  { label: 'Configurator', to: '/tools/configurator', highlight: true },
+  { label: 'Rent a NAS', to: '/rent' },
+  { label: 'Services', to: '/services' },
+  { label: 'NAS Finder & ROI', to: '/finder' },
+  { label: 'Resources', to: '/resources' },
 ];
+
+// The full site map: footer columns and the /sitemap page.
+export const siteMap = [
+  ['Products', productLinks.map(({ label, to }) => [label === 'All NAS Products' ? 'NAS Products' : label, to])],
+  ['Solutions', solutions.map((s) => [`NAS for ${s.name}`, `/solutions/${s.slug}`])],
+  ['Brands', brands.map((b) => [b.name, `/brands/${b.slug}`])],
+  ['Services', [['All Services', '/services'], ...services.map((s) => [s.name, `/services/${s.slug}`])]],
+  ['Tools', [['NAS Configurator', '/tools/configurator'], ['NAS Finder & ROI', '/finder'], ['Savings calculator', '/finder#roi'], ['Rent a NAS', '/rent']]],
+  ['Resources', [['All Resources', '/resources'], ...resources.map((r) => [r.name, `/resources/${r.slug}`])]],
+  ['Company', [['About NASTOWN', '/about'], ['Contact Us', '/about#contact'], ['Sitemap', '/sitemap']]],
+];
+
+/** A WhatsApp chat with NASTOWN, message pre-filled. */
+export const waLink = (text) => `https://wa.me/919560111954?text=${encodeURIComponent(text)}`;
 
 export const brandName = (slug) =>
   ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
@@ -274,15 +297,7 @@ export const brandName = (slug) =>
 export const reels = [];
 export const instagramHandle = 'digibuggy';
 
-// Track record shown at the top of the footer. Real figures only: fill in `value` from
-// your own records (e.g. '1,200+' or '5,000 TB'). A figure with an empty value is not shown, and the
-// whole row stays hidden until at least one is filled in.
-export const trackRecord = [
-  { value: '', label: 'NAS units delivered' },
-  { value: '', label: 'Businesses & creators served' },
-  { value: '', label: 'Storage deployed' },
-  { value: '', label: 'Years serving Nehru Place' },
-];
+// Track-record numbers now live in config/siteContent.js (stats), shown on the homepage.
 
 // Parent company. Links taken from digibuggy.com (checked 25 Sep 2026).
 export const digibuggy = {

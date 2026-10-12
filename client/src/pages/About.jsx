@@ -1,5 +1,6 @@
-import { digibuggy } from '../data/site.js';
-import { Headset, ShieldCheck, Wrench } from 'lucide-react';
+import { digibuggy, waLink } from '../data/site.js';
+import { experienceZone, parentCompany } from '../config/siteContent.js';
+import { CalendarCheck, Headset, MapPin, ShieldCheck, Wrench } from 'lucide-react';
 import PageHero from '../components/PageHero.jsx';
 import EnquiryForm from '../components/EnquiryForm.jsx';
 import Reveal from '../components/Reveal.jsx';
@@ -32,6 +33,29 @@ export default function About() {
         </div>
       </section>
 
+      {/* Part of DigiBuggy, and where to see NAS running live */}
+      <section className="mx-auto grid max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-2">
+        <Reveal className="glass rounded-xl p-8">
+          <p className="eyebrow mb-4">Part of {parentCompany.name}</p>
+          <p className="text-lg leading-relaxed">
+            NASTOWN is a{' '}
+            <a href={parentCompany.site} target="_blank" rel="noopener noreferrer" className="link">{parentCompany.name}</a>{' '}
+            (<a href={parentCompany.dgbSite} target="_blank" rel="noopener noreferrer" className="link">{parentCompany.alsoKnownAs}</a>) company.
+            {parentCompany.name} builds custom PCs and storage in Nehru Place, New Delhi, and NASTOWN brings that hardware experience to NAS: choosing it, setting it up and supporting it.
+          </p>
+        </Reveal>
+        <Reveal delay={100} className="glass rounded-xl p-8">
+          <p className="eyebrow mb-4">{experienceZone.name}</p>
+          <p className="text-lg leading-relaxed">{experienceZone.invite}</p>
+          <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="mt-4 flex items-start gap-2 text-muted hover:text-fg">
+            <MapPin className="mt-1 size-4 shrink-0" aria-hidden /> {digibuggy.address}
+          </a>
+          <a href={waLink(experienceZone.bookVisitText)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp mt-6">
+            <CalendarCheck className="size-4" /> Book a visit on WhatsApp
+          </a>
+        </Reveal>
+      </section>
+
       <section id="contact" className="mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 py-16 pb-28 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
         <Reveal>
           <p className="eyebrow mb-5">Contact</p>
@@ -41,7 +65,7 @@ export default function About() {
             <a href={digibuggy.site} target="_blank" rel="noopener" className="inline-block">
               <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" className="h-5 w-auto invert" />
             </a>
-            <p className="mt-3 text-sm text-muted">NASTOWN is backed by Digibuggy, custom PC and storage builders in Nehru Place, New Delhi.</p>
+            <p className="mt-3 text-sm text-muted">NASTOWN is a {parentCompany.name} ({parentCompany.alsoKnownAs}) company: custom PC and storage builders in Nehru Place, New Delhi.</p>
             <dl className="mt-5 grid gap-2 text-sm">
               <div className="flex gap-3"><dt className="w-20 text-subtle">Email</dt><dd><a href={`mailto:${digibuggy.email}`} className="hover:text-accent">{digibuggy.email}</a></dd></div>
               <div className="flex gap-3"><dt className="w-20 text-subtle">WhatsApp</dt><dd><a href={digibuggy.socials[0].href} target="_blank" rel="noopener" className="hover:text-accent">{digibuggy.whatsapp}</a></dd></div>

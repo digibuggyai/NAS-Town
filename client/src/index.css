@@ -69,6 +69,55 @@
   summary::-webkit-details-marker { display: none; }
 }
 
+/* Navbar "Configurator": a light pill whose border is a gradient that travels round it,
+   with a soft glow that breathes. Movement draws the eye without a heavy solid block.
+   Reduced motion: the gradient border stays, still. */
+@property --nav-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes nav-spin { to { --nav-angle: 360deg; } }
+@keyframes nav-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(58 103 255 / 0); }
+  50% { box-shadow: 0 0 18px 2px rgb(58 103 255 / 0.28); }
+}
+@keyframes nav-shine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
+.nav-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-raised);
+  color: var(--color-accent-strong);
+  animation: nav-breathe 3s ease-in-out infinite;
+}
+.nav-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--nav-angle), #3a67ff, #22d3ee, #8b5cf6, #3a67ff);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: nav-spin 3s linear infinite;
+}
+/* A light sweep across the label every few seconds. */
+.nav-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(58 103 255 / 0.14), transparent);
+  animation: nav-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.nav-glow:hover, .nav-glow[aria-current="page"] { background: var(--color-accent-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .nav-glow, .nav-glow::before { animation: none; }
+  .nav-glow::after { display: none; }
+}
+
 @layer components {
   /* Footer: black with a blue glow rising from the bottom. */
   .theme-dark {
@@ -148,6 +197,15 @@
   .btn-primary:hover { background: var(--color-accent-strong); border-color: var(--color-accent-strong); }
   .btn-secondary { background: var(--color-raised); color: var(--color-fg); border: 1px solid var(--color-line-strong); }
   .btn-secondary:hover { border-color: var(--color-accent); color: var(--color-accent); }
+  /* Quiet action next to a primary one: no border until hovered. */
+  .btn-ghost { background: transparent; color: var(--color-fg); border: 1px solid transparent; }
+  .btn-ghost:hover { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+  /* WhatsApp's own green, so it's recognisable at a glance. */
+  .btn-whatsapp { background: #25d366; color: #fff; border: 1px solid #1fb855; box-shadow: 0 6px 18px -8px rgb(37 211 102 / 0.7); }
+  .btn-whatsapp:hover { background: #1fb855; }
+  /* Compact size for cards; the tap target stays 44px. */
+  .btn-sm { padding: 0.55rem 1rem; font-size: 0.875rem; }
+  .btn:focus-visible, .chip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
   /* Blue text link, used with a trailing chevron. */
   .link {
@@ -162,7 +220,7 @@
   .chip {
     border-radius: 999px;
     padding: 0.5rem 1rem;
-    min-height: 40px;
+    min-height: 44px; /* comfortable tap target on phones */
     font-size: 0.875rem;
     color: var(--color-fg);
     background: var(--color-raised);
@@ -264,13 +322,6 @@
   }
 
   .led { display: inline-block; width: 7px; height: 7px; border-radius: 999px; background: var(--color-led); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-led) 18%, transparent); }
-}
-
-/* Brand strip: animated with GSAP in BrandsBand.jsx; edges fade out. */
-.marquee {
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -6,6 +6,7 @@
 // Keep this file plain JS with no browser-only or Vite-only code, so Node can import it.
 import { brands, capacityPages, digibuggy, faqs, resources, services, solutions } from '../data/site.js';
 import { productPhoto } from '../data/productImages.js';
+import { parentCompany } from '../config/siteContent.js';
 
 export const SITE_NAME = 'NASTOWN';
 export const DEFAULT_IMAGE = '/og-image.jpg'; // 1200×630 social card
@@ -27,7 +28,7 @@ const crumbs = (siteUrl, items) => ({
   itemListElement: [['Home', '/'], ...items].map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: abs(path, siteUrl) })),
 });
 
-/** The business, on every page: who NASTOWN is and where the showroom is. */
+/** The business, on every page: who NASTOWN is and where its Experience Zone is. */
 export function siteJsonLd(siteUrl) {
   return {
     '@context': 'https://schema.org',
@@ -40,7 +41,13 @@ export function siteJsonLd(siteUrl) {
         logo: abs('/apple-touch-icon.png', siteUrl),
         email: digibuggy.email,
         telephone: digibuggy.whatsapp.replace(/ /g, '-'),
-        parentOrganization: { '@type': 'Organization', name: 'Digibuggy', url: digibuggy.site, sameAs: digibuggy.socials.filter((s) => s.label !== 'WhatsApp').map((s) => s.href) },
+        parentOrganization: {
+          '@type': 'Organization',
+          name: parentCompany.name,
+          alternateName: parentCompany.alsoKnownAs,
+          url: parentCompany.site,
+          sameAs: [parentCompany.dgbSite, ...digibuggy.socials.filter((s) => s.label !== 'WhatsApp').map((s) => s.href)],
+        },
       },
       {
         '@type': 'ComputerStore',
@@ -95,10 +102,6 @@ export function staticPages(siteUrl) {
       title: 'Rent a NAS: Short-Term Storage on Flexible Terms | NASTOWN',
       description: 'Rent a NAS for a project, event, migration or trial. Configured before it reaches you, full performance, support included and no large upfront cost.',
     },
-    '/tools/calculator': {
-      title: 'NAS Storage & ROI Calculator | NASTOWN',
-      description: 'Estimate how much NAS storage you need from your photos, video and backups, and compare the cost of a NAS against cloud storage over the years.',
-    },
     '/tools/configurator': {
       title: 'NAS Configurator: Build & Price Your NAS | NASTOWN',
       description: 'Pick capacity, RAID level, bays and brand, and get the right NAS with drives, installation and AMC, priced instantly with GST.',
@@ -110,6 +113,11 @@ export function staticPages(siteUrl) {
     '/about': {
       title: 'About & Contact NASTOWN | NAS Experts in Nehru Place',
       description: "NASTOWN makes NAS storage simple, from choosing the right system to keeping it running. Backed by Digibuggy, Nehru Place, New Delhi. Let's talk storage.",
+    },
+    '/resources': {
+      title: 'NAS Resources: Guides, Comparisons & FAQ | NASTOWN',
+      description: 'NAS guides, brand comparisons, how-tos, reviews, the NASTOWN blog and answers to common NAS questions, all in one place.',
+      jsonLd: crumbs(siteUrl, [['Resources', '/resources']]),
     },
     '/sitemap': {
       title: 'Sitemap | NASTOWN',
@@ -157,7 +165,7 @@ export function staticPages(siteUrl) {
     const page = {
       title: r.slug === 'blog' ? 'NAS Blog: Tips, Guides & News | NASTOWN' : `${r.name} | NASTOWN`,
       description: clip(r.intro),
-      jsonLd: [crumbs(siteUrl, [['Resources', '/resources/guides'], [r.name, `/resources/${r.slug}`]])],
+      jsonLd: [crumbs(siteUrl, [['Resources', '/resources'], [r.name, `/resources/${r.slug}`]])],
     };
     if (r.slug === 'faq') {
       page.title = 'NAS FAQ: Common Questions Answered | NASTOWN';
@@ -308,30 +316,26 @@ const KEYWORDS = {
     title: 'NAS Data Recovery: Synology, QNAP & RAID | NASTOWN',
     description: 'Recover data from a crashed NAS volume, failed drives, a broken RAID or accidental deletion, with a clear assessment before any work begins.',
   },
-  // "nas storage calculator", "nas vs cloud cost"
-  '/tools/calculator': {
-    title: 'NAS Storage Calculator & NAS vs Cloud Cost | NASTOWN',
-    description: 'How much NAS storage do you need? Estimate it from your photos, video and backups, and see when a NAS pays for itself compared with cloud storage.',
-  },
   // "nas configuration", "nas setup price"
   '/tools/configurator': {
     title: 'NAS Configuration & Setup Price, with Drives | NASTOWN',
     description: 'Configure your NAS: choose capacity, RAID, bays and brand, and get the full setup price with hard drives, installation and AMC, instantly with GST.',
   },
-  // "best nas", "which nas should i buy"
+  // "best nas", "which nas should i buy", "nas storage calculator", "nas vs cloud cost"
+  // (/tools/calculator was merged into this page and redirects here)
   '/finder': {
-    title: 'Best NAS for You? Free NAS Finder: Which NAS to Buy | NASTOWN',
-    description: 'Not sure which NAS to buy? Answer a few questions about what you store and how you work, and get a NAS recommendation that fits your needs and budget.',
+    title: 'Which NAS to Buy? NAS Finder & NAS vs Cloud Cost | NASTOWN',
+    description: 'Answer three questions for a NAS recommendation, estimate how much storage you need, and see what a NAS saves over cloud storage and external drives.',
   },
   // "nas dealer nehru place", "nastown contact"
   '/about': {
     title: 'NAS Dealer in Nehru Place, Delhi: About & Contact | NASTOWN',
-    description: `NASTOWN by Digibuggy: NAS sales, setup and support from our showroom in Nehru Place, New Delhi. Call or WhatsApp ${digibuggy.whatsapp}.`,
+    description: `NASTOWN by Digibuggy: NAS sales, setup and support, and a live NAS Experience Zone in Nehru Place, New Delhi. Call or WhatsApp ${digibuggy.whatsapp}.`,
   },
-  // "what is nas", "nas faq"
+  // "nas faq", "how many drive bays nas", "nas usable storage raid", "synology third party drives"
   '/resources/faq': {
-    title: 'What Is a NAS? NAS FAQ & Common Questions | NASTOWN',
-    description: 'What is a NAS, how is it different from an external drive, is RAID a backup and how much storage do you need? Clear answers to common NAS questions.',
+    title: 'NAS FAQ: Drive Bays, RAID, Drives & Backup | NASTOWN',
+    description: 'How many bays you need, usable storage after RAID, which drives work, Synology drive rules, ransomware protection, backups and more: 18 NAS questions answered.',
   },
   '/resources/blog': {
     title: 'NAS Blog: Buying Guides, Tips & News | NASTOWN',

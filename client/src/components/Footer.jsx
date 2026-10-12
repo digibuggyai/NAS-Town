@@ -1,7 +1,8 @@
 import { Link } from 'react-router';
-import { MessageCircle } from 'lucide-react';
+import { CalendarCheck, MessageCircle } from 'lucide-react';
 import { Logo } from './Navbar.jsx';
-import { brands, digibuggy, productLinks, solutions, trackRecord } from '../data/site.js';
+import { digibuggy, siteMap, waLink } from '../data/site.js';
+import { experienceZone, parentCompany } from '../config/siteContent.js';
 
 // Lucide no longer ships brand marks, so these are simple outline glyphs.
 const glyph = (children) =>
@@ -20,40 +21,10 @@ const XLogo = glyph(<path d="M4 4l16 16M20 4 4 20" />);
 
 const ICONS = { WhatsApp: MessageCircle, Instagram, YouTube: Youtube, LinkedIn: Linkedin, Facebook, X: XLogo };
 
-// Footer columns (optimised content). UGREEN is left out: it isn't in the catalogue.
-const columns = [
-  ['Products', productLinks.map(({ label, to }) => [label === 'All NAS Products' ? 'NAS Products' : label, to])],
-  ['Solutions', solutions.map((s) => [`NAS for ${s.name}`, `/solutions/${s.slug}`])],
-  ['Brands', brands.map((b) => [b.name, `/brands/${b.slug}`])],
-  ['Services', [
-    ['NAS Installation', '/services/installation'], ['Data Migration', '/services/migration'], ['NAS Repair', '/services/repair'],
-    ['NAS Upgrade', '/services/upgrade'], ['RAID Setup', '/services/raid-setup'], ['AMC', '/services/amc'],
-    ['Remote Support', '/services/remote-support'], ['On-Site Support', '/services/on-site-support'],
-  ]],
-  ['Resources', [
-    ['NAS Guides', '/resources/guides'], ['NAS Comparisons', '/resources/comparisons'], ['NAS Reviews', '/resources/reviews'],
-    ['How-To Guides', '/resources/how-to'], ['NAS Blog', '/resources/blog'], ['FAQs', '/resources/faq'],
-  ]],
-  ['Company', [['About NASTOWN', '/about'], ['Contact Us', '/about#contact']]],
-];
-
 export default function Footer() {
-  const figures = trackRecord.filter((f) => String(f.value).trim());
   return (
     <footer className="theme-dark">
-      <div className="mx-auto max-w-7xl px-4 pt-12 pb-6 sm:px-6">
-        {/* Track record: only figures filled in data/site.js appear. */}
-        {figures.length > 0 && (
-          <dl className="mb-10 grid grid-cols-2 gap-x-6 gap-y-6 border-b border-line pb-10 md:grid-cols-4">
-            {figures.map((f) => (
-              // Label first in the markup (read as "label: value"), shown under the number.
-              <div key={f.label} className="flex flex-col-reverse justify-end">
-                <dt className="mt-2 text-[0.8125rem] text-muted">{f.label}</dt>
-                <dd className="font-display text-[clamp(1.75rem,3.2vw,2.5rem)] leading-none font-semibold tracking-tight text-fg tabular-nums">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
+      <div className="mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:pb-6">{/* phones: room for the floating buttons */}
         {/* Contact block sits beside the link columns only on wide screens; at laptop/tablet width it stacks above. */}
         <div className="grid gap-10 border-b border-line pb-10 xl:grid-cols-[minmax(0,15rem)_1fr] xl:gap-12">
           {/* Who we are and how to reach a person */}
@@ -63,9 +34,12 @@ export default function Footer() {
             {/* A <dl> may hold dt/dd or one level of <div>, so each group is its own list. */}
             <div className="mt-5 grid gap-2.5 text-[0.8125rem]">
               <dl>
-                <dt className="eyebrow !text-xs">Showroom</dt>
+                <dt className="eyebrow !text-xs">{experienceZone.name}</dt>
                 <dd className="mt-0.5 text-muted">
-                  <a href={digibuggy.mapsHref} target="_blank" rel="noopener" className="hover:text-fg">{digibuggy.address}</a>
+                  <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="hover:text-fg">{digibuggy.address}</a>
+                  <a href={waLink(experienceZone.bookVisitText)} target="_blank" rel="noopener noreferrer" className="link mt-1.5 flex items-center gap-1.5">
+                    <CalendarCheck className="size-3.5" aria-hidden /> Book a visit
+                  </a>
                 </dd>
               </dl>
               <dl className="flex flex-wrap gap-x-6 gap-y-2.5">
@@ -81,8 +55,8 @@ export default function Footer() {
             </div>
           </div>
 
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-[repeat(6,auto)] lg:justify-between lg:gap-x-6">
-            {columns.map(([title, items]) => (
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-[repeat(7,auto)] lg:justify-between lg:gap-x-6">
+            {siteMap.map(([title, items]) => (
               <div key={title}>
                 <p className="font-display text-sm font-semibold text-fg">{title}</p>
                 <ul className="mt-3 grid gap-1.5">
@@ -99,10 +73,14 @@ export default function Footer() {
 
         <div className="flex flex-col gap-4 pt-5 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            <a href={digibuggy.site} target="_blank" rel="noopener" className="group inline-flex items-center gap-2.5 text-xs text-subtle">
-              A company of
-              <img src="/digibuggy-logo.svg" alt="Digibuggy" width="218" height="25" loading="lazy" decoding="async" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
-            </a>
+            {/* The group, spelled out: NASTOWN is a DigiBuggy company, and DigiBuggy is DGB India. */}
+            <p className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-subtle">
+              <span className="font-medium text-muted">NASTOWN</span> · A
+              <a href={parentCompany.site} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center" aria-label="DigiBuggy">
+                <img src="/digibuggy-logo.svg" alt="DigiBuggy" width="218" height="25" loading="lazy" decoding="async" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
+              </a>
+              (<a href={parentCompany.dgbSite} target="_blank" rel="noopener noreferrer" className="hover:text-fg">{parentCompany.alsoKnownAs}</a>) company
+            </p>
             <ul className="flex gap-1">
               {digibuggy.socials.map(({ label, href }) => {
                 const Icon = ICONS[label];

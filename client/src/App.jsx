@@ -11,7 +11,6 @@ const ServicesIndex = lazy(() => import('./pages/ServicesIndex.jsx'));
 const Brand = lazy(() => import('./pages/Brand.jsx'));
 const Rent = lazy(() => import('./pages/Rent.jsx'));
 const Service = lazy(() => import('./pages/Service.jsx'));
-const Calculator = lazy(() => import('./pages/Calculator.jsx'));
 const Configurator = lazy(() => import('./pages/Configurator.jsx'));
 const FinderPage = lazy(() => import('./pages/FinderPage.jsx'));
 const Resource = lazy(() => import('./pages/Resource.jsx'));
@@ -19,6 +18,7 @@ const BlogPost = lazy(() => import('./pages/BlogPost.jsx'));
 const About = lazy(() => import('./pages/About.jsx'));
 const SitemapPage = lazy(() => import('./pages/SitemapPage.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
+const ResourcesIndex = lazy(() => import('./pages/ResourcesIndex.jsx'));
 const CapacityIndex = lazy(() => import('./pages/CapacityIndex.jsx'));
 const CapacityPage = lazy(() => import('./pages/CapacityPage.jsx'));
 
@@ -45,9 +45,11 @@ export default function App() {
         <Route path="rent" element={<Rent />} />
         <Route path="services" element={<ServicesIndex />} />
         <Route path="services/:slug" element={<Service />} />
-        <Route path="tools/calculator" element={<Calculator />} />
+        {/* Merged into the Finder (the server also answers 301, vercel.json). */}
+        <Route path="tools/calculator" element={<Navigate to={{ pathname: '/finder', hash: '#roi' }} replace />} />
         <Route path="tools/configurator" element={<Configurator />} />
         <Route path="finder" element={<FinderPage />} />
+        <Route path="resources" element={<ResourcesIndex />} />
         <Route path="resources/:slug" element={<Resource />} />
         <Route path="blog/:slug" element={<BlogPost />} />
         <Route path="about" element={<About />} />
