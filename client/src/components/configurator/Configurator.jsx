@@ -33,6 +33,9 @@ function initialAnswers(P, params) {
   const a = { ...INITIAL_ANSWERS };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
+  // ?brand=synology from a brand page: recommend only that brand's units.
+  const brand = P.models.find((m) => m.brand.toLowerCase() === params?.get('brand')?.toLowerCase())?.brand;
+  if (brand) a.brand = brand;
   const raid = params?.get('raid');
   if (RAID_LEVELS.includes(raid)) Object.assign(a, { raid, raidAuto: false });
   const model = P.models.find((m) => m.slug === params?.get('model'));
