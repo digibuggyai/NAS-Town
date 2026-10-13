@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ExternalLink, ImagePlus, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { api, formatPostDate, mediaUrl } from '../../lib/api.js';
-import RichEditor from './RichEditor.jsx';
+// The editor is large (tables, images…), so it loads only when a post is opened.
+const RichEditor = lazy(() => import('./RichEditor.jsx'));
 
 const MAX_BYTES = 3 * 1024 * 1024;
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
@@ -168,7 +169,9 @@ function PostEditor({ post, onDone }) {
               <span>Article</span>
               <span className="text-subtle">{stats.words} words · ~{stats.mins} min read</span>
             </span>
-            <RichEditor value={f.body} onChange={(body) => set({ body })} onStats={setStats} />
+            <Suspense fallback={<div className="field grid min-h-[29rem] place-items-center text-sm text-muted">Loading the editor…</div>}>
+              <RichEditor value={f.body} onChange={(body) => set({ body })} onStats={setStats} />
+            </Suspense>
             <span className="mt-1 block text-xs text-subtle">
               Paste from Google Docs, Word, a web page or ChatGPT and the formatting is kept. This is exactly how the post will look.
             </span>

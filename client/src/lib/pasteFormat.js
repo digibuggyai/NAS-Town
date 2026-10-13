@@ -9,7 +9,10 @@ export function cleanPastedHtml(html) {
     .replace(/<!--[\s\S]*?-->/g, '') // Word conditional comments
     .replace(/<\/?o:p[^>]*>/gi, '')
     .replace(/<(\/?)h1(\s|>)/gi, '<$1h2$2') // the post title is the page's h1
-    .replace(/<(\/?)h[56](\s|>)/gi, '<$1h4$2');
+    .replace(/<(\/?)h[56](\s|>)/gi, '<$1h4$2')
+    // Pictures pasted from other sites or from Word (data: / file:) aren't kept: upload them
+    // with the Image button (or paste the image file itself) so they're stored with the post.
+    .replace(/<img(?![^>]*\ssrc="(?:[^"]*\/api\/blog\/images\/\d+|\/images\/)[^"]*")[^>]*>/gi, '');
   if (/mso-list/i.test(out)) out = wordLists(out);
   return out;
 }

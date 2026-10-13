@@ -9,6 +9,7 @@ import NotFound from './NotFound.jsx';
 import Seo, { SITE_URL } from '../components/Seo.jsx';
 import { abs, postMeta } from '../lib/seo.js';
 import { blogPath, preloaded } from '../lib/preload.js';
+import { withMediaHost } from '../lib/blogMedia.js';
 import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 export default function BlogPost() {
@@ -51,7 +52,8 @@ export default function BlogPost() {
           </Reveal>
         )}
         {/* Sanitised on the server (server/src/blog-html.js): formatting tags only. */}
-        <div className="prose-blog mt-10" dangerouslySetInnerHTML={{ __html: post.body }} />
+        {/* Article images are stored as /api/… paths; they load from the API host. */}
+        <div className="prose-blog mt-10" dangerouslySetInnerHTML={{ __html: withMediaHost(post.body) }} />
       </article>
 
       {more.length > 0 && (
