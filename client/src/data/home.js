@@ -57,12 +57,12 @@ export const solutions = {
   body: ['The right NAS depends on what you do with your data.'],
   // `setup` is a typical starting configuration: a concrete answer, not a promise.
   cards: [
-    { slug: 'photographers', image: '/images/solutions/photographers.webp', alt: 'Hands holding a camera at golden hour', title: 'Photographers', body: 'RAW files, client projects and a photo library that keeps growing.', setup: '4-bay · RAID 5 · 2.5GbE', cta: 'Explore Photography NAS' },
-    { slug: 'videographers', image: '/images/solutions/videographers.webp', alt: 'Video editor working on a timeline at his desk', title: 'Videographers', body: 'Large footage, project assets and archives, fast enough to edit from.', setup: '4–8 bay · RAID 5 · 2.5–10GbE', cta: 'Explore Video NAS' },
-    { slug: 'creators', image: '/images/solutions/creators.webp', alt: 'Camera and microphone set up for recording', title: 'Creators', body: 'Media, working files and backups in one organised system.', setup: '4-bay · RAID 5 · NVMe cache', cta: 'Explore Creator NAS' },
-    { slug: 'business', image: '/images/solutions/business.webp', alt: 'A team working together on laptops', title: 'Business', body: 'Company files with user access, backups and team collaboration.', setup: '4–8 bay · RAID 5/6 · ECC memory', cta: 'Explore Business NAS' },
-    { slug: 'home', image: '/images/solutions/home.webp', alt: 'A family relaxing together at home', title: 'Home', body: 'A private cloud for family photos, videos, backups and documents.', setup: '2-bay · RAID 1 mirror', cta: 'Explore Home NAS' },
-    { slug: 'surveillance', image: '/images/solutions/surveillance.webp', alt: 'Security camera mounted on a wall', title: 'Surveillance', body: 'Continuous recording from many cameras, kept safe and searchable.', setup: '4-bay+ · RAID 5 · 24/7 drives', cta: 'Explore Surveillance NAS' },
+    { slug: 'photographers', image: '/images/solutions/photographers.webp', alt: 'A photographer with his camera in an old Indian street', title: 'Photographers', body: 'RAW files, client projects and a photo library that keeps growing.', setup: '4-bay · RAID 5 · 2.5GbE', cta: 'Explore Photography NAS' },
+    { slug: 'videographers', image: '/images/solutions/videographers.webp', alt: 'A video editor with headphones cutting footage on a desktop', title: 'Videographers', body: 'Large footage, project assets and archives, fast enough to edit from.', setup: '4–8 bay · RAID 5 · 2.5–10GbE', cta: 'Explore Video NAS' },
+    { slug: 'creators', image: '/images/solutions/creators.webp', alt: 'A content creator with headphones at his recording desk', title: 'Creators', body: 'Media, working files and backups in one organised system.', setup: '4-bay · RAID 5 · NVMe cache', cta: 'Explore Creator NAS' },
+    { slug: 'business', image: '/images/solutions/business.webp', alt: 'An Indian office team in a meeting room', title: 'Business', body: 'Company files with user access, backups and team collaboration.', setup: '4–8 bay · RAID 5/6 · ECC memory', cta: 'Explore Business NAS' },
+    { slug: 'home', image: '/images/solutions/home.webp', alt: 'A family at home: father, toddler and mother in a saree', title: 'Home', body: 'A private cloud for family photos, videos, backups and documents.', setup: '2-bay · RAID 1 mirror', cta: 'Explore Home NAS' },
+    { slug: 'surveillance', image: '/images/solutions/surveillance.webp', alt: 'A CCTV camera mounted on a plastered wall', title: 'Surveillance', body: 'Continuous recording from many cameras, kept safe and searchable.', setup: '4-bay+ · RAID 5 · 24/7 drives', cta: 'Explore Surveillance NAS' },
   ],
   cta: 'Explore All NAS Solutions',
 };

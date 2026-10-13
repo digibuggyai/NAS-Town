@@ -1,13 +1,14 @@
-# Solution card photos
+# NAS solutions photos
 
-All from Unsplash (https://unsplash.com/license): free for commercial use, no attribution required.
-Downloaded 26 Sep 2026 at 800×600, cropped, WebP.
+Real photographs of Indian people and places, from Unsplash (https://unsplash.com/license):
+free for commercial use, no attribution required (credited here anyway). Downloaded 13 Oct 2026,
+cropped to 4:3, WebP. `-480.webp` files are smaller copies served to phones through srcset.
 
-| File | Unsplash photo |
-|---|---|
-| photographers.webp | https://unsplash.com/photos/1590486803833-1c5dc8ddd4c8 |
-| videographers.webp | https://unsplash.com/photos/1627244714766-94dab62ed964 |
-| creators.webp | https://unsplash.com/photos/1764664035133-0d2ca12016dd |
-| business.webp | https://unsplash.com/photos/1522071820081-009f0129c71c |
-| home.webp | https://unsplash.com/photos/1704240958715-22c4ba121773 |
-| surveillance.webp | https://unsplash.com/photos/1549109926-58f039549485 |
+| File | Photographer | Unsplash photo |
+|---|---|---|
+| photographers.webp | Aejaz Memon | https://unsplash.com/photos/a-man-walking-down-a-street-holding-a-cell-phone-akPqU03pJ7c |
+| videographers.webp | Harsh Gadhiya | https://unsplash.com/photos/a-man-sitting-in-front-of-a-computer-with-headphones-on-1XwEmRKIzig |
+| creators.webp | Hitesh Choudhary | https://unsplash.com/photos/a-man-wearing-headphones-sitting-at-a-table-01_cE4yUgOA |
+| business.webp | Smartworks Coworking | https://unsplash.com/photos/people-sitting-at-the-table-looking-to-another-person-standing-in-front-of-them-Uz8THWPXwhI |
+| home.webp | CR | https://unsplash.com/photos/a-family-sitting-on-the-floor-in-front-of-a-decorated-wall-LvelDKbCeZg |
+| surveillance.webp | MF Mohomed | https://unsplash.com/photos/a-security-camera-mounted-on-the-side-of-a-building-NpBtMcQGTL0 |
