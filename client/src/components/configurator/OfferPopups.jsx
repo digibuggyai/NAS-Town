@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Copy, Loader2 } from 'lucide-react';
+import { Check, Copy, Gift, Loader2 } from 'lucide-react';
 import { api } from '../../lib/api.js';
 import { RAID_INFO, inr } from '../../lib/nas/logic.js';
 import { Dialog } from './parts.jsx';
@@ -11,6 +11,25 @@ import { Dialog } from './parts.jsx';
  * Timing lives in Configurator.jsx (useOfferPopups). */
 
 export const COUPON_INR = 2000;
+
+/** The ₹2,000 as the first thing anyone sees: a coupon ticket with notched edges and a light
+ *  that sweeps across it (styles: .coupon-ticket in index.css; still for reduced motion). */
+function CouponHero({ caption }) {
+  return (
+    <div className="coupon-ticket relative overflow-hidden rounded-2xl px-6 py-5 text-white">
+      <div className="relative z-10 flex items-center gap-4">
+        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-white/15 ring-2 ring-white/40"><Gift className="size-7" aria-hidden /></span>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold tracking-[0.18em] text-white/80 uppercase">Your personal coupon</p>
+          <p className="font-display text-[clamp(2.4rem,9vw,3.4rem)] leading-none font-bold tracking-tight">
+            {inr(COUPON_INR)} <span className="text-[0.55em] font-extrabold tracking-wide text-amber-300">OFF</span>
+          </p>
+          <p className="mt-1 text-sm text-white/85">{caption}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Perks() {
   return (
@@ -98,7 +117,7 @@ function CouponCode({ offer, note }) {
   const copy = () => navigator.clipboard?.writeText(offer.code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   return (
     <div className="mt-5 rounded-xl border border-dashed border-accent/50 bg-accent-soft p-5 text-center" role="status">
-      <p className="text-sm text-muted">Your coupon: {inr(offer.valueInr ?? COUPON_INR)} off</p>
+      <p className="text-sm text-muted">Your coupon: <span className="text-lg font-bold text-success">{inr(offer.valueInr ?? COUPON_INR)} OFF</span></p>
       <p className="mt-1 font-mono text-2xl font-semibold tracking-widest text-fg">{offer.code}</p>
       <button type="button" onClick={copy} className="mt-2 inline-flex items-center gap-1.5 text-sm text-accent hover:underline">
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />} {copied ? 'Copied' : 'Copy code'}
@@ -112,7 +131,8 @@ export function IntroPopup({ open, onClose, offer, onOffer }) {
   return (
     <Dialog open={open} onClose={onClose} title="Not sure which NAS is right for you?">
       <div className="pb-2">
-        <p className="text-[0.95rem] leading-relaxed text-muted">
+        <CouponHero caption="On your NAS, when you take up your formal quotation." />
+        <p className="mt-5 text-[0.95rem] leading-relaxed text-muted">
           Tell us what you're storing and we'll tell you honestly which unit fits, and which one you don't need to pay for. No obligation.
         </p>
         <div className="mt-5"><Perks /></div>
@@ -151,18 +171,22 @@ export function QuoteOfferPopup({ open, onClose, build, price, summary, offer, o
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title={`Your quote is ready: ${inr(COUPON_INR)} off`}>
+    <Dialog open={open} onClose={onClose} title="Your quote is ready">
       <div className="pb-2">
-        <div className="rounded-xl bg-surface p-4 ring-1 ring-line">
+        <CouponHero caption={`Off this ${build.model.model} quote, just for you.`} />
+        <div className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
           <p className="font-medium">{build.model.brand} {build.model.model}</p>
           <p className="mt-1 text-sm text-muted">
             {build.drivesPerUnit} × {build.driveCap} TB {build.driveLine} · {RAID_INFO[build.raid].title} · <span className="whitespace-nowrap">{build.totalUsable} TB usable</span>
           </p>
           <dl className="mt-3 grid gap-1 border-t border-line pt-3 text-sm">
-            <div className="flex justify-between gap-3"><dt className="text-muted">Your quote</dt><dd>{inr(price.total)}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Coupon</dt><dd className="text-accent">− {inr(COUPON_INR)}</dd></div>
-            <div className="flex items-baseline justify-between gap-3 text-base font-semibold">
-              <dt>With your coupon</dt><dd className="text-xl tracking-tight">{inr(Math.max(0, price.total - COUPON_INR))}</dd>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Your quote</dt><dd className="text-muted line-through decoration-error/70 decoration-2">{inr(price.total)}</dd></div>
+            <div className="-mx-2 flex items-center justify-between gap-3 rounded-lg bg-success/10 px-2 py-1.5">
+              <dt className="font-semibold text-success">You save</dt>
+              <dd className="text-lg font-bold text-success">− {inr(COUPON_INR)}</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3 pt-1 text-base font-semibold">
+              <dt>With your coupon</dt><dd className="text-2xl tracking-tight text-success">{inr(Math.max(0, price.total - COUPON_INR))}</dd>
             </div>
           </dl>
           <p className="mt-1 text-right text-xs text-subtle">GST inclusive</p>

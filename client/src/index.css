@@ -118,6 +118,28 @@
   .nav-glow::after { display: none; }
 }
 
+/* ₹2,000 coupon ticket in the configurator popups (OfferPopups.jsx CouponHero): a bold
+   gradient ticket with notched sides, and a light that sweeps across it now and then. */
+@keyframes coupon-shine { 0%, 55% { transform: translateX(-120%) skewX(-20deg); } 100% { transform: translateX(260%) skewX(-20deg); } }
+.coupon-ticket {
+  background: linear-gradient(120deg, #3a67ff 0%, #6d4aff 55%, #a23cff 100%);
+  box-shadow: 0 18px 40px -18px rgb(58 103 255 / 0.75);
+  -webkit-mask: radial-gradient(circle 12px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat,
+                radial-gradient(circle 12px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 12px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat,
+                radial-gradient(circle 12px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+}
+.coupon-ticket::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: coupon-shine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) { .coupon-ticket::after { display: none; } }
+
 @layer components {
   /* Footer: black with a blue glow rising from the bottom. */
   .theme-dark {
