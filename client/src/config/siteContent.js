@@ -3,15 +3,14 @@
 // Rule: real data only. Every empty value below is a TODO, and the part of the site that
 // uses it stays hidden until it's filled in. Nothing here is ever guessed or made up.
 
-/* ---------------- 7. Numbers strip (homepage) ----------------
- * `value` is what's shown, exactly as written: '1,200+', '5,000 TB', '15'. Digits count up
- * when the strip scrolls into view; any prefix/suffix (+, TB, hrs) stays as typed.
- * A counter with an empty value is hidden; the whole strip is hidden while all are empty. */
+/* ---------------- 7. Numbers (homepage strip + footer) ----------------
+ * `value` is what's shown, exactly as written: '10K+', '5,000 TB', '15'. Digits count up
+ * when the homepage strip scrolls into view; any prefix/suffix (K+, TB, hrs) stays as typed.
+ * A number with an empty value is hidden; both places hide while all are empty. */
 export const stats = [
-  { value: '', label: 'NAS units installed' }, // TODO: from your sales records
-  { value: '', label: 'TB of data managed' }, // TODO
-  { value: '', label: 'Businesses & creators served' }, // TODO
-  { value: '', label: 'Years in IT infrastructure' }, // TODO: e.g. years since Digibuggy / DGB India started
+  { value: '10K+', label: 'Happy customers' }, // supplied 13 Oct 2026
+  { value: '100K+', label: 'Drives delivered' }, // supplied 13 Oct 2026
+  { value: '7K+', label: 'NAS served' }, // supplied 13 Oct 2026
 ];
 
 /* ---------------- 10. "Trusted by" customer logo wall ----------------

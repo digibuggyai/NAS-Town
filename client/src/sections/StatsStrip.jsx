@@ -51,11 +51,11 @@ export default function StatsStrip() {
 
   return (
     <section aria-label="NASTOWN in numbers" className="border-y border-line bg-surface">
-      <dl ref={ref} className={`mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:px-6 md:py-12 ${COLS[Math.min(filled.length, 4)]}`}>
+      <dl ref={ref} className={`mx-auto grid max-w-7xl gap-x-4 gap-y-8 px-4 py-10 text-center sm:gap-x-6 sm:px-6 md:py-12 ${filled.length === 3 ? 'grid-cols-3' : `grid-cols-2 ${COLS[Math.min(filled.length, 4)]}`}`}>
         {filled.map((s) => (
           <div key={s.label} className="flex flex-col-reverse">
-            <dt className="mt-2 text-sm text-muted">{s.label}</dt>
-            <dd className="font-display text-[clamp(2rem,4vw,3rem)] leading-none font-semibold tracking-tight text-fg tabular-nums"><Counter value={s.value} run={run} /></dd>
+            <dt className="mt-2 text-xs text-muted sm:text-sm">{s.label}</dt>
+            <dd className="font-display text-[clamp(1.75rem,5vw,3.25rem)] leading-none font-semibold tracking-tight text-accent tabular-nums"><Counter value={s.value} run={run} /></dd>
           </div>
         ))}
       </dl>

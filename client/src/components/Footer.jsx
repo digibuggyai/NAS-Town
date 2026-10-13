@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { CalendarCheck, MessageCircle } from 'lucide-react';
 import { Logo } from './Navbar.jsx';
 import { digibuggy, siteMap, waLink } from '../data/site.js';
-import { experienceZone, parentCompany } from '../config/siteContent.js';
+import { experienceZone, parentCompany, stats } from '../config/siteContent.js';
 
 // Lucide no longer ships brand marks, so these are simple outline glyphs.
 const glyph = (children) =>
@@ -31,6 +31,17 @@ export default function Footer() {
           <div>
             <Logo onDark />
             <p className="mt-3 text-[0.95rem] leading-snug text-fg">Smart Storage for Every Need.</p>
+            {/* Track record (config/siteContent.js), on every page. */}
+            {stats.some((s) => s.value) && (
+              <dl className="mt-5 grid max-w-xs grid-cols-3 gap-3">
+                {stats.filter((s) => s.value).map((s) => (
+                  <div key={s.label} className="flex flex-col-reverse">
+                    <dt className="text-[0.7rem] leading-tight text-muted">{s.label}</dt>
+                    <dd className="font-display text-lg leading-tight font-semibold text-fg">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
             {/* A <dl> may hold dt/dd or one level of <div>, so each group is its own list. */}
             <div className="mt-5 grid gap-2.5 text-[0.8125rem]">
               <dl>
@@ -79,7 +90,7 @@ export default function Footer() {
               <a href={parentCompany.site} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center" aria-label="DigiBuggy">
                 <img src="/digibuggy-logo.svg" alt="DigiBuggy" width="218" height="25" loading="lazy" decoding="async" className="h-3.5 w-auto opacity-80 transition-opacity group-hover:opacity-100" />
               </a>
-              (<a href={parentCompany.dgbSite} target="_blank" rel="noopener noreferrer" className="hover:text-fg">{parentCompany.alsoKnownAs}</a>) company
+              <span>(<a href={parentCompany.dgbSite} target="_blank" rel="noopener noreferrer" className="hover:text-fg">{parentCompany.alsoKnownAs}</a>)</span> company
             </p>
             <ul className="flex gap-1">
               {digibuggy.socials.map(({ label, href }) => {
