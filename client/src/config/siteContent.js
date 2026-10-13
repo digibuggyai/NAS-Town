@@ -45,6 +45,9 @@ export const groupBrands = [
     name: 'DGB India',
     description: 'Enterprise IT infrastructure.',
     url: 'https://dgbindia.com/',
+    // Official logo supplied 13 Oct 2026. dgb-india.png has the "Redefining Your Needs" tagline;
+    // the card uses the mark alone, where the tagline would be too small to read.
+    logo: '/images/brands/dgb-india-mark.png',
   },
   {
     key: 'avs',
