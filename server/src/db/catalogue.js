@@ -1,5 +1,5 @@
 // NAS catalogue seed, shared with DGB India: specs and quote prices come from
-// catalogue.json (the DGB India export of 8 Oct 2026; quote prices only, GST inclusive).
+// catalogue.json (the DGB India export of 8 Oct 2026, drive prices updated 14 Oct 2026; quote prices only, GST inclusive).
 // Floor prices are NOT here: they live in floors.local.json (gitignored) and are applied
 // by seeding or `npm run import-floors`, or entered in the admin panel.
 // NASTOWN adds its own copy per model (summary, best-for, featured, rentable) below.

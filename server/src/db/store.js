@@ -169,9 +169,13 @@ async function applyCatalogueOnce(freshlySeeded) {
     if (!row) {
       const created = await insertRow('drives', src);
       log.push({ editor, collection: 'drives', itemId: created.id, itemLabel: label, field: '(created)', after: String(src.quotePrice) });
-    } else if (!same(row.quotePrice, src.quotePrice)) {
-      const { before, after } = await update('drives', row.id, { quotePrice: src.quotePrice });
-      record('drives', row, label, before, after, ['quotePrice']);
+    } else {
+      // Price, and whether it's sold at all ("0 / NA" on the price sheet = active: false).
+      const changed = ['quotePrice', 'active'].filter((f) => !same(row[f], src[f]));
+      if (changed.length) {
+        const { before, after } = await update('drives', row.id, Object.fromEntries(changed.map((f) => [f, src[f]])));
+        record('drives', row, label, before, after, changed);
+      }
     }
   }
 
