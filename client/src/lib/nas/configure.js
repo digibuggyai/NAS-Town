@@ -319,7 +319,7 @@ export function estimateLines(build, price, a, P) {
   if (price.ramItem) rows.push({ key: 'ram', label: price.ramItem.name, detail: 'RAM upgrade', basis: `${u} × ${inr(price.ramItem.quote)}`, qty: u, rate: price.ramItem.quote, quote: price.ram, floor: f?.ram });
   if (price.nicItem) rows.push({ key: 'nic', label: price.nicItem.name, detail: 'Network card', basis: `${u} × ${inr(price.nicItem.quote)}`, qty: u, rate: price.nicItem.quote, quote: price.nic, floor: f?.nic });
   rows.push({ key: 'hardware', label: 'Hardware', basis: '', quote: price.hardware, floor: f?.hardware, subtotal: true });
-  if (a.includeInstall) rows.push({ key: 'install', label: 'Installation & setup', detail: 'Racking, RAID configuration, network setup', basis: `${u} × ${inr(P.install.quote)}`, qty: u, rate: P.install.quote, quote: price.install, floor: f?.install });
+  if (a.includeInstall) rows.push({ key: 'install', label: 'Installation & setup', detail: 'Delhi NCR only · Racking, RAID configuration, network setup', basis: `${u} × ${inr(P.install.quote)}`, qty: u, rate: P.install.quote, quote: price.install, floor: f?.install });
   if (a.includeAMC) rows.push({ key: 'amc', label: 'Annual maintenance (AMC)', detail: `${Math.round(P.amcRate.quote * 100)}% of hardware value, first year`, basis: `${Math.round(P.amcRate.quote * 100)}% of hardware`, quote: price.amc, floor: f?.amc });
   rows.push({ key: 'total', label: 'Total', basis: 'GST inclusive', quote: price.total, floor: f?.total, total: true });
   return rows;
@@ -334,7 +334,7 @@ export function estimateRef(now = new Date()) {
 /** The configuration as plain text, filed with the lead so sales sees exactly what was configured. */
 export function leadSummary(d, build, price, speed, a, P, ref) {
   if (!build || !price) return '';
-  const addons = [a.includeInstall ? 'Installation & setup' : null, a.includeAMC ? `AMC (${Math.round(P.amcRate.quote * 100)}%)` : null].filter(Boolean).join(', ');
+  const addons = [a.includeInstall ? 'Installation & setup (Delhi NCR)' : null, a.includeAMC ? `AMC (${Math.round(P.amcRate.quote * 100)}%)` : null].filter(Boolean).join(', ');
   return [
     ref ? `NAS configurator request · ${ref}` : null,
     ref ? '' : null,

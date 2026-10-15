@@ -82,7 +82,7 @@ export const services = [
   {
     slug: 'installation', name: 'Installation', icon: Wrench,
     h1: 'Professional NAS Installation, Done Right',
-    intro: 'Skip the trial-and-error setup. Our technicians install and configure your NAS correctly from day one: network settings, storage pools, and user accounts included.',
+    intro: 'Skip the trial-and-error setup. Our technicians install and configure your NAS correctly from day one: network settings, storage pools, and user accounts included. On-site installation is available in Delhi NCR only.',
     includes: ['Drive installation and health check', 'Storage pool and volume setup', 'Users, groups and shared folders', 'Network, remote access and notifications'],
   },
   {

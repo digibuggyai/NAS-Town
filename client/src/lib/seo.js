@@ -282,7 +282,7 @@ const KEYWORDS = {
   },
   '/services/installation': {
     title: 'NAS Installation & Setup Service in Delhi | NASTOWN',
-    description: 'Professional NAS installation for Synology and QNAP: drives, storage pools, users, shared folders, remote access and alerts, set up right from day one.',
+    description: 'Professional on-site NAS installation in Delhi NCR for Synology and QNAP: drives, storage pools, users, shared folders, remote access and alerts, set up right from day one.',
   },
   '/services/migration': {
     title: 'NAS Data Migration Service | NASTOWN',

@@ -400,7 +400,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
             {/* 10 Installation & support */}
             <StepCard n={++n} wide={P.upgrades.length === 0} title="Installation & support" hint="Both optional.">
               <div className="grid gap-2 sm:grid-cols-2">
-                <CheckTile checked={a.includeInstall} onChange={(v) => set({ includeInstall: v })} title="On-site installation & setup" sub="Racking, RAID configuration and network setup. Charged per NAS unit." price={inr(P.install.quote)} priceSub="per unit" />
+                <CheckTile checked={a.includeInstall} onChange={(v) => set({ includeInstall: v })} title="On-site installation & setup" sub="Delhi NCR only. Racking, RAID configuration and network setup. Charged per NAS unit." price={inr(P.install.quote)} priceSub="per unit" />
                 <CheckTile checked={a.includeAMC} onChange={(v) => set({ includeAMC: v })} title="Annual maintenance (AMC)" sub="Ongoing support, charged on the hardware value. Installation isn't included." price={`${Math.round(P.amcRate.quote * 100)}%`} priceSub="of hardware" />
               </div>
             </StepCard>

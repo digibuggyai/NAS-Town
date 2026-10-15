@@ -181,7 +181,7 @@ export default function CapacityPage() {
           <div>
             <h3 className="text-lg">Can you set up a {tb}TB NAS for me?</h3>
             <p className="mt-2 text-muted">
-              Yes. We install the drives, build and verify the RAID array, and set up users, shared folders, backups and remote access.{' '}
+              Yes, on-site in Delhi NCR. We install the drives, build and verify the RAID array, and set up users, shared folders, backups and remote access.{' '}
               <Link to="/services/installation" className="link">See NAS installation</Link>.
             </p>
           </div>

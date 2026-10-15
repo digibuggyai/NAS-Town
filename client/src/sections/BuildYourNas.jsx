@@ -6,7 +6,7 @@ import Button from '../components/Button.jsx';
 const STEPS = [
   { icon: Boxes, title: 'Pick a box', body: 'Tell it how much storage you need, or your budget. It suggests the unit; change it if you like.' },
   { icon: HardDrive, title: 'Pick drives & RAID', body: 'Drives and the RAID level are matched to your size. Choose your own if you prefer.' },
-  { icon: Wrench, title: 'Add installation or AMC', body: 'On-site setup and an annual maintenance plan, ticked or not, priced per unit.' },
+  { icon: Wrench, title: 'Add installation or AMC', body: 'On-site setup (Delhi NCR only) and an annual maintenance plan, ticked or not, priced per unit.' },
 ];
 
 /** The configurator is the main way to get a price, so the homepage gives it its own section. */
