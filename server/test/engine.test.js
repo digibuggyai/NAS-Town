@@ -39,9 +39,9 @@ test('20 TB RAID 5 → TS-433-4G + 3 × 10 TB WD Ultrastar, ₹1,97,397 hw, ₹2
   assert.equal(price.total, 203297);
 });
 
-test('20 TB RAID 1 → one pair: TS-233-2G + 2 × 20 TB WD Ultrastar', () => {
+test('20 TB RAID 1 → one pair: DS223J + 2 × 20 TB WD Ultrastar', () => {
   const { b, price } = run({ targetTB: 20, raid: 'RAID1' });
-  assert.equal(describe(b), 'TS-233-2G 2x20 WD Ultrastar 20TB');
+  assert.equal(describe(b), 'DS223J 2x20 WD Ultrastar 20TB');
   assert.equal(price.hardware, 247020);
   assert.equal(price.total, 252920);
 });
@@ -55,7 +55,7 @@ test('4 TB RAID 5 → TS-433-4G + 3 × 2 TB IronWolf (no 2-bay)', () => {
 
 test('4 TB RAID 0 → 2 × 2 TB, never 1 × 4 TB', () => {
   const { b, price } = run({ targetTB: 4, raid: 'RAID0' });
-  assert.equal(describe(b), 'TS-233-2G 2x2 IronWolf 4TB');
+  assert.equal(describe(b), 'DS223J 2x2 IronWolf 4TB');
   assert.equal(price.hardware, 63648);
   assert.equal(price.total, 69548);
 });
@@ -81,15 +81,15 @@ test('budget ₹50,000 → no build, least is ₹69,548', () => {
 
 test('§7.6 worked quotations with install + AMC, including floors', () => {
   const cases = [
-    // DGB India spec §7.6 cases; quote prices of 14 Oct 2026, floors from floors.local.json
+    // DGB India spec §7.6 cases; quote prices of 26 Oct 2026, floors from floors.local.json
     [{ targetTB: 10, raid: 'RAID5' }, 'TS-433-4G 4x4 IronWolf 12TB', 153529, 139481],
     [{ targetTB: 20, raid: 'RAID5' }, 'TS-433-4G 3x10 WD Ultrastar 20TB', 223037, 204627],
     [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 WD Ultrastar 20TB', 278916, 256308],
-    [{ targetTB: 20, raid: 'RAID1' }, 'TS-233-2G 2x20 WD Ultrastar 20TB', 277622, 245287],
+    [{ targetTB: 20, raid: 'RAID1' }, 'DS223J 2x20 WD Ultrastar 20TB', 277622, 245287],
     [{ targetTB: 50, raid: 'RAID5' }, 'TS-664-8G 6x10 WD Ultrastar 50TB', 436873, 402598],
-    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 WD Ultrastar 50TB', 595052, 548974],
+    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 WD Ultrastar 50TB', 589552, 547904],
     [{ targetTB: 100, raid: 'RAID5' }, 'TS-664-8G 6x20 WD Ultrastar 100TB', 837566, 744014],
-    [{ storageMode: 'budget', budget: 150000 }, 'TS-233-2G 2x10 WD Ultrastar 10TB', 144058, 131481],
+    [{ storageMode: 'budget', budget: 150000 }, 'DS223J 2x10 WD Ultrastar 10TB', 144058, 131481],
     [{ storageMode: 'budget', budget: 300000 }, 'TS-433-4G 4x10 WD Ultrastar 30TB', 278916, 256308],
     [{ storageMode: 'budget', budget: 500000 }, 'TS-433-4G 4x18 WD Ultrastar 54TB', 496980, 413212],
   ];
