@@ -65,13 +65,6 @@
   summary::-webkit-details-marker { display: none; }
 }
 
-/* Hero NAS (NasHero.jsx): a studio stage and front LEDs lit like a running unit. */
-.nas-stage { background: radial-gradient(90% 75% at 50% 38%, #ffffff 0%, #eef2f8 55%, #dde4ef 100%); box-shadow: inset 0 1px 0 #fff, 0 24px 60px -32px rgb(15 23 42 / 0.45); }
-.nas-led {
-  position: absolute; width: 0.9%; aspect-ratio: 1; border-radius: 9999px; transform: translate(-50%, -50%);
-  background: #7dff8f; box-shadow: 0 0 4px 1px rgb(74 222 128 / 0.95), 0 0 12px 3px rgb(34 197 94 / 0.55);
-}
-
 /* Navbar "Configurator": a light pill whose border is a gradient that travels round it,
    with a light sweep across it. Movement draws the eye without a heavy solid block.
    Reduced motion: the gradient border stays, still. */

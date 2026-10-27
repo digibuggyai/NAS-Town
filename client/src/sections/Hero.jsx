@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import SplitHeading from '../components/SplitHeading.jsx';
-import NasHero from '../components/NasHero.jsx';
+import NasHddAnimation from '../components/NasHddAnimation.jsx';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 import { hero } from '../data/home.js';
 
@@ -34,9 +34,12 @@ export default function Hero() {
         </div>
 
         <figure className="hero-figure">
-          <NasHero />
+          {/* Dark stage for the product animation */}
+          <div className="overflow-hidden rounded-[24px] bg-[radial-gradient(120%_90%_at_60%_35%,#1e293b_0%,#0f172a_55%,#070b14_100%)] px-2 py-4 shadow-[0_24px_60px_-30px_rgb(15_23_42/0.6)] sm:px-6 sm:py-8">
+            <NasHddAnimation />
+          </div>
           <figcaption className="mt-3 text-xs text-subtle sm:text-right">
-            Synology DS925+: four drives in one box, every device connected.
+            A 4-bay NAS: four drives, one box, every device connected.
           </figcaption>
         </figure>
       </div>
