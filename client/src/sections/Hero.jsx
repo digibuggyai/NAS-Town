@@ -1,17 +1,17 @@
 import { useRef } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, CalendarCheck, MessageCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import SplitHeading from '../components/SplitHeading.jsx';
 import NasHddAnimation from '../components/NasHddAnimation.jsx';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 import { hero } from '../data/home.js';
-import { digibuggy, waLink } from '../data/site.js';
-import { experienceZone } from '../config/siteContent.js';
 
-// The things that make someone comfortable buying storage online, answered up front.
+// Why a NAS, in four short lines.
 const facts = [
-  ['Prices', 'GST-inclusive, published'],
-  ['Setup', 'Installed & configured by our team'],
+  ['No monthly fees', 'Pay once, unlike cloud plans'],
+  ['Protected', 'RAID survives a drive failure'],
+  ['Anywhere access', 'Your files on every device'],
+  ['Private', 'Your data stays with you'],
 ];
 
 export default function Hero() {
@@ -52,7 +52,7 @@ export default function Hero() {
         </figure>
       </div>
 
-      {/* Trust facts on a hairline. */}
+      {/* NAS advantages on a hairline. */}
       <dl className="hero-fade mt-14 grid gap-y-5 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
         {facts.map(([k, v]) => (
           <div key={k} className="sm:pr-6">
@@ -60,23 +60,6 @@ export default function Hero() {
             <dd className="mt-1 font-medium text-fg">{v}</dd>
           </div>
         ))}
-        <div className="sm:pr-6">
-          <dt className="text-xs font-semibold tracking-wide text-subtle uppercase">{experienceZone.name}</dt>
-          <dd className="mt-1">
-            <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="font-medium text-fg hover:text-accent">{digibuggy.addressShort}</a>
-            <a href={waLink(experienceZone.bookVisitText)} target="_blank" rel="noopener noreferrer" className="link mt-0.5 flex items-center gap-1.5 text-sm">
-              <CalendarCheck className="size-3.5" aria-hidden /> Book a visit
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt className="text-xs font-semibold tracking-wide text-subtle uppercase">Talk to a person</dt>
-          <dd className="mt-1">
-            <a href={digibuggy.whatsappHref} target="_blank" rel="noopener" className="link inline-flex items-center gap-1.5">
-              <MessageCircle className="size-4" /> {digibuggy.whatsapp}
-            </a>
-          </dd>
-        </div>
       </dl>
     </section>
   );
