@@ -9,11 +9,11 @@ const STEPS = [
 ];
 
 /** Four steps joined by a line. Used on the homepage and Services page; Rent passes its own `steps`. */
-export default function HowItWorks({ eyebrow = 'How it works', title = 'From question to running NAS', steps = STEPS, className = '' }) {
+export default function HowItWorks({ eyebrow = '', title = 'How it works', steps = STEPS, className = '' }) {
   return (
     <section className={`mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20 ${className}`}>
       <Reveal className="max-w-2xl">
-        <p className="eyebrow mb-3">{eyebrow}</p>
+        {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}
         <h2 className="h-section">{title}</h2>
       </Reveal>
       <div className="relative mt-10">

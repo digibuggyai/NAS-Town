@@ -22,7 +22,7 @@ export function openEstimatePdf({ ref, build, price, lines, raid, speed, mode, t
 <style>
   @page { size: A4; margin: 16mm; }
   * { box-sizing: border-box; }
-  body { font-family: Inter, "Segoe UI", system-ui, sans-serif; color: #1e293b; margin: 0; font-size: 12.5px; line-height: 1.5; }
+  body { font-family: Manrope, "Segoe UI", system-ui, sans-serif; color: #1e293b; margin: 0; font-size: 12.5px; line-height: 1.5; }
   .head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 14px; }
   .head img { height: 64px; }
   .head .meta { text-align: right; font-size: 11.5px; color: #475569; }

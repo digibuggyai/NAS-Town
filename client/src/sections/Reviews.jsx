@@ -1,10 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, PenLine } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2, PenLine } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { Stars, StarInput } from '../components/StarRating.jsx';
 import { Dialog } from '../components/configurator/parts.jsx';
 import { api } from '../lib/api.js';
 import { preloaded } from '../lib/preload.js';
+import { digibuggy } from '../data/site.js';
+
+// Google's own colours for the "G", so the link reads as Google reviews at a glance.
+const GoogleG = ({ className }) => (
+  <svg viewBox="0 0 24 24" className={className} aria-hidden>
+    <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z" />
+    <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.8A11 11 0 0 0 12 23z" />
+    <path fill="#FBBC05" d="M5.7 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.1a11 11 0 0 0 0 9.8l3.6-2.8z" />
+    <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1A11 11 0 0 0 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z" />
+  </svg>
+);
 
 /* Customer reviews written on this site (or added by staff from real reviews received
  * elsewhere). Only reviews approved in Admin → Reviews appear here; nothing is invented.
@@ -47,9 +58,14 @@ export default function Reviews() {
               </p>
             )}
           </div>
-          <button onClick={() => setWriting(true)} className="btn btn-primary">
-            <PenLine className="size-4" /> Write a review
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <a href={digibuggy.mapsHref} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+              <GoogleG className="size-4" /> Our Google reviews <ArrowUpRight className="size-4" />
+            </a>
+            <button onClick={() => setWriting(true)} className="btn btn-primary">
+              <PenLine className="size-4" /> Write a review
+            </button>
+          </div>
         </Reveal>
 
         {data == null ? (

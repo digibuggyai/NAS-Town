@@ -2,17 +2,9 @@ import { useRef } from 'react';
 import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import SplitHeading from '../components/SplitHeading.jsx';
-import NasHddAnimation from '../components/NasHddAnimation.jsx';
+import NasHero from '../components/NasHero.jsx';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 import { hero } from '../data/home.js';
-
-// Why a NAS, in four short lines.
-const facts = [
-  ['No monthly fees', 'Pay once, unlike cloud plans'],
-  ['Protected', 'RAID survives a drive failure'],
-  ['Anywhere access', 'Your files on every device'],
-  ['Private', 'Your data stays with you'],
-];
 
 export default function Hero() {
   const root = useRef(null);
@@ -27,7 +19,7 @@ export default function Hero() {
   }, { scope: root });
 
   return (
-    <section ref={root} className="mx-auto max-w-7xl px-4 pt-28 pb-14 sm:px-6 md:pt-32 lg:pb-20">
+    <section ref={root} className="mx-auto max-w-7xl px-4 pt-28 pb-12 sm:px-6 md:pt-32 lg:pb-16">
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
         <div>
           <p className="hero-fade eyebrow">{hero.eyebrow}</p>
@@ -42,25 +34,12 @@ export default function Hero() {
         </div>
 
         <figure className="hero-figure">
-          {/* Dark stage for the product animation */}
-          <div className="overflow-hidden rounded-[24px] bg-[radial-gradient(120%_90%_at_60%_35%,#1e293b_0%,#0f172a_55%,#070b14_100%)] px-2 py-4 shadow-[0_24px_60px_-30px_rgb(15_23_42/0.6)] sm:px-6 sm:py-8">
-            <NasHddAnimation />
-          </div>
+          <NasHero />
           <figcaption className="mt-3 text-xs text-subtle sm:text-right">
-            A 4-bay NAS: four drives, one box, every device connected.
+            Synology DS925+: four drives in one box, every device connected.
           </figcaption>
         </figure>
       </div>
-
-      {/* NAS advantages on a hairline. */}
-      <dl className="hero-fade mt-14 grid gap-y-5 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
-        {facts.map(([k, v]) => (
-          <div key={k} className="sm:pr-6">
-            <dt className="font-bold text-fg">{k}</dt>
-            <dd className="mt-0.5 text-sm text-muted">{v}</dd>
-          </div>
-        ))}
-      </dl>
     </section>
   );
 }

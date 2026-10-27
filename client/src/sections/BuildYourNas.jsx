@@ -4,9 +4,9 @@ import Reveal from '../components/Reveal.jsx';
 import Button from '../components/Button.jsx';
 
 const STEPS = [
-  { icon: Boxes, title: 'Pick a box', body: 'Tell it how much storage you need, or your budget. It suggests the unit; change it if you like.' },
-  { icon: HardDrive, title: 'Pick drives & RAID', body: 'Drives and the RAID level are matched to your size. Choose your own if you prefer.' },
-  { icon: Wrench, title: 'Add installation or AMC', body: 'On-site setup (Delhi NCR only) and an annual maintenance plan, ticked or not, priced per unit.' },
+  { icon: HardDrive, title: 'Pick storage & RAID', body: 'The space you need, or your budget.' },
+  { icon: Boxes, title: 'Pick an enclosure (NAS)', body: 'We suggest the best fit. Change it if you like.' },
+  { icon: Wrench, title: 'Installation/AMC', body: 'On-site setup (Delhi NCR) and yearly support, both optional.' },
 ];
 
 /** The configurator is the main way to get a price, so the homepage gives it its own section. */
@@ -16,7 +16,7 @@ export default function BuildYourNas() {
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.35fr] lg:gap-14">
         <Reveal>
           <p className="eyebrow mb-3">NAS Configurator</p>
-          <h2 className="h-section">Build your NAS in 3 steps</h2>
+          <h2 className="h-section">Build your NAS</h2>
           <ol className="mt-8 grid gap-6">
             {STEPS.map(({ icon: Icon, title, body }, i) => (
               <li key={title} className="flex gap-4">
@@ -31,7 +31,7 @@ export default function BuildYourNas() {
               <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-white"><ReceiptIndianRupee className="size-5" aria-hidden /></span>
               <div>
                 <h3 className="text-lg font-bold">Instant, GST-inclusive quote</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted">The full price as you go, from our live price list. Download it as a PDF or request a formal quotation.</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">Live price as you go. Download a PDF or get a formal quote.</p>
               </div>
             </li>
           </ol>

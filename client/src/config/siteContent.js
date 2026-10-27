@@ -9,8 +9,9 @@
  * A number with an empty value is hidden; both places hide while all are empty. */
 export const stats = [
   { value: '10K+', label: 'Happy customers' }, // supplied 13 Oct 2026
-  { value: '100K+', label: 'Drives delivered' }, // supplied 13 Oct 2026
+  { value: '100K+', label: 'TB delivered' }, // supplied 13 Oct 2026 as drives; label changed to TB on 27 Oct 2026, confirm the figure
   { value: '7K+', label: 'NAS served' }, // supplied 13 Oct 2026
+  { value: '20K+', label: 'Instagram followers' }, // @digibuggy, supplied 27 Oct 2026
 ];
 
 /* ---------------- 10. "Trusted by" customer logo wall ----------------

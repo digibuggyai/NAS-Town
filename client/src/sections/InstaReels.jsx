@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { ArrowUpRight, Play } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
-import { instagramHandle, reels } from '../data/site.js';
+import { instagramFollowers, instagramHandle, reels } from '../data/site.js';
 import { reducedMotion } from '../lib/motion.js';
 
 /* Our Instagram reels about NAS. Each video plays silently and on loop while it's on screen
@@ -13,6 +13,23 @@ const InstagramIcon = ({ className }) => (
     <rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
   </svg>
 );
+
+/** A reel given only as a link: Instagram's own embedded player. */
+function EmbeddedReel({ reel, index }) {
+  const id = reel.url.match(/instagram\.com\/(?:reel|p)\/([\w-]+)/)?.[1];
+  if (!id) return null;
+  return (
+    <Reveal as="li" delay={(index % 4) * 70} className="w-[68vw] shrink-0 snap-start sm:w-[38vw] lg:w-auto">
+      <iframe
+        src={`https://www.instagram.com/reel/${id}/embed`}
+        title={reel.caption || 'NASTOWN reel on Instagram'}
+        loading="lazy"
+        allowFullScreen
+        className="aspect-[9/16] w-full overflow-hidden rounded-2xl border-0 bg-raised ring-1 ring-line"
+      />
+    </Reveal>
+  );
+}
 
 function Reel({ reel, index }) {
   const video = useRef(null);
@@ -63,16 +80,15 @@ function Reel({ reel, index }) {
 }
 
 export default function InstaReels() {
-  if (!reels.length) return null;
   const profile = `https://www.instagram.com/${instagramHandle}/`;
   return (
-    <section className="py-16 md:py-24">
+    <section className={reels.length ? 'py-16 md:py-24' : 'pt-16 md:pt-24'}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="eyebrow mb-4">On Instagram</p>
-            <h2 className="h-section">NAS, explained in 60 seconds</h2>
-            <p className="measure mt-5 text-muted">Quick reels on storage, RAID, backups and setups we've built. Tap any reel to watch it with sound on Instagram.</p>
+            <h2 className="h-section">{reels.length ? 'NAS, explained in 60 seconds' : 'Follow us on Instagram'}</h2>
+            <p className="measure mt-5 text-muted">Reels on storage, RAID, backups and builds from our team. Join <b className="text-fg">{instagramFollowers} followers</b> on @{instagramHandle}.</p>
           </div>
           <a href={profile} target="_blank" rel="noopener" className="btn btn-secondary">
             <InstagramIcon className="size-4" /> Follow @{instagramHandle}
@@ -80,9 +96,9 @@ export default function InstaReels() {
         </Reveal>
       </div>
       {/* Phones: swipe sideways like a reels tray. Desktop: a row of four. */}
-      <ul className="mx-auto mt-10 flex max-w-7xl snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:scroll-px-6 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible">
-        {reels.map((r, i) => <Reel key={r.url} reel={r} index={i} />)}
-      </ul>
+      {reels.length > 0 && <ul className="mx-auto mt-10 flex max-w-7xl snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:scroll-px-6 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible">
+        {reels.map((r, i) => (r.video ? <Reel key={r.url} reel={r} index={i} /> : <EmbeddedReel key={r.url} reel={r} index={i} />))}
+      </ul>}
     </section>
   );
 }

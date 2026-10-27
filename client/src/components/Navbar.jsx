@@ -22,7 +22,6 @@ export function Logo({ onDark = false }) {
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const { pathname, key } = useLocation();
   const header = useRef(null);
   const menu = useRef(null);
@@ -35,27 +34,15 @@ export default function Navbar() {
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(closeDropdowns, [key]); // every navigation, including ?filter changes
-  useEffect(() => { if (hidden) closeDropdowns(); }, [hidden]); // bar tucked away: nothing left hanging
   useEffect(() => lockScroll(open), [open]);
 
-  // A hairline appears once the page scrolls; the bar tucks away while reading down, returns on the way up.
+  // The bar stays in place while scrolling; it gains a stronger shadow once the page moves.
   useEffect(() => {
-    let last = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 8);
-      setHidden(y > 320 && y > last);
-      last = y;
-    };
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  // GSAP: the bar glides out of the way while reading down and back on the way up.
-  useGSAP(() => {
-    gsap.to(header.current, { yPercent: hidden && !open ? -130 : 0, duration: reducedMotion() ? 0 : 0.55, ease: 'power3.out', overwrite: true });
-  }, { dependencies: [hidden, open] });
 
   // GSAP: the phone menu drops in, then its rows cascade.
   useGSAP(() => {

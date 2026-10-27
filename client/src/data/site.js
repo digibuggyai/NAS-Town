@@ -288,14 +288,14 @@ export const waLink = (text) => `https://wa.me/919560111954?text=${encodeURIComp
 export const brandName = (slug) =>
   ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
 
-// Instagram reels on the homepage. They play silently on the page; tapping opens the reel
-// on Instagram. Put each video in client/public/reels/ (MP4, ideally under 10 MB) with an
-// optional poster image (the first frame, JPG). The section stays hidden while this is empty;
-// 4 or 8 reels fill the desktop rows neatly.
-// Example: { video: '/reels/raid-explained.mp4', poster: '/reels/raid-explained.jpg',
-//            url: 'https://www.instagram.com/reel/XXXXXXXXX/', caption: 'RAID explained in 30 seconds' }
+// Instagram reels on the homepage. Two ways to add one:
+//  1. Just the link: { url: 'https://www.instagram.com/reel/XXXXXXXXX/' } shows Instagram's own player.
+//  2. Your own copy: { video: '/reels/raid.mp4', poster: '/reels/raid.jpg', url: '…', caption: '…' }
+//     plays silently on the page (MP4 under 10 MB in client/public/reels/); tapping opens Instagram.
+// With no reels the section still shows the follow link. 4 or 8 reels fill the desktop rows neatly.
 export const reels = [];
 export const instagramHandle = 'digibuggy';
+export const instagramFollowers = '20K+'; // supplied 27 Oct 2026
 
 // Track-record numbers now live in config/siteContent.js (stats), shown on the homepage.
 
