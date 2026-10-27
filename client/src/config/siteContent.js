@@ -34,12 +34,12 @@ export const parentCompany = {
 
 export const groupBrands = [
   {
-    key: 'nastown',
-    name: 'NASTOWN',
-    description: 'NAS storage: choosing, configuring, installing and supporting it.',
-    url: '/',
-    logo: '/nastown-logo-sm.png',
-    current: true, // "You are here"
+    key: 'digibuggy',
+    name: 'DigiBuggy',
+    description: 'The parent company: custom PC and storage builders in Nehru Place, New Delhi.',
+    url: 'https://digibuggy.com/',
+    logo: '/digibuggy-logo.svg',
+    logoOnDark: true, // the DigiBuggy wordmark is white
   },
   {
     key: 'dgb',
@@ -57,12 +57,12 @@ export const groupBrands = [
     url: '', // TODO: AVS website
   },
   {
-    key: 'digibuggy',
-    name: 'DigiBuggy',
-    description: 'The parent company: custom PC and storage builders in Nehru Place, New Delhi.',
-    url: 'https://digibuggy.com/',
-    logo: '/digibuggy-logo.svg',
-    logoOnDark: true, // the DigiBuggy wordmark is white
+    key: 'nastown',
+    name: 'NASTOWN',
+    description: 'NAS storage: choosing, configuring, installing and supporting it.',
+    url: '/',
+    logo: '/nastown-logo-sm.png',
+    current: true, // "You are here"
   },
 ];
 
