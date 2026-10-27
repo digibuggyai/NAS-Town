@@ -82,7 +82,7 @@ export default function Reviews() {
             {/* Up to three: a grid. More: a swipeable carousel with arrows. */}
             <ul
               ref={track}
-              data-lenis-prevent-wheel
+             
               className={carousel
                 ? '-mx-4 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-4 px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6'
                 : 'mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3'}

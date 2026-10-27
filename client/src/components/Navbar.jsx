@@ -55,7 +55,7 @@ export default function Navbar() {
     <header ref={header} className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
       {/* Capsule: a floating rounded-full bar that gains a stronger shadow once the page scrolls. */}
       <div
-        className={`mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-line bg-raised/90 pr-2 pl-5 backdrop-blur-md transition-shadow duration-300 ${
+        className={`mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-line bg-raised pr-2 pl-5 transition-shadow duration-300 ${
           scrolled || open ? 'shadow-[0_10px_30px_-12px_rgb(15_23_42/0.25)]' : 'shadow-[0_4px_16px_-10px_rgb(15_23_42/0.18)]'
         }`}
       >

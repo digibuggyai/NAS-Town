@@ -23,13 +23,17 @@ export default function Layout() {
   // On route change: go to the top (or the #hash), fade the new page in, re-measure scroll triggers.
   useGSAP(() => {
     let frame;
+    let settle;
     if (hash) {
       // The page may still be loading its code, so look for the target for up to ~2s.
+      // Content above it (photos, prices) can still be arriving and push it down, which also
+      // cuts a smooth scroll short, so check again once the page has settled.
       let tries = 120;
       const find = () => {
         const el = document.getElementById(hash.slice(1));
-        if (el) scrollToEl(el);
-        else if (--tries > 0) frame = requestAnimationFrame(find);
+        if (!el) { if (--tries > 0) frame = requestAnimationFrame(find); return; }
+        scrollToEl(el);
+        settle = setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)) > 24) scrollToEl(el, true); }, 900);
       };
       frame = requestAnimationFrame(find);
     } else {
@@ -37,7 +41,7 @@ export default function Layout() {
     }
     if (!reducedMotion()) gsap.fromTo(main.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: 'power1.out' });
     const id = setTimeout(() => ScrollTrigger.refresh(), 300);
-    return () => { clearTimeout(id); cancelAnimationFrame(frame); };
+    return () => { clearTimeout(id); clearTimeout(settle); cancelAnimationFrame(frame); };
   }, { dependencies: [pathname, hash] });
 
   return (

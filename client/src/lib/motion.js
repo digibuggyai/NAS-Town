@@ -1,11 +1,10 @@
-// Motion: GSAP for all animation, Lenis for smooth wheel scrolling on desktop.
-// Touch devices keep native scrolling (it already has momentum and feels right),
-// and everything is switched off for people who prefer reduced motion.
+// Motion: GSAP for all animation. Scrolling is the browser's own: instant and smooth on
+// every device (an eased scroll library made the page trail behind the wheel).
+// Animation is switched off for people who prefer reduced motion.
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { useGSAP } from '@gsap/react';
-import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
 gsap.defaults({ ease: 'power3.out', duration: 0.8 });
@@ -14,15 +13,8 @@ export { gsap, ScrollTrigger, SplitText, useGSAP };
 
 export const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export let lenis = null;
-const NAV_OFFSET = -96; // keep anchored sections clear of the floating navbar
-
+// Anchored sections stay clear of the fixed navbar through their own scroll-mt-* margin.
 export function initMotion() {
-  if (!reducedMotion()) {
-    lenis = new Lenis({ duration: 1.1, easing: (t) => 1 - Math.pow(1 - t, 3.2), wheelMultiplier: 1, syncTouch: false, anchors: { offset: NAV_OFFSET } });
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
-  }
   // Layout can shift once web fonts arrive; re-measure trigger positions then.
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
   // Sections that load data (blog, products, reviews) change the page height after
@@ -39,21 +31,13 @@ export function initMotion() {
 }
 
 export function scrollToTop() {
-  if (lenis) lenis.scrollTo(0, { immediate: true });
-  else window.scrollTo({ top: 0, behavior: 'instant' });
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-export function scrollToEl(el) {
-  if (lenis) {
-    // Straight after a page load Lenis may not have measured the page yet and would clamp
-    // the jump to the top (e.g. opening /finder#roi directly). Measure first.
-    lenis.resize();
-    lenis.scrollTo(el, { offset: NAV_OFFSET, duration: 1.2, force: true });
-  }
-  else el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
+export function scrollToEl(el, instant = false) {
+  el.scrollIntoView({ behavior: instant || reducedMotion() ? 'auto' : 'smooth', block: 'start' });
 }
 
 export function lockScroll(locked) {
-  if (lenis) (locked ? lenis.stop() : lenis.start());
   document.body.style.overflow = locked ? 'hidden' : '';
 }

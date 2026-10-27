@@ -374,7 +374,7 @@ export default function RichEditor({ value, onChange, onStats }) {
       {notice && <p role="status" className="border-b border-line bg-accent-soft px-4 py-2 text-sm text-accent-strong">{notice}</p>}
       <input ref={fileInput} type="file" accept={IMAGE_TYPES.join(',')} multiple hidden onChange={(e) => { insertImages([...e.target.files]); e.target.value = ''; }} />
 
-      <div className={full ? 'min-h-0 flex-1 overflow-y-auto' : ''} data-lenis-prevent>
+      <div className={full ? 'min-h-0 flex-1 overflow-y-auto' : ''}>
         {off ? (
           <textarea
             value={source}

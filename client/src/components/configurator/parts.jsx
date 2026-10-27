@@ -69,8 +69,8 @@ export function Dialog({ open, onClose, title, children, wide = false }) {
     if (!d) return;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
-    // While open, the page behind stays still: smooth scrolling pauses and the wheel
-    // scrolls the popup instead (data-lenis-prevent below).
+    // While open, the page behind stays still and the wheel
+    // scrolls the popup instead.
     if (!open) return;
     lockScroll(true);
     return () => lockScroll(false);
@@ -78,7 +78,7 @@ export function Dialog({ open, onClose, title, children, wide = false }) {
   return (
     <dialog
       ref={ref}
-      data-lenis-prevent
+     
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       className={`m-auto ${wide ? 'w-[min(96vw,64rem)]' : 'w-[min(92vw,34rem)]'} rounded-xl border border-line bg-raised p-0 text-fg shadow-2xl backdrop:bg-fg/40 backdrop:backdrop-blur-sm`}

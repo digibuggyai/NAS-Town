@@ -16,7 +16,7 @@ export default function FeatureRows() {
       </Reveal>
 
       {/* Phones: one swipeable row. Tablets: 2 × 2. Desktop: one row of four. */}
-      <ul data-lenis-prevent-wheel className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+      <ul className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
         {whatIsNas.points.map((pt, i) => (
           <Reveal as="li" key={pt.key} delay={i * 70} className="flex w-[78%] shrink-0 snap-start flex-col rounded-2xl border border-line bg-raised p-5 sm:w-auto">
             <div className="flex items-center gap-3">

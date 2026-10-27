@@ -72,7 +72,7 @@ export default function Products() {
         <div className="grid gap-8 lg:grid-cols-[15rem_1fr] xl:grid-cols-[16.5rem_1fr]">
           {/* Desktop: filters in a sidebar */}
           <aside aria-label="Filters" className="hidden lg:block">
-            <div data-lenis-prevent className="sticky top-24 grid max-h-[calc(100svh-7rem)] gap-6 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-raised p-5">{panel}</div>
+            <div className="sticky top-24 grid max-h-[calc(100svh-7rem)] gap-6 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-raised p-5">{panel}</div>
           </aside>
 
           <div className="min-w-0">
@@ -145,7 +145,7 @@ export default function Products() {
       {sheet && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
           <button type="button" aria-label="Close filters" onClick={() => setSheet(false)} className="absolute inset-0 bg-fg/40" />
-          <div data-lenis-prevent className="absolute inset-x-0 bottom-0 flex max-h-[85svh] flex-col rounded-t-3xl bg-raised shadow-[0_-16px_40px_-16px_rgb(15_23_42/0.35)]">
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[85svh] flex-col rounded-t-3xl bg-raised shadow-[0_-16px_40px_-16px_rgb(15_23_42/0.35)]">
             <div className="flex items-center justify-between border-b border-line px-5 py-3">
               <p className="font-medium">Filters</p>
               <button type="button" onClick={() => setSheet(false)} aria-label="Close" className="grid size-11 place-items-center rounded-full hover:bg-surface"><X className="size-5" /></button>

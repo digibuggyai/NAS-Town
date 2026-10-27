@@ -48,10 +48,6 @@
   h1, h2, h3, h4, p, li, dd, dt, a, span, label, td, th, figcaption, blockquote { overflow-wrap: break-word; }
   h1, h2, h3 { hyphens: manual; }
   input, select, textarea { min-width: 0; }
-  /* Lenis smooth scroll */
-  html.lenis, html.lenis body { height: auto; }
-  .lenis.lenis-stopped { overflow: clip; }
-  .lenis.lenis-smooth iframe { pointer-events: none; }
   body {
     background: var(--color-bg);
     color: var(--color-body);
@@ -77,14 +73,10 @@
 }
 
 /* Navbar "Configurator": a light pill whose border is a gradient that travels round it,
-   with a soft glow that breathes. Movement draws the eye without a heavy solid block.
+   with a light sweep across it. Movement draws the eye without a heavy solid block.
    Reduced motion: the gradient border stays, still. */
 @property --nav-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 @keyframes nav-spin { to { --nav-angle: 360deg; } }
-@keyframes nav-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(58 103 255 / 0); }
-  50% { box-shadow: 0 0 18px 2px rgb(58 103 255 / 0.28); }
-}
 @keyframes nav-shine { 0%, 70% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
 .nav-glow {
   position: relative;
@@ -93,7 +85,6 @@
   border-radius: 999px;
   background: var(--color-raised);
   color: var(--color-accent-strong);
-  animation: nav-breathe 3s ease-in-out infinite;
 }
 .nav-glow::before {
   content: "";
