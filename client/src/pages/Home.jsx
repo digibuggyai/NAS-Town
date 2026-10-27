@@ -2,7 +2,6 @@ import { MessageCircle } from 'lucide-react';
 import Hero from '../sections/Hero.jsx';
 import NasAdvantages from '../sections/NasAdvantages.jsx';
 import StatsStrip from '../sections/StatsStrip.jsx';
-import TopSelling from '../sections/TopSelling.jsx';
 import Solutions from '../sections/Solutions.jsx';
 import FeatureRows from '../sections/FeatureRows.jsx';
 import WhyNas from '../sections/WhyNas.jsx';
@@ -20,7 +19,7 @@ import Seo from '../components/Seo.jsx';
 import { waLink } from '../data/site.js';
 import { quoteText } from '../config/siteContent.js';
 
-// Order: what you get (hero, NAS advantages, numbers), the configurator, top sellers, who it's for, what it is, why it beats
+// Order: what you get (hero, NAS advantages, numbers), the configurator, who it's for, what it is, why it beats
 // the alternatives, how buying works. Trust follows (brands, customers, reviews, the group),
 // then reading, questions and one last ask. Sections with no real content yet (numbers,
 // customers, reels) hide themselves.
@@ -33,7 +32,6 @@ export default function Home() {
       <StatsStrip />
       {/* The configurator is the main way to buy, so it comes straight after the hero. */}
       <BuildYourNas />
-      <TopSelling />
       <Solutions />
       <FeatureRows />
       <WhyNas />
