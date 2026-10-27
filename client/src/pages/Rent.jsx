@@ -28,7 +28,7 @@ export default function Rent() {
         <a href="#rent-form" className="btn btn-primary">Request a Rental</a>
       </PageHero>
 
-      <HowItWorks eyebrow="How renting works" title="Four steps, no large upfront cost." steps={steps} />
+      <HowItWorks eyebrow="How renting works" title="Four steps, no large upfront cost" steps={steps} />
 
       <section id="rent-form" className="mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
         <Reveal>

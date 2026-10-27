@@ -24,10 +24,10 @@ export default function ServicesIndex() {
               >
                 <span className="mono hidden text-xs text-subtle sm:block">0{i + 1}</span>
                 <div>
-                  <h2 className="text-xl sm:text-2xl">{s.name}</h2>
+                  <h2 className="text-xl font-bold sm:text-2xl">{s.name}</h2>
                   {s.price && <p className="mono mt-1 text-xs text-accent">{s.price}</p>}
                 </div>
-                <p className="max-w-lg text-[0.95rem] text-muted">{s.intro}</p>
+                <p className="max-w-lg text-sm text-muted">{s.intro}</p>
                 <ArrowUpRight className="mt-2 size-5 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-fg sm:mt-0" aria-hidden />
               </Link>
             </li>

@@ -16,22 +16,22 @@ export default function BuildYourNas() {
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.35fr] lg:gap-14">
         <Reveal>
           <p className="eyebrow mb-3">NAS Configurator</p>
-          <h2 className="h-section">Build your NAS in 3 steps.</h2>
+          <h2 className="h-section">Build your NAS in 3 steps</h2>
           <ol className="mt-8 grid gap-6">
             {STEPS.map(({ icon: Icon, title, body }, i) => (
               <li key={title} className="flex gap-4">
                 <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent-strong"><Icon className="size-5" aria-hidden /></span>
                 <div>
-                  <h3 className="font-semibold"><span className="mono mr-2 text-xs text-subtle">0{i + 1}</span>{title}</h3>
-                  <p className="mt-1 text-[0.95rem] leading-relaxed text-muted">{body}</p>
+                  <h3 className="text-lg font-bold"><span className="mono mr-2 text-xs font-normal text-subtle">0{i + 1}</span>{title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
                 </div>
               </li>
             ))}
             <li className="flex gap-4">
               <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-white"><ReceiptIndianRupee className="size-5" aria-hidden /></span>
               <div>
-                <h3 className="font-semibold">Instant, GST-inclusive quote</h3>
-                <p className="mt-1 text-[0.95rem] leading-relaxed text-muted">The full price as you go, from our live price list. Download it as a PDF or request a formal quotation.</p>
+                <h3 className="text-lg font-bold">Instant, GST-inclusive quote</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">The full price as you go, from our live price list. Download it as a PDF or request a formal quotation.</p>
               </div>
             </li>
           </ol>

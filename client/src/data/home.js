@@ -3,7 +3,7 @@
 
 export const hero = {
   eyebrow: 'Store · Protect · Share · Grow',
-  title: 'Your Data Deserves a *Home.*',
+  title: 'Your Data Deserves a *Home*',
   body: [
     'Find, configure and manage the right NAS for the way you work, create and store, from family photos and personal files to business data, backups and surveillance.',
   ],
@@ -11,7 +11,7 @@ export const hero = {
 
 export const problem = {
   eyebrow: 'The problem',
-  title: 'Your Data Is Growing.',
+  title: 'Your Data Is Growing',
   body: [
     'Photos, videos, projects and backups end up everywhere. Drives fill up, files scatter across devices, and cloud bills keep climbing.',
     'A NAS gives you one central place to store, protect and access your data.',
@@ -21,29 +21,29 @@ export const problem = {
 
 export const whatIsNas = {
   eyebrow: 'What is NAS?',
-  title: 'More Than Storage.',
+  title: 'More Than Storage',
   body: [
     'A NAS (Network Attached Storage) is a storage box on your network: one place for every file, backup and photo, reachable from every device.',
   ],
   // Four compact cards (sections/FeatureRows.jsx): diagram, headline, two lines, link.
   points: [
     {
-      key: 'store', title: 'Store', headline: 'Everything in one place.',
+      key: 'store', title: 'Store', headline: 'Everything in one place',
       body: 'Every photo, video and document on one NAS, not five external drives and three cloud accounts. Running out? Add bigger drives, not another subscription.',
       link: { label: 'See NAS products', to: '/products' },
     },
     {
-      key: 'protect', title: 'Protect', headline: 'One drive fails. Nothing is lost.',
+      key: 'protect', title: 'Protect', headline: 'One drive fails, nothing is lost',
       body: 'RAID keeps your files available when a drive dies. Snapshots roll back mistakes and ransomware, and scheduled backups copy what matters off-site.',
       link: { label: 'How RAID setup works', to: '/services/raid-setup' },
     },
     {
-      key: 'share', title: 'Share', headline: 'Share files. Stay in control.',
+      key: 'share', title: 'Share', headline: 'Share files, stay in control',
       body: 'One set of shared folders for the team, or a client link with a password and an expiry date. No email attachments, no version confusion.',
       link: { label: 'NAS for business', to: '/solutions/business' },
     },
     {
-      key: 'access', title: 'Access', headline: 'Your files, wherever you are.',
+      key: 'access', title: 'Access', headline: 'Your files, wherever you are',
       body: 'Open your files from a phone, laptop or browser, at home, in the office or on the road: a client gallery on a shoot, a document while travelling.',
       link: { label: 'NAS for home', to: '/solutions/home' },
     },
@@ -53,7 +53,7 @@ export const whatIsNas = {
 
 export const solutions = {
   eyebrow: 'NAS solutions',
-  title: 'NAS for the Way You Work.',
+  title: 'NAS for the Way You Work',
   body: ['The right NAS depends on what you do with your data.'],
   // `setup` is a typical starting configuration: a concrete answer, not a promise.
   cards: [
@@ -69,14 +69,14 @@ export const solutions = {
 
 export const featured = {
   eyebrow: 'Featured NAS',
-  title: 'Meet Your NAS.',
+  title: 'Meet Your NAS',
   body: 'Selected systems from leading brands. Prices are for the unit, GST inclusive.',
   cta: 'View All NAS Products',
 };
 
 export const why = {
   eyebrow: 'Why NASTOWN',
-  title: "We Don't Just Sell NAS.",
+  title: "We Don't Just Sell NAS",
   body: ['Choosing a NAS is only the first step. We help you pick it, set it up and keep it running.'],
   // `fact` is a concrete, checkable detail for each promise.
   points: [

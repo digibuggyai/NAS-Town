@@ -29,8 +29,8 @@ export default function ResourcesIndex() {
                   <span className="grid size-11 place-items-center rounded-xl bg-accent-soft text-accent-strong"><Icon className="size-5" aria-hidden /></span>
                   <ArrowUpRight className="size-5 text-subtle transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" aria-hidden />
                 </div>
-                <h2 className="mt-6 text-xl font-medium">{r.name}</h2>
-                <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">{r.intro}</p>
+                <h2 className="mt-6 text-xl font-bold">{r.name}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{r.intro}</p>
               </Link>
             </Reveal>
           );

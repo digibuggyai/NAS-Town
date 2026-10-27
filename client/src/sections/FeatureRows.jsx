@@ -23,8 +23,8 @@ export default function FeatureRows() {
               <div className="w-14 shrink-0 rounded-xl bg-surface p-1.5"><MiniDiagram kind={pt.key} /></div>
               <p className="eyebrow">{pt.title}</p>
             </div>
-            <h3 className="mt-4 text-lg leading-snug font-semibold">{pt.headline}</h3>
-            <p className="mt-2 text-[0.95rem] leading-relaxed text-muted">{pt.body}</p>
+            <h3 className="mt-4 text-lg leading-snug font-bold">{pt.headline}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{pt.body}</p>
             <Link to={pt.link.to} className="link mt-auto inline-flex items-center gap-1 pt-4 text-sm">
               {pt.link.label} <ChevronRight className="size-4" />
             </Link>

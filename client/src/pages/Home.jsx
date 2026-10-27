@@ -42,7 +42,7 @@ export default function Home() {
       <BlogSection />
       <HomeFaq />
       <CtaBanner
-        title="Tell us what you need. We'll quote it."
+        title="Tell us what you need, we'll quote it"
         cta={<><MessageCircle className="size-4" /> Get a free quote on WhatsApp</>}
         href={waLink(quoteText)}
       >

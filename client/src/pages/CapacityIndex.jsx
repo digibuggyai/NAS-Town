@@ -33,8 +33,8 @@ export default function CapacityIndex() {
                   to={`/nas/${c.tb}tb`}
                   className="group grid gap-x-8 gap-y-1 py-6 transition-colors hover:bg-surface sm:grid-cols-[8rem_1fr_auto_auto] sm:items-baseline sm:px-3"
                 >
-                  <h2 className="text-xl sm:text-2xl">{c.tb}TB NAS</h2>
-                  <p className="max-w-xl text-[0.95rem] text-muted">{c.who}</p>
+                  <h2 className="text-xl font-bold sm:text-2xl">{c.tb}TB NAS</h2>
+                  <p className="max-w-xl text-sm text-muted">{c.who}</p>
                   <p className="mono text-sm text-fg">{from ? `from ${formatInr(from)}` : ''}</p>
                   <ArrowUpRight className="mt-2 size-5 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-fg sm:mt-0" aria-hidden />
                 </Link>

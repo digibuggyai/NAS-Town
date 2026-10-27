@@ -20,12 +20,12 @@ const MARK = {
 };
 
 const BENEFITS = [
-  { icon: Wallet, title: 'Pay once, not every month.', body: 'No subscription. The hardware and the drives are yours.' },
-  { icon: ShieldCheck, title: 'A failed drive is not a disaster.', body: 'RAID keeps your files available while the drive is replaced.' },
-  { icon: Gauge, title: 'Network speed, not internet speed.', body: 'Open and edit large files straight off the NAS over 2.5GbE or 10GbE.' },
-  { icon: Lock, title: 'Your data stays yours.', body: "On your premises, behind your passwords, not on someone else's server." },
-  { icon: HardDriveDownload, title: 'Every device, backed up.', body: 'Phones, laptops and PCs back up to one place automatically.' },
-  { icon: History, title: 'Roll back after ransomware.', body: 'Snapshots restore files to how they were before an attack or a mistake.' },
+  { icon: Wallet, title: 'Pay once, not every month', body: 'No subscription. The hardware and the drives are yours.' },
+  { icon: ShieldCheck, title: 'A failed drive is not a disaster', body: 'RAID keeps your files available while the drive is replaced.' },
+  { icon: Gauge, title: 'Network speed, not internet speed', body: 'Open and edit large files straight off the NAS over 2.5GbE or 10GbE.' },
+  { icon: Lock, title: 'Your data stays yours', body: "On your premises, behind your passwords, not on someone else's server." },
+  { icon: HardDriveDownload, title: 'Every device, backed up', body: 'Phones, laptops and PCs back up to one place automatically.' },
+  { icon: History, title: 'Roll back after ransomware', body: 'Snapshots restore files to how they were before an attack or a mistake.' },
 ];
 
 export default function WhyNas() {
@@ -35,7 +35,7 @@ export default function WhyNas() {
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="eyebrow mb-3">Why NAS</p>
-            <h2 className="h-section">Cheaper than the cloud. Safer than a drive.</h2>
+            <h2 className="h-section">Cheaper than the cloud, safer than a drive</h2>
             <p className="mt-4 text-lg leading-relaxed">How a NAS compares with the two things most people use instead.</p>
           </div>
           <Button variant="secondary" to="/finder#roi">See your savings <ChevronRight className="size-4" /></Button>
@@ -89,8 +89,8 @@ export default function WhyNas() {
             <Reveal key={title} delay={(i % 3) * 80} className="flex gap-4">
               <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-raised text-accent ring-1 ring-line"><Icon className="size-5" aria-hidden /></span>
               <div>
-                <h3 className="font-semibold">{title}</h3>
-                <p className="mt-1 text-[0.95rem] leading-relaxed text-muted">{body}</p>
+                <h3 className="text-lg font-bold">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{body}</p>
               </div>
             </Reveal>
           ))}

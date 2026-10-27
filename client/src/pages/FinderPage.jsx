@@ -22,7 +22,7 @@ export default function FinderPage() {
       </section>
       <section id="roi" className="mx-auto max-w-7xl scroll-mt-24 px-4 pb-28 sm:px-6">
         <p className="eyebrow mb-3">NAS vs cloud vs external drives</p>
-        <h2 className="h-section">What it costs over the years.</h2>
+        <h2 className="h-section">What it costs over the years</h2>
         <p className="mt-3 mb-8 max-w-2xl text-lg leading-relaxed">A NAS is paid for once. Cloud storage is paid every month, and external drives have no protection when one fails.</p>
         <Savings preset={preset} />
       </section>

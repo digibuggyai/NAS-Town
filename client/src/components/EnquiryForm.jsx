@@ -28,7 +28,7 @@ export default function EnquiryForm({ type = 'contact', payload = {}, extra, sub
     return (
       <div className={`glass rounded-xl p-8 text-center ${className}`}>
         <CheckCircle2 className="mx-auto size-10 text-accent" />
-        <h3 className="mt-4 text-xl font-semibold">Thanks, we've got it.</h3>
+        <h3 className="mt-4 text-xl font-semibold">Thanks, we've got it</h3>
         <p className="mt-2 text-muted">Our team will get back to you shortly.</p>
       </div>
     );

@@ -61,7 +61,7 @@ export default function Finder({ onResult }) {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="eyebrow">Your matches</p>
-            <h3 className="mt-3 text-2xl font-medium tracking-tight">We'd start with these.</h3>
+            <h3 className="mt-3 text-2xl font-medium tracking-tight">We'd start with these</h3>
           </div>
           <div className="flex gap-2">
             <button onClick={() => { setAnswers({}); setResult(null); }} className="btn btn-secondary"><RotateCcw className="size-4" /> Start over</button>

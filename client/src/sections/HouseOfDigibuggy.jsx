@@ -11,7 +11,7 @@ export default function HouseOfDigibuggy() {
     <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
       <Reveal className="max-w-2xl">
         <p className="eyebrow mb-3">House of {parentCompany.name}</p>
-        <h2 className="h-section">Part of a bigger family.</h2>
+        <h2 className="h-section">Part of a bigger family</h2>
         <p className="mt-4 text-lg leading-relaxed">
           NASTOWN is a {parentCompany.name} ({parentCompany.alsoKnownAs}) company, based in Nehru Place, New Delhi. The same group, the same people behind it.
         </p>
@@ -32,8 +32,8 @@ export default function HouseOfDigibuggy() {
                   ? <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-strong"><MapPin className="size-3" aria-hidden /> You are here</span>
                   : <ArrowUpRight className="size-5 text-subtle transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent" aria-hidden />}
               </div>
-              <h3 className="mt-5 text-lg font-semibold">{b.name}</h3>
-              <p className="mt-1.5 text-[0.95rem] leading-relaxed text-muted">{b.description}</p>
+              <h3 className="mt-5 text-lg font-bold">{b.name}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">{b.description}</p>
               {!b.current && <p className="mt-3 text-sm text-accent">{b.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</p>}
             </>
           );

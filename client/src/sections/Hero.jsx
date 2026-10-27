@@ -56,8 +56,8 @@ export default function Hero() {
       <dl className="hero-fade mt-14 grid gap-y-5 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
         {facts.map(([k, v]) => (
           <div key={k} className="sm:pr-6">
-            <dt className="text-xs font-semibold tracking-wide text-subtle uppercase">{k}</dt>
-            <dd className="mt-1 font-medium text-fg">{v}</dd>
+            <dt className="font-bold text-fg">{k}</dt>
+            <dd className="mt-0.5 text-sm text-muted">{v}</dd>
           </div>
         ))}
       </dl>

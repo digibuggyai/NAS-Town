@@ -23,8 +23,8 @@ export default function SolutionsIndex() {
                   className="group grid gap-x-8 gap-y-1 py-6 transition-colors hover:bg-surface sm:grid-cols-[3rem_1fr_1.5fr_auto] sm:items-baseline sm:px-3"
                 >
                   <span className="mono hidden text-xs text-subtle sm:block">0{i + 1}</span>
-                  <h2 className="text-xl sm:text-2xl">NAS for {s.name}</h2>
-                  <p className="max-w-lg text-[0.95rem] text-muted">{card?.body ?? s.intro}</p>
+                  <h2 className="text-xl font-bold sm:text-2xl">NAS for {s.name}</h2>
+                  <p className="max-w-lg text-sm text-muted">{card?.body ?? s.intro}</p>
                   <ArrowUpRight className="mt-2 size-5 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-fg sm:mt-0" aria-hidden />
                 </Link>
               </li>

@@ -71,7 +71,7 @@ export default function InstaReels() {
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="eyebrow mb-4">On Instagram</p>
-            <h2 className="h-section">NAS, explained in 60 seconds.</h2>
+            <h2 className="h-section">NAS, explained in 60 seconds</h2>
             <p className="measure mt-5 text-muted">Quick reels on storage, RAID, backups and setups we've built. Tap any reel to watch it with sound on Instagram.</p>
           </div>
           <a href={profile} target="_blank" rel="noopener" className="btn btn-secondary">

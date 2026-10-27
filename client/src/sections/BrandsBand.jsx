@@ -60,7 +60,7 @@ export default function BrandsBand() {
       <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
         <Reveal>
           <p className="eyebrow mb-4">Authorized dealer</p>
-          <h2 className="h-section">The brands inside your NAS.</h2>
+          <h2 className="h-section">The brands inside your NAS</h2>
           <p className="mt-5 text-muted">
             We're an authorized dealer for Synology, QNAP, Seagate and Western Digital, so every NAS and drive we supply is genuine
             and sourced through official channels. The box and the drives both matter, and we build with ones we'd trust with our own data.
