@@ -27,6 +27,55 @@ function cell(k, v) {
   return String(v);
 }
 
+/** A price in the table that edits in place: click, type, Enter (or click away) saves, Esc cancels.
+ * An empty floor shows as "Set floor" so missing floors stand out. Saves go through the same
+ * admin API as the edit form, so every change lands in the change log. */
+function MoneyCell({ k, row, collection, onChanged }) {
+  const [draft, setDraft] = useState(null); // null = not editing
+  const [busy, setBusy] = useState(false);
+  const floor = k === 'minPrice';
+
+  async function save() {
+    const text = String(draft ?? '').replace(/[^\d]/g, '');
+    const value = text === '' ? null : Number(text);
+    setDraft(null);
+    if (value === (row[k] ?? null)) return;
+    if (!floor && value == null) return alert('A quote price is required.');
+    if (floor && value != null && row.quotePrice != null && value > row.quotePrice
+      && !confirm(`The floor (${inr(value)}) is higher than the quote (${inr(row.quotePrice)}). Save anyway?`)) return;
+    setBusy(true);
+    try { await api.updateItem(collection, row.id, { [k]: value }); onChanged(); } catch (e) { alert(e.message); }
+    setBusy(false);
+  }
+
+  if (draft != null) {
+    return (
+      <input
+        autoFocus
+        inputMode="numeric"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setDraft(null); }}
+        aria-label={label(k)}
+        className="field !w-28 !py-1 !text-sm"
+      />
+    );
+  }
+  const value = row[k];
+  return (
+    <button
+      type="button"
+      onClick={() => setDraft(value ?? '')}
+      disabled={busy}
+      title="Click to edit"
+      className={`rounded-md px-1.5 py-0.5 -mx-1.5 hover:bg-surface ${floor ? 'text-warning' : ''} ${busy ? 'opacity-50' : ''}`}
+    >
+      {value != null ? inr(value) : floor ? <span className="rounded-full border border-dashed border-warning/60 px-2 py-0.5 text-xs">Set floor</span> : <span className="text-subtle">—</span>}
+    </button>
+  );
+}
+
 /** A drive row: full name plus the specs that identify it. Exact per-drive RPM/cache win
  * over the line's ranges from Drive specs. */
 function DriveCell({ row, line }) {
@@ -60,6 +109,7 @@ export default function CatalogueTable({ collection, rows, schema, onChanged, li
   const [editing, setEditing] = useState(null); // row, or {} for new
   const cols = COLUMNS[collection];
   const hasActive = 'active' in schema.fields;
+  const missingFloors = rows.filter((r) => r.minPrice == null && (!hasActive || r.active)).length;
 
   async function toggleActive(row) {
     try {
@@ -78,6 +128,11 @@ export default function CatalogueTable({ collection, rows, schema, onChanged, li
 
   return (
     <div>
+      {cols.includes('minPrice') && missingFloors > 0 && (
+        <p className="mb-3 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
+          {missingFloors} of {rows.length} items have no floor price. Click "Set floor" in the table to add one.
+        </p>
+      )}
       <div className="mb-3 flex items-center justify-between">
         <p className="text-sm text-muted">{rows.length} items{hasActive ? ` · ${rows.filter((r) => r.active).length} in the configurator` : ''}</p>
         <button onClick={() => { setEditing({}); }} className="btn btn-primary !px-4 !py-2 !text-xs"><Plus className="size-3.5" /> Add</button>
@@ -98,7 +153,9 @@ export default function CatalogueTable({ collection, rows, schema, onChanged, li
               <tr key={r.id} className={`border-t border-line ${hasActive && !r.active ? 'opacity-50' : ''}`}>
                 {cols.map((k) => (
                   <td key={k} className={`px-4 py-2.5 whitespace-nowrap ${k === 'minPrice' ? 'text-warning' : ''} ${k === 'drive' ? 'min-w-72' : ''}`}>
-                    {k === 'drive' ? <DriveCell row={r} line={lines.find((l) => l.name === r.line)} /> : cell(k, r[k])}
+                    {k === 'drive' ? <DriveCell row={r} line={lines.find((l) => l.name === r.line)} />
+                      : isMoney(k) ? <MoneyCell k={k} row={r} collection={collection} onChanged={onChanged} />
+                      : cell(k, r[k])}
                   </td>
                 ))}
                 {hasActive && (
