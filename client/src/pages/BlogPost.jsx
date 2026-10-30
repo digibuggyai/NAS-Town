@@ -11,6 +11,7 @@ import { abs, postMeta } from '../lib/seo.js';
 import { blogPath, preloaded } from '../lib/preload.js';
 import { withMediaHost } from '../lib/blogMedia.js';
 import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
+import Accordion from '../components/Accordion.jsx';
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -54,6 +55,12 @@ export default function BlogPost() {
         {/* Sanitised on the server (server/src/blog-html.js): formatting tags only. */}
         {/* Article images are stored as /api/… paths; they load from the API host. */}
         <div className="prose-blog mt-10" dangerouslySetInnerHTML={{ __html: withMediaHost(post.body) }} />
+        {post.faqs?.length > 0 && (
+          <section aria-labelledby="post-faq" className="mt-14">
+            <h2 id="post-faq" className="h-section !text-[1.6rem]">Frequently asked questions</h2>
+            <Accordion items={post.faqs} className="rule-list mt-4 border-y border-line" />
+          </section>
+        )}
       </article>
 
       {more.length > 0 && (

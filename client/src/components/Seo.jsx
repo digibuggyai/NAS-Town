@@ -36,6 +36,7 @@ export default function Seo(props) {
   useEffect(() => {
     if (v.title) document.title = v.title;
     setMeta('name', 'description', v.description);
+    setMeta('name', 'keywords', v.keywords);
     setMeta('name', 'robots', v.robots);
     setTag('link[rel="canonical"]', () => Object.assign(document.createElement('link'), { rel: 'canonical' }), 'href', v.canonical);
     setMeta('property', 'og:type', v.type);
@@ -55,7 +56,7 @@ export default function Seo(props) {
       }
       script.textContent = ld;
     }
-  }, [v.title, v.description, v.robots, v.canonical, v.type, v.url, v.image, ld]);
+  }, [v.title, v.description, v.keywords, v.robots, v.canonical, v.type, v.url, v.image, ld]);
 
   return null;
 }

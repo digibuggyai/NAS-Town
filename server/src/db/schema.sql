@@ -174,6 +174,13 @@ CREATE TABLE IF NOT EXISTS blog_images (
 );
 
 CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts (published, published_at DESC);
+-- SEO fields per post: search-result title/description, keywords, FAQs (shown on the post and
+-- sent as FAQPage schema) and extra JSON-LD written by the editor. All optional.
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_title TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_description TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_keywords TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS faqs TEXT;
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS schema_json TEXT;
 
 -- Offer coupons (configurator popups). One per customer email; every code is unique.
 CREATE TABLE IF NOT EXISTS coupons (

@@ -385,11 +385,20 @@ export function productMeta(p, siteUrl) {
 }
 
 /** `cover` is the post's cover image as an absolute URL, or empty. */
+/** Extra JSON-LD saved with a post (validated by the server); bad data is skipped, never shown. */
+function customSchema(json) {
+  if (!json) return [];
+  try { const d = JSON.parse(json); return (Array.isArray(d) ? d : [d]).filter((x) => x && x['@type']); } catch { return []; }
+}
+
 export function postMeta(post, siteUrl, cover) {
   const path = `/blog/${post.slug}`;
+  const faqs = (post.faqs ?? []).filter((f) => f.q && f.a);
   return {
-    title: `${post.title} | NASTOWN Blog`,
-    description: clip(post.excerpt || post.title),
+    // Meta title/description from the editor win; otherwise the post's own title and excerpt.
+    title: post.metaTitle || `${post.title} | NASTOWN Blog`,
+    description: clip(post.metaDescription || post.excerpt || post.title),
+    keywords: post.metaKeywords || undefined,
     path,
     type: 'article',
     image: cover || undefined,
@@ -399,8 +408,9 @@ export function postMeta(post, siteUrl, cover) {
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
         headline: post.title,
-        description: post.excerpt || undefined,
-        image: cover || abs(DEFAULT_IMAGE, siteUrl),
+        description: post.metaDescription || post.excerpt || undefined,
+        keywords: post.metaKeywords || undefined,
+        image: cover ? { '@type': 'ImageObject', url: cover, caption: post.coverAlt || undefined } : abs(DEFAULT_IMAGE, siteUrl),
         datePublished: post.publishedAt,
         dateModified: post.updatedAt || post.publishedAt,
         articleSection: post.category || undefined,
@@ -408,7 +418,14 @@ export function postMeta(post, siteUrl, cover) {
         publisher: { '@id': `${siteUrl}/#org` },
         mainEntityOfPage: abs(path, siteUrl),
       },
-    ],
+      // The FAQs are also printed on the post, as Google requires for FAQ markup.
+      faqs.length > 0 && {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+      },
+      ...customSchema(post.schemaJson),
+    ].filter(Boolean),
   };
 }
 
@@ -424,6 +441,7 @@ export function headValues(meta, siteUrl) {
   return {
     title: meta.title,
     description: meta.description,
+    keywords: meta.keywords || null,
     canonical: url,
     robots: meta.noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large',
     type: meta.type ?? 'website',
@@ -439,6 +457,7 @@ export function headHtml(meta, siteUrl) {
   return [
     `<title>${esc(v.title)}</title>`,
     `<meta name="description" content="${esc(v.description)}" />`,
+    v.keywords && `<meta name="keywords" content="${esc(v.keywords)}" />`,
     `<meta name="robots" content="${v.robots}" />`,
     v.canonical && `<link rel="canonical" href="${esc(v.canonical)}" />`,
     `<meta property="og:site_name" content="${SITE_NAME}" />`,

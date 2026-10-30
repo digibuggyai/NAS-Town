@@ -81,17 +81,17 @@ test('budget ₹50,000 → no build, least is ₹69,548', () => {
 
 test('§7.6 worked quotations with install + AMC, including floors', () => {
   const cases = [
-    // DGB India spec §7.6 cases; quote prices of 26 Oct 2026, floors from floors.local.json
-    [{ targetTB: 10, raid: 'RAID5' }, 'TS-433-4G 4x4 IronWolf 12TB', 153529, 139481],
-    [{ targetTB: 20, raid: 'RAID5' }, 'TS-433-4G 3x10 WD Ultrastar 20TB', 223037, 204627],
-    [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 WD Ultrastar 20TB', 278916, 256308],
-    [{ targetTB: 20, raid: 'RAID1' }, 'DS223J 2x20 WD Ultrastar 20TB', 277622, 245287],
-    [{ targetTB: 50, raid: 'RAID5' }, 'TS-664-8G 6x10 WD Ultrastar 50TB', 436873, 402598],
-    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 WD Ultrastar 50TB', 589552, 547904],
-    [{ targetTB: 100, raid: 'RAID5' }, 'TS-664-8G 6x20 WD Ultrastar 100TB', 837566, 744014],
-    [{ storageMode: 'budget', budget: 150000 }, 'DS223J 2x10 WD Ultrastar 10TB', 144058, 131481],
-    [{ storageMode: 'budget', budget: 300000 }, 'TS-433-4G 4x10 WD Ultrastar 30TB', 278916, 256308],
-    [{ storageMode: 'budget', budget: 500000 }, 'TS-433-4G 4x18 WD Ultrastar 54TB', 496980, 413212],
+    // DGB India spec §7.6 cases; quote prices and floors of 26 Oct 2026 (floors from floors.local.json)
+    [{ targetTB: 10, raid: 'RAID5' }, 'TS-433-4G 4x4 IronWolf 12TB', 153529, 140491],
+    [{ targetTB: 20, raid: 'RAID5' }, 'TS-433-4G 3x10 WD Ultrastar 20TB', 223037, 204883],
+    [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 WD Ultrastar 20TB', 278916, 256650],
+    [{ targetTB: 20, raid: 'RAID1' }, 'DS223J 2x20 WD Ultrastar 20TB', 277622, 255387],
+    [{ targetTB: 50, raid: 'RAID5' }, 'TS-664-8G 6x10 WD Ultrastar 50TB', 436873, 403112],
+    [{ targetTB: 50, raid: 'RAID6', brand: 'Synology' }, 'DS1825+ 7x10 WD Ultrastar 50TB', 589552, 548503],
+    [{ targetTB: 100, raid: 'RAID5' }, 'TS-664-8G 6x20 WD Ultrastar 100TB', 837566, 774316],
+    [{ storageMode: 'budget', budget: 150000 }, 'DS223J 2x10 WD Ultrastar 10TB', 144058, 131653],
+    [{ storageMode: 'budget', budget: 300000 }, 'TS-433-4G 4x10 WD Ultrastar 30TB', 278916, 256650],
+    [{ storageMode: 'budget', budget: 500000 }, 'TS-433-4G 4x18 WD Ultrastar 54TB', 496980, 458666],
   ];
   for (const [over, expected, total, floor] of cases) {
     const { b, price } = run({ ...over, includeAMC: true });

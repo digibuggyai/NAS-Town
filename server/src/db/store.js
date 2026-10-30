@@ -260,7 +260,7 @@ export async function update(key, id, data) {
   const sets = keys.map((k, i) => `${snake(k)} = $${i + 1}`);
   const { rows } = await pool.query(
     `UPDATE ${table} SET ${sets.join(', ')}, updated_at = now() WHERE id = $${keys.length + 1} RETURNING *`,
-    [...keys.map((k) => data[k]), id],
+    [...keys.map((k) => toDb(k, data[k])), id],
   );
   return { before, after: fromRow(fields, rows[0]) };
 }
@@ -600,9 +600,13 @@ export async function logFinder({ storing, capacity, work_style, recommended }) 
 
 /* ---------------- blog ---------------- */
 
-const POST_COLS = ['slug', 'title', 'excerpt', 'category', 'body', 'coverImage', 'coverAlt', 'published', 'publishedAt'];
+const POST_COLS = ['slug', 'title', 'excerpt', 'category', 'body', 'coverImage', 'coverAlt', 'published', 'publishedAt', 'metaTitle', 'metaDescription', 'metaKeywords', 'faqs', 'schemaJson'];
+// FAQs are an array in the app and JSON text in the database.
+const toDb = (k, v) => (k === 'faqs' && v != null ? JSON.stringify(v) : v);
+const parseFaqs = (v) => { if (typeof v !== 'string') return v ?? null; try { return JSON.parse(v); } catch { return null; } };
 const postRow = (r) => r && ({
   ...fromRow({}, r),
+  faqs: parseFaqs(r.faqs),
   publishedAt: r.published_at instanceof Date ? r.published_at.toISOString().slice(0, 10) : r.published_at ?? r.publishedAt,
 });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -639,7 +643,7 @@ export async function createPost(data) {
   const keys = POST_COLS.filter((k) => row[k] !== undefined);
   const { rows } = await pool.query(
     `INSERT INTO blog_posts (${keys.map(snake).join(',')}) VALUES (${keys.map((_, i) => `$${i + 1}`).join(',')}) RETURNING *`,
-    keys.map((k) => row[k]),
+    keys.map((k) => toDb(k, row[k])),
   );
   return postRow(rows[0]);
 }

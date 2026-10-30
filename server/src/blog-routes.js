@@ -26,6 +26,21 @@ async function uniqueSlug(base, exceptId) {
   }
 }
 
+/** Extra JSON-LD from the editor: one schema object or a list of them, each with an @type.
+ * Stored re-serialised, so what reaches the page is always valid JSON. */
+function cleanSchema(v) {
+  const raw = typeof v === 'string' ? v.trim() : '';
+  if (!raw) return null;
+  if (raw.length > 30000) throw new Error('Schema is too long (30,000 characters at most).');
+  let data;
+  try { data = JSON.parse(raw); } catch (e) { throw new Error(`Schema is not valid JSON: ${e.message}`); }
+  const list = Array.isArray(data) ? data : data?.['@graph'] ? data['@graph'] : [data];
+  if (!list.length || list.some((x) => !x || typeof x !== 'object' || Array.isArray(x) || !x['@type'])) {
+    throw new Error('Schema must be a JSON-LD object (or a list of them), each with an "@type".');
+  }
+  return JSON.stringify(list.map((x) => ({ '@context': 'https://schema.org', ...x })));
+}
+
 /** Validate and normalise an incoming post. `partial` allows updates with only some fields. */
 function cleanPost(b, { partial = false } = {}) {
   const out = {};
@@ -42,6 +57,20 @@ function cleanPost(b, { partial = false } = {}) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.publishedAt))) throw new Error('Publish date must be YYYY-MM-DD.');
     out.publishedAt = b.publishedAt;
   }
+  // SEO. Empty means "use the title / excerpt".
+  for (const [k, max] of [['metaTitle', 120], ['metaDescription', 320], ['metaKeywords', 300]]) {
+    if (b[k] !== undefined) out[k] = text(b[k], max)?.replace(/\s+/g, ' ') || null;
+  }
+  if (b.faqs !== undefined) {
+    if (b.faqs != null && !Array.isArray(b.faqs)) throw new Error('FAQs must be a list.');
+    const faqs = (b.faqs ?? [])
+      .map((f) => ({ q: text(f?.q, 300) ?? '', a: text(f?.a, 3000) ?? '' }))
+      .filter((f) => f.q || f.a);
+    if (faqs.some((f) => !f.q || !f.a)) throw new Error('Each FAQ needs both a question and an answer.');
+    if (faqs.length > 30) throw new Error('At most 30 FAQs per post.');
+    out.faqs = faqs.length ? faqs : null;
+  }
+  if (b.schemaJson !== undefined) out.schemaJson = cleanSchema(b.schemaJson);
   if (b.coverImage !== undefined) {
     const c = text(b.coverImage, 500) || null;
     if (c && !/^(\/images\/[\w./-]+|\/api\/blog\/images\/\d+|https:\/\/[^\s]+)$/.test(c)) throw new Error('Cover image must be an uploaded image or an https:// link.');

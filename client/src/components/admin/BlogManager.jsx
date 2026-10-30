@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ExternalLink, ImagePlus, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { api, formatPostDate, mediaUrl } from '../../lib/api.js';
+import { SITE_URL } from '../Seo.jsx';
+import PostSeoFields, { schemaProblem } from './PostSeoFields.jsx';
 // The editor is large (tables, images…), so it loads only when a post is opened.
 const RichEditor = lazy(() => import('./RichEditor.jsx'));
 
@@ -8,7 +10,10 @@ const MAX_BYTES = 3 * 1024 * 1024;
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 const today = () => new Date().toISOString().slice(0, 10);
 const slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
-const EMPTY = { title: '', slug: '', category: '', excerpt: '', body: '', coverImage: '', coverAlt: '', published: true, publishedAt: today() };
+const EMPTY = {
+  title: '', slug: '', category: '', excerpt: '', body: '', coverImage: '', coverAlt: '', published: true, publishedAt: today(),
+  metaTitle: '', metaDescription: '', metaKeywords: '', faqs: [], schemaJson: '',
+};
 
 /** Admin → Blog: list, create, edit, publish/unpublish and delete posts. */
 export default function BlogManager() {
@@ -86,7 +91,9 @@ export default function BlogManager() {
 
 function PostEditor({ post, onDone }) {
   const isNew = !post.id;
-  const [f, setF] = useState({ ...EMPTY, ...post, publishedAt: post.publishedAt ?? today() });
+  // Saved schema is compact JSON; show it indented so it's easy to edit.
+  const pretty = (j) => { try { if (!j) return ''; const d = JSON.parse(j); return JSON.stringify(Array.isArray(d) && d.length === 1 ? d[0] : d, null, 2); } catch { return j; } };
+  const [f, setF] = useState({ ...EMPTY, ...post, publishedAt: post.publishedAt ?? today(), faqs: post.faqs ?? [], schemaJson: pretty(post.schemaJson) });
   const [slugTouched, setSlugTouched] = useState(!isNew);
   const [stats, setStats] = useState({ words: 0, mins: 1 });
   const [busy, setBusy] = useState(false);
@@ -114,11 +121,16 @@ function PostEditor({ post, onDone }) {
 
   async function save(e) {
     e.preventDefault();
+    const bad = schemaProblem(f.schemaJson);
+    if (bad) return setError(`Custom schema: ${bad}`);
+    if ((f.faqs ?? []).some((x) => (x.q.trim() === '') !== (x.a.trim() === ''))) return setError('Each FAQ needs both a question and an answer.');
     setBusy(true);
     setError('');
     const data = {
       title: f.title, slug: f.slug || slugify(f.title), category: f.category, excerpt: f.excerpt, body: f.body,
       coverImage: f.coverImage || '', coverAlt: f.coverAlt, published: f.published, publishedAt: f.publishedAt,
+      metaTitle: f.metaTitle, metaDescription: f.metaDescription, metaKeywords: f.metaKeywords,
+      faqs: (f.faqs ?? []).filter((x) => x.q.trim() || x.a.trim()), schemaJson: f.schemaJson,
     };
     try {
       if (isNew) await api.createPost(data);
@@ -176,6 +188,7 @@ function PostEditor({ post, onDone }) {
               Paste from Google Docs, Word, a web page or ChatGPT and the formatting is kept. This is exactly how the post will look.
             </span>
           </div>
+          <PostSeoFields f={f} set={set} siteUrl={SITE_URL} />
         </div>
 
         <aside className="grid content-start gap-4">
@@ -210,7 +223,7 @@ function PostEditor({ post, onDone }) {
             )}
           </div>
           <label>
-            <span className="mb-1 block text-sm text-muted">Image description <span className="text-subtle">(for accessibility)</span></span>
+            <span className="mb-1 block text-sm text-muted">Image alt text <span className="text-subtle">(describes the image for Google and screen readers)</span></span>
             <input value={f.coverAlt ?? ''} onChange={(e) => set({ coverAlt: e.target.value })} className="field !py-2 text-sm" placeholder="What the picture shows" />
           </label>
           <label>
