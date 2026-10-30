@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as store from './db/store.js';
 import { PricingUnavailable, toProduct, toPublicPricing } from './pricing.js';
 import { issueToken, loginAllowed, requireSignedIn, verifyPassword } from './auth.js';
+import { emailLead } from './lead-emails.js';
 
 const router = Router();
 
@@ -58,7 +59,19 @@ router.post('/finder', async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
+// 8 enquiries per IP per 10 minutes: plenty for a person, and it stops the form (which sends
+// emails) being used to mail people in bulk.
+const enquiryHits = new Map();
+function enquiryAllowed(ip) {
+  const now = Date.now();
+  const recent = (enquiryHits.get(ip) ?? []).filter((t) => now - t < 10 * 60 * 1000);
+  recent.push(now);
+  enquiryHits.set(ip, recent);
+  return recent.length <= 8;
+}
+
 router.post('/enquiries', async (req, res) => {
+  if (!enquiryAllowed(req.ip)) return res.status(429).json({ error: 'Too many requests. Please try again in a few minutes.' });
   const b = req.body ?? {};
   const type = clean(b.type, 40);
   const name = clean(b.name, 120);
@@ -72,8 +85,10 @@ router.post('/enquiries', async (req, res) => {
   }
   const payload = b.payload && typeof b.payload === 'object' ? b.payload : {};
   if (JSON.stringify(payload).length > 20000) return res.status(400).json({ error: 'That request is too large.' });
-  const row = await store.createEnquiry({ type, name, email, phone, message: clean(b.message, 5000), payload });
+  const message = clean(b.message, 5000);
+  const row = await store.createEnquiry({ type, name, email, phone, message, payload });
   res.status(201).json({ ok: true, id: row.id });
+  emailLead({ type, name, email, phone, message, payload }); // after replying: never slows or fails the form
 });
 
 /* ---------------- offer coupons (configurator popups) ---------------- */
@@ -108,7 +123,7 @@ router.post('/offers', async (req, res) => {
     email, name, company, phone, valueInr: COUPON_VALUE_INR, quoteTotal, quoteSummary: summary, message, source,
   });
   const intro = source === 'quote' ? 'Coupon requested with a configured quote.' : 'Asked for help choosing a NAS (coupon & call back).';
-  await store.createEnquiry({
+  const lead = {
     type: 'offer',
     name,
     email,
@@ -124,8 +139,11 @@ router.post('/offers', async (req, res) => {
         summary,
       ].filter(Boolean).join('\n\n'),
     },
-  });
+  };
+  await store.createEnquiry(lead);
   res.status(201).json({ code: coupon.code, valueInr: coupon.valueInr, isNew: coupon.isNew });
+  // The coupon email goes only the first time a code is issued to this address.
+  emailLead({ ...lead, payload: { ...lead.payload, isNewCoupon: coupon.isNew } });
 });
 
 /* ---------------- staff sign-in ---------------- */
