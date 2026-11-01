@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import NasVisual from './NasVisual.jsx';
 import { productPhoto } from '../data/productImages.js';
 
-/** The unit's real photo, or the NAS drawing when there's no photo for that model. */
 export default function ProductPhoto({ model, bays, alt, className = '', eager = false }) {
   const photo = productPhoto(model);
   if (!photo) return <NasVisual bays={bays} className={className} />;
@@ -19,12 +18,6 @@ export default function ProductPhoto({ model, bays, alt, className = '', eager =
   );
 }
 
-/**
- * Cursor-follow hover for a product's photo plate. Spread the returned handlers on the element
- * that receives the pointer (a card whose whole area is a link), and give `plateRef` to the plate.
- * The plate tilts towards the cursor and a soft light follows it (styles: .tilt in index.css).
- * Mouse only, and off for people who prefer reduced motion.
- */
 export function useTilt() {
   const plateRef = useRef(null);
   const frame = useRef(0);

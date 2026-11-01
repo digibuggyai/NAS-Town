@@ -3,8 +3,6 @@ import { ArrowUpRight, MapPin } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { groupBrands, parentCompany } from '../config/siteContent.js';
 
-/** The DigiBuggy group: one card per brand. A brand missing its description or link
- *  (AVS, until confirmed) is left out rather than guessed. */
 export default function HouseOfDigibuggy() {
   const brands = groupBrands.filter((b) => b.description && b.url);
   return (

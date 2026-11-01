@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 
-// Content settles into place the first time it scrolls into view. Short and quiet.
 export default function Reveal({ as: Tag = 'div', delay = 0, y = 16, className = '', children, ...rest }) {
   const ref = useRef(null);
   useGSAP(() => {

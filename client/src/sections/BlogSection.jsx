@@ -6,7 +6,6 @@ import PostCard from '../components/PostCard.jsx';
 import { api } from '../lib/api.js';
 import { blogPath, preloaded } from '../lib/preload.js';
 
-// Latest posts, managed in Admin → Blog. The newest is featured large, the next two beside it.
 export default function BlogSection() {
   const [posts, setPosts] = useState(() => preloaded(blogPath({ limit: 3 })) ?? null);
 
@@ -16,7 +15,6 @@ export default function BlogSection() {
     return () => { alive = false; };
   }, []);
 
-  // Nothing published yet (or the API is down): leave the section out rather than show an empty band.
   if (posts && posts.length === 0) return null;
   const [lead, ...rest] = posts ?? [];
 

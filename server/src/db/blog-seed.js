@@ -1,4 +1,3 @@
-// Starter blog posts, seeded once into an empty database. Edit them in Admin → Blog.
 export const blogSeed = [
   {
     "slug": "photographers-moving-off-external-drives",

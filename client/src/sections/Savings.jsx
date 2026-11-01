@@ -5,11 +5,6 @@ import { formatInr } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 import { RAID_INFO, autoBuildableSizes, suggestAutoBuilds } from '../lib/nas/logic.js';
 
-/* "See what you save": the NAS against cloud storage and external drives over the years.
- * Pre-filled from the Finder (storage needed and its top pick); works on its own too.
- * Hardware prices come from the live price list. The cloud price is the visitor's own
- * assumption (editable), and external drives are priced from the same drive list. */
-
 const videoPresets = [['1080p H.264', 15], ['4K H.265', 45], ['4K H.264', 90], ['4K ProRes 422', 330]];
 
 function Slider({ label, value, onChange, min, max, step = 1, suffix = '' }) {
@@ -24,7 +19,6 @@ function Slider({ label, value, onChange, min, max, step = 1, suffix = '' }) {
   );
 }
 
-/** The old storage calculator, now optional: works out how much you need from your files. */
 function Estimator({ onEstimate }) {
   const [existingTb, setExistingTb] = useState(4);
   const [photosPerYear, setPhotosPerYear] = useState(20000);
@@ -35,7 +29,7 @@ function Estimator({ onEstimate }) {
   const [deviceGb, setDeviceGb] = useState(500);
   const [growthYears, setGrowthYears] = useState(3);
   const yearlyTb = (photosPerYear * photoMb) / 1e6 + (videoHours * videoPresets[videoPreset][1]) / 1000;
-  const needTb = Math.ceil((existingTb + (devices * deviceGb) / 1000 + yearlyTb * growthYears) * 1.2); // 20% headroom for snapshots
+  const needTb = Math.ceil((existingTb + (devices * deviceGb) / 1000 + yearlyTb * growthYears) * 1.2);
   return (
     <div className="grid gap-6 pt-5">
       <Slider label="Data you already have" value={existingTb} onChange={setExistingTb} min={0} max={100} suffix=" TB" />
@@ -69,23 +63,19 @@ export default function Savings({ preset }) {
   const { pricing: P, error: pricingError } = usePricing('public');
   const [needTb, setNeedTb] = useState(preset?.targetTB ?? 20);
   const [years, setYears] = useState(5);
-  const [cloudPerTb, setCloudPerTb] = useState(350); // ₹ per TB per month: the visitor's assumption
+  const [cloudPerTb, setCloudPerTb] = useState(350);
   const [estimating, setEstimating] = useState(false);
 
-  // A new Finder answer re-fills the savings with its size.
   useEffect(() => { if (preset?.targetTB) setNeedTb(preset.targetTB); }, [preset]);
 
   const r = useMemo(() => {
     if (!P) return null;
     const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
-    // The Finder's pick if it covers the need, else the best-value protected build from the price list.
     let build = preset?.build && preset.build.totalUsable >= needTb ? preset.build : null;
     if (!build) {
       const target = autoBuildableSizes(catalogue).find((s) => s >= needTb);
       build = target ? suggestAutoBuilds({ targetTB: target, ...catalogue })[0] ?? null : null;
     }
-    // External drives: the data plus a second copy (one drive has no protection), at the
-    // cheapest per-TB drive on the same price list. USB enclosures are extra.
     const perTb = Math.min(...Object.entries(P.hddPricing).flatMap(([cap, lines]) => Object.values(lines).map((d) => d.quote / Number(cap))));
     const external = Math.round(needTb * 2 * perTb);
     const cloudMonthly = needTb * cloudPerTb;

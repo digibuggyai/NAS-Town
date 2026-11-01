@@ -1,11 +1,5 @@
 import { Check, Info } from 'lucide-react';
 
-/* The configurator's building blocks (same inventory as DGB India's: Step, Tile, CheckTile,
- * Badge, hover info), drawn in NASTOWN's design. Selection is shown with the soft accent
- * tint; the solid accent is kept for the one primary action on screen. */
-
-/** A numbered step card: circled number, title, one line of explanation, then content.
- *  `locked` greys it out (and makes it unclickable) until the storage step is answered. */
 export function StepCard({ n, title, hint, aside, wide = false, locked = false, id, children }) {
   return (
     <section
@@ -14,7 +8,6 @@ export function StepCard({ n, title, hint, aside, wide = false, locked = false, 
       aria-disabled={locked || undefined}
       className={`scroll-mt-28 rounded-2xl border border-line bg-raised p-5 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-opacity sm:p-6 ${wide ? 'xl:col-span-2' : ''} ${locked ? 'opacity-50 select-none' : ''}`}
     >
-      {/* Half-width cards stack the aside under the title so long titles never get squeezed. */}
       <header className={`flex flex-col gap-3 ${wide ? 'sm:flex-row sm:items-start sm:justify-between' : 'sm:flex-row sm:items-start sm:justify-between xl:flex-col xl:items-stretch'}`}>
         <div className="flex min-w-0 gap-3">
           <span className="grid size-7 shrink-0 place-items-center rounded-full bg-fg text-xs font-semibold text-white tabular-nums">{n}</span>
@@ -30,7 +23,6 @@ export function StepCard({ n, title, hint, aside, wide = false, locked = false, 
   );
 }
 
-/** A radio choice drawn as a card. Impossible options are greyed with a reason, never hidden. */
 export function Tile({ active, disabled, onClick, title, sub, aside, className = '', children }) {
   return (
     <button
@@ -56,7 +48,6 @@ export function Tile({ active, disabled, onClick, title, sub, aside, className =
   );
 }
 
-/** A switch drawn as a card, for installation and AMC. */
 export function CheckTile({ checked, onChange, title, sub, price, priceSub }) {
   return (
     <label className={`flex cursor-pointer items-start gap-3 rounded-xl p-4 ring-1 transition-colors ${checked ? 'bg-accent-soft ring-2 ring-accent' : 'bg-raised ring-line hover:bg-surface'}`}>
@@ -89,8 +80,6 @@ export function Badge({ tone = 'outline', children }) {
   return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[0.7rem] font-semibold tracking-wide whitespace-nowrap uppercase ${BADGE[tone]}`}>{children}</span>;
 }
 
-/** The ⓘ: hover or focus shows the key specifications; a click opens the full dialog.
- *  It sits inside clickable tiles, so its own clicks must not select the tile underneath. */
 export function InfoHover({ label, specs, onOpen, align = 'right' }) {
   return (
     <span className="group/info relative inline-flex" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
@@ -125,7 +114,6 @@ export function InfoHover({ label, specs, onOpen, align = 'right' }) {
   );
 }
 
-/** Label / value rows for the specification dialogs. */
 export function SpecList({ specs }) {
   return (
     <dl className="divide-y divide-line text-sm">

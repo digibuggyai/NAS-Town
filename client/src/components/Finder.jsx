@@ -21,17 +21,13 @@ const steps = [
   },
 ];
 
-// Each band is sized to its upper end; 50 TB+ starts at 60 TB and the configurator can go higher.
 const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '50plus': 60 };
 
-/** Answers → the three best-value complete builds from the live price list. */
 function recommend(P, { storing, capacity, work_style }) {
   const targetTB = TARGET[capacity] ?? 10;
-  // Enterprise gets two-drive protection; small home setups may use a simple mirror.
   const raids = work_style === 'enterprise' ? ['RAID6'] : work_style === 'home' && targetTB <= 20 ? ['RAID1', 'RAID5'] : ['RAID5'];
   const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
   let builds = raids.flatMap((raid) => suggestBuilds({ targetTB, raid, ...catalogue }));
-  // Video work wants fast networking; prefer 2.5GbE+ units when any qualify.
   if (storing === 'videos') {
     const fast = builds.filter((b) => /2\.5GbE|10GbE/.test(b.model.network));
     if (fast.length) builds = fast;
@@ -40,7 +36,6 @@ function recommend(P, { storing, capacity, work_style }) {
   return { targetTB, builds: bestBuildPerModel(builds).slice(0, 3) };
 }
 
-/** `onResult({ targetTB, build })` hands the answer to the savings section below it. */
 export default function Finder({ onResult }) {
   const { pricing, error: pricingError } = usePricing('public');
   const [answers, setAnswers] = useState({});

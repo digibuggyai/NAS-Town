@@ -5,7 +5,6 @@ import { lockScroll } from '../../lib/motion.js';
 export function Step({ n, title, hint, children, aside }) {
   return (
     <section className="glass rounded-xl p-5 sm:p-7">
-      {/* Phones: the step's toggle (if any) drops under the title instead of squeezing it. */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex min-w-0 items-baseline gap-3">
           <span className="font-mono text-xs text-accent">{String(n).padStart(2, '0')}</span>
@@ -21,7 +20,6 @@ export function Step({ n, title, hint, children, aside }) {
   );
 }
 
-/** Selectable pill. Impossible options are greyed with a reason, never hidden. */
 export function Choice({ active, disabled, onClick, children, sub, title }) {
   return (
     <button
@@ -61,7 +59,6 @@ export function InfoButton({ onClick, label }) {
   );
 }
 
-/** Modal built on <dialog>, for specifications. */
 export function Dialog({ open, onClose, title, children, wide = false }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -69,8 +66,6 @@ export function Dialog({ open, onClose, title, children, wide = false }) {
     if (!d) return;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
-    // While open, the page behind stays still and the wheel
-    // scrolls the popup instead.
     if (!open) return;
     lockScroll(true);
     return () => lockScroll(false);

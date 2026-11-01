@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { preloaded, productsPath } from './preload.js';
 
-// Adds the `in` class once the element scrolls into view.
 export function useReveal() {
   const ref = useRef(null);
   useEffect(() => {
@@ -37,7 +36,6 @@ export function useProducts(params) {
       .then((data) => alive && setState({ data, error: null, loading: false }))
       .catch((error) => alive && setState({ data: null, error, loading: false }));
     return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   return state;
 }

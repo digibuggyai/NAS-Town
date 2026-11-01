@@ -4,7 +4,6 @@ import { Logo } from './Navbar.jsx';
 import { digibuggy, siteMap, waLink } from '../data/site.js';
 import { experienceZone, parentCompany, stats } from '../config/siteContent.js';
 
-// Lucide no longer ships brand marks, so these are simple outline glyphs.
 const glyph = (children) =>
   function Glyph({ className }) {
     return (
@@ -24,14 +23,11 @@ const ICONS = { WhatsApp: MessageCircle, Instagram, YouTube: Youtube, LinkedIn: 
 export default function Footer() {
   return (
     <footer className="theme-dark">
-      <div className="mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:pb-6">{/* phones: room for the floating buttons */}
-        {/* Contact block sits beside the link columns only on wide screens; at laptop/tablet width it stacks above. */}
+      <div className="mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:pb-6">
         <div className="grid gap-10 border-b border-line pb-10 xl:grid-cols-[minmax(0,15rem)_1fr] xl:gap-12">
-          {/* Who we are and how to reach a person */}
           <div>
             <Logo onDark />
             <p className="mt-3 text-[0.95rem] leading-snug text-fg">Smart Storage for Every Need.</p>
-            {/* Track record (config/siteContent.js), on every page. */}
             {stats.some((s) => s.value) && (
               <dl className="mt-5 grid max-w-xs grid-cols-3 gap-3">
                 {stats.filter((s) => s.value).map((s) => (
@@ -42,7 +38,6 @@ export default function Footer() {
                 ))}
               </dl>
             )}
-            {/* A <dl> may hold dt/dd or one level of <div>, so each group is its own list. */}
             <div className="mt-5 grid gap-2.5 text-[0.8125rem]">
               <dl>
                 <dt className="eyebrow !text-xs">{experienceZone.name}</dt>
@@ -84,7 +79,6 @@ export default function Footer() {
 
         <div className="flex flex-col gap-4 pt-5 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            {/* The group, spelled out: NASTOWN is a DigiBuggy company, and DigiBuggy is DGB India. */}
             <p className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-subtle">
               <span className="font-medium text-muted">NASTOWN</span> · A
               <a href={parentCompany.site} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center" aria-label="DigiBuggy">

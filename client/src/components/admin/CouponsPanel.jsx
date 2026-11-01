@@ -2,11 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Check, Loader2, Search, Trash2, X } from 'lucide-react';
 import { api, formatInr } from '../../lib/api.js';
 
-/* Admin → Coupons: which customer has which code, from the configurator popups.
- * One row per customer (one code per email). Quote and message show N/A when not given.
- * Staff mark each one "Deal done" or "Not interested" (click again to reopen); admins can
- * delete. Every status change and delete is recorded in the change log. */
-
 const NA = <span className="text-subtle">N/A</span>;
 const when = (iso) => new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 
@@ -31,7 +26,6 @@ export default function CouponsPanel({ canDelete }) {
       (!needle || [c.code, c.name, c.company, c.email, c.phone].some((v) => v?.toLowerCase().includes(needle))));
   }, [state.rows, q, view]);
 
-  // Clicking the active outcome again sets the coupon back to Open.
   async function setStatus(c, status) {
     const next = c.status === status ? 'issued' : status;
     setBusy(c.id);
@@ -167,7 +161,6 @@ export default function CouponsPanel({ canDelete }) {
   );
 }
 
-/** A tick-style toggle: outlined when off, filled when it's the coupon's outcome. */
 function OutcomeButton({ active, disabled, onClick, tone, icon: Icon, children }) {
   const on = tone === 'success' ? 'bg-success text-white ring-success' : 'bg-fg text-bg ring-fg';
   return (

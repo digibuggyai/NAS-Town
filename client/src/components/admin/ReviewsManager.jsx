@@ -4,10 +4,6 @@ import { api } from '../../lib/api.js';
 import { Dialog } from '../configurator/parts.jsx';
 import { Stars, StarInput } from '../StarRating.jsx';
 
-/* Admin → Reviews. Reviews written on the site arrive as "Waiting"; publish them to show
- * them on the homepage, hide them, edit or delete. "Add review" is for real reviews received
- * elsewhere (Google, WhatsApp, in person); copy them word for word. Every change is logged. */
-
 const STATUS = { pending: 'Waiting', published: 'Published', hidden: 'Hidden' };
 const SOURCES = { website: 'Website', google: 'Google', whatsapp: 'WhatsApp', 'in-store': 'In person', email: 'Email' };
 const VIEWS = [['pending', 'Waiting'], ['published', 'Published'], ['hidden', 'Hidden'], ['all', 'All']];
@@ -17,7 +13,7 @@ export default function ReviewsManager() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
   const [view, setView] = useState('pending');
-  const [editing, setEditing] = useState(null); // review, or {} to add
+  const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(null);
   const [msg, setMsg] = useState('');
 

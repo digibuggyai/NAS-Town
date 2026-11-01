@@ -3,10 +3,7 @@ import Reveal from '../components/Reveal.jsx';
 import Accordion from '../components/Accordion.jsx';
 import { faqs } from '../data/site.js';
 
-// The five questions buyers ask first; the rest live on the FAQ page.
 const top = faqs.slice(0, 5);
-
-// FAQ structured data lives on the full FAQ page (lib/seo.js), not here: Google wants it on one page only.
 
 export default function HomeFaq() {
   return (

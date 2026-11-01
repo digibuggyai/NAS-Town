@@ -17,24 +17,15 @@ import { api, mediaUrl } from '../../lib/api.js';
 import { withMediaHost, withoutMediaHost } from '../../lib/blogMedia.js';
 import { cleanPastedHtml, looksLikeMarkdown, markdownToHtml } from '../../lib/pasteFormat.js';
 
-/* The blog article editor. What you see here is what readers see: it uses the same
- * .prose-blog styles as the public post page. Everything it can produce (headings, lists,
- * quotes, links, anchors, images, tables, highlights, sub/superscript, code) is also on the
- * server's allowlist (server/src/blog-html.js), so nothing is lost when the post is saved.
- * Pasting keeps formatting from Google Docs, Word, web pages and Markdown; pasted or dropped
- * image files are uploaded and placed where they land. */
-
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 const MAX_IMAGE_MB = 3;
 
-// "Anchor": an id on a heading or paragraph, so a link to "#that-id" jumps to it.
 const Anchors = Extension.create({
   name: 'anchors',
   addGlobalAttributes() {
     return [{
       types: ['heading', 'paragraph'],
       attributes: {
-        // keepOnSplit: false, or pressing Enter copies the anchor onto the next line.
         id: { default: null, keepOnSplit: false, parseHTML: (el) => el.getAttribute('id'), renderHTML: (attrs) => (attrs.id ? { id: attrs.id } : {}) },
       },
     }];
@@ -65,16 +56,15 @@ const plainTextToHtml = (text) =>
 const slug = (s) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
 
 export default function RichEditor({ value, onChange, onStats }) {
-  const [full, setFull] = useState(false); // maximise
-  const [source, setSource] = useState(null); // HTML source text while in Source view
+  const [full, setFull] = useState(false);
+  const [source, setSource] = useState(null);
   const [spell, setSpell] = useState(true);
-  const [panel, setPanel] = useState(null); // 'chars' | 'help' | null
+  const [panel, setPanel] = useState(null);
   const [uploading, setUploading] = useState(0);
   const [notice, setNotice] = useState('');
   const fileInput = useRef(null);
   const editorRef = useRef(null);
 
-  /** Uploads image files and puts them at `pos` (or the cursor). */
   async function insertImages(files, pos) {
     const e = editorRef.current;
     for (const file of files) {
@@ -84,7 +74,7 @@ export default function RichEditor({ value, onChange, onStats }) {
       try {
         const { url } = await api.uploadBlogImage(file);
         const alt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
-        const node = { type: 'image', attrs: { src: mediaUrl(url), alt } }; // stored back as /api/… (withoutMediaHost)
+        const node = { type: 'image', attrs: { src: mediaUrl(url), alt } };
         if (pos != null) e.chain().focus().insertContentAt(pos, node).run();
         else e.chain().focus().insertContent(node).run();
         setNotice('Image added. Click it, then "Image description" to describe it for readers and Google.');
@@ -117,11 +107,11 @@ export default function RichEditor({ value, onChange, onStats }) {
       handlePaste(view, event) {
         const data = event.clipboardData;
         const images = [...(data?.files ?? [])].filter((f) => f.type.startsWith('image/'));
-        if (images.length) { insertImages(images); return true; } // a screenshot or copied image
-        if (!data || data.types.includes('text/html')) return false; // rich paste: handled by the editor
+        if (images.length) { insertImages(images); return true; }
+        if (!data || data.types.includes('text/html')) return false;
         const text = data.getData('text/plain');
         if (!text || !looksLikeMarkdown(text)) return false;
-        view.pasteHTML(markdownToHtml(text)); // runs the normal rich-paste path with the converted HTML
+        view.pasteHTML(markdownToHtml(text));
         return true;
       },
       handleDrop(view, event, _slice, moved) {
@@ -203,7 +193,6 @@ export default function RichEditor({ value, onChange, onStats }) {
         if (text) editor.chain().focus().insertContent(plainTextToHtml(text)).run();
         return;
       }
-      // Paste / Paste from Word: the clipboard's formatted copy, cleaned like a normal paste.
       const items = await navigator.clipboard.read();
       for (const item of items) {
         const image = item.types.find((t) => t.startsWith('image/'));
@@ -236,9 +225,8 @@ export default function RichEditor({ value, onChange, onStats }) {
 
   const format = s.h2 ? 'h2' : s.h3 ? 'h3' : s.h4 ? 'h4' : s.pre ? 'pre' : 'p';
   const style = s.highlight ? 'highlight' : s.code ? 'code' : s.sup ? 'superscript' : s.sub ? 'subscript' : '';
-  const off = source != null; // Source view: formatting tools are off
+  const off = source != null;
 
-  // [label, Icon, active, onClick, disabled]
   const row1 = [
     [
       ['Cut (Ctrl+X)', Scissors, false, () => clip('cut'), off],
@@ -292,7 +280,7 @@ export default function RichEditor({ value, onChange, onStats }) {
       aria-label={label}
       aria-pressed={active}
       disabled={disabled}
-      onMouseDown={(e) => e.preventDefault()} // keep the text selection
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       className={`grid size-8 place-items-center rounded-md transition-colors disabled:opacity-35 ${active ? 'bg-fg text-bg' : 'text-muted hover:bg-line hover:text-fg'}`}
     >
@@ -329,7 +317,6 @@ export default function RichEditor({ value, onChange, onStats }) {
           {Group([['Help: shortcuts and tips', HelpCircle, panel === 'help', () => setPanel((p) => (p === 'help' ? null : 'help'))]], 'help')}
         </div>
 
-        {/* Table tools, while the cursor is in a table */}
         {s.table && !off && (
           <div className="mt-1 flex flex-wrap items-center gap-1 border-t border-line pt-1 text-xs">
             <span className="px-1 font-medium text-muted">Table:</span>
@@ -343,7 +330,6 @@ export default function RichEditor({ value, onChange, onStats }) {
             <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={run((c) => c.deleteTable())} className="rounded-md px-2 py-1 text-error ring-1 ring-error/30 hover:bg-error/10">Delete table</button>
           </div>
         )}
-        {/* Image tools, while an image is selected */}
         {s.image && !off && (
           <div className="mt-1 flex flex-wrap items-center gap-1 border-t border-line pt-1 text-xs">
             <span className="px-1 font-medium text-muted">Image:</span>
@@ -398,7 +384,6 @@ function stats(editor) {
   return { words, mins: Math.max(1, Math.round(words / 200)) };
 }
 
-/** One block per line, so the Source view is readable. */
 function prettyHtml(html) {
   return html.replace(/(<\/(p|h[2-4]|ul|ol|li|blockquote|pre|table|thead|tbody|tr|figure)>|<hr>|<img[^>]*>)/g, '$1\n').replace(/\n{2,}/g, '\n').trim();
 }

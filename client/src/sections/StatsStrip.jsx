@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { stats } from '../config/siteContent.js';
 import { reducedMotion } from '../lib/motion.js';
 
-/** "1,200+" → { prefix: '', n: 1200, decimals: 0, suffix: '+' }; null if there's no number in it. */
 function parse(value) {
   const m = String(value).match(/^(\D*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
   if (!m) return null;
@@ -12,9 +11,8 @@ function parse(value) {
 
 function Counter({ value, run }) {
   const p = parse(value);
-  // null = show the value as typed (pre-rendered HTML, reduced motion, finished count).
   const [shown, setShown] = useState(null);
-  useEffect(() => { if (p && !reducedMotion()) setShown(0); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (p && !reducedMotion()) setShown(0); }, []);
   useEffect(() => {
     if (!p || !run) return;
     if (reducedMotion()) { setShown(null); return; }
@@ -27,15 +25,14 @@ function Counter({ value, run }) {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [run]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!p || shown == null) return value; // the exact text you entered
+  }, [run]);
+  if (!p || shown == null) return value;
   const num = p.grouped ? shown.toLocaleString('en-IN', { maximumFractionDigits: p.decimals, minimumFractionDigits: p.decimals }) : shown.toFixed(p.decimals);
   return `${p.prefix}${num}${p.suffix}`;
 }
 
 const COLS = { 1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3', 4: 'md:grid-cols-4' };
 
-/** Four real numbers that count up once when they scroll into view. Hidden until filled in. */
 export default function StatsStrip() {
   const filled = stats.filter((s) => String(s.value).trim());
   const ref = useRef(null);

@@ -1,11 +1,3 @@
-// Emails sent when a lead arrives:
-//  1. An alert to the sales team (LEAD_NOTIFY_TO) for every lead, with everything the customer sent.
-//  2. To the customer:
-//     - a configurator quotation request → their quotation, priced again here from the live
-//       price list (quote prices only, never floors). Figures sent by the browser are never
-//       emailed, so nobody can make NASTOWN mail made-up prices to anyone.
-//     - a coupon request → their coupon code.
-// Nothing here throws: emails go out after the lead is saved and can't fail the request.
 import { LEAD_NOTIFY_TO, sendMail } from './mailer.js';
 import { toPublicPricing } from './pricing.js';
 
@@ -25,7 +17,6 @@ function usable(raid, n, c) {
   return { RAID0: n * c, RAID1: c, RAID5: (n - 1) * c, RAID6: (n - 2) * c, RAID10: (n / 2) * c }[raid] ?? null;
 }
 
-/** The quotation for a configuration, from the live price list. null if it doesn't add up. */
 export async function serverQuote(cfg = {}) {
   const P = await toPublicPricing();
   const model = P.models.find((m) => m.model === cfg.model);
@@ -50,8 +41,6 @@ export async function serverQuote(cfg = {}) {
   return { model, raid, drives: n, cap, line: cfg.driveLine, usableTB: raid ? usable(raid, n, cap) : null, rows, hardware, total };
 }
 
-/* ---------------- layout ---------------- */
-
 const wrap = (inner) => `<!doctype html><html><body style="margin:0;background:#f5f7fb;font-family:Segoe UI,Arial,sans-serif;color:#1e293b">
 <div style="max-width:620px;margin:0 auto;padding:24px">
   <p style="font-size:18px;font-weight:700;letter-spacing:2px;color:#0f172a;margin:0 0 16px">NASTOWN</p>
@@ -74,8 +63,6 @@ function quoteTable(q) {
     <tr><td colspan="2" style="padding:14px 8px 0 0;font-size:16px"><b>Total</b> <span style="color:#64748b;font-size:12px">incl. GST</span></td>
     <td style="padding:14px 0 0 8px;text-align:right;font-size:20px;font-weight:700;white-space:nowrap">${inr(q.total)}</td></tr></table>`;
 }
-
-/* ---------------- the emails ---------------- */
 
 function teamAlert(lead, q) {
   const p = lead.payload ?? {};
@@ -130,7 +117,6 @@ function customerCoupon(lead) {
   return { subject, html };
 }
 
-/** Send the emails for a new lead. Call without awaiting. */
 export async function emailLead(lead) {
   try {
     const q = lead.type === 'configurator' ? await serverQuote(lead.payload?.configuration) : null;

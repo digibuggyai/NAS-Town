@@ -1,5 +1,3 @@
-// Checks the configurator engine against the worked examples in the spec (§5, §7.6).
-// Run: npm test (from server/). Uses the in-memory store seeded from the catalogue.
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -16,7 +14,6 @@ before(async () => {
 });
 
 const run = (over) => {
-  // The spec's examples include installation; naming a level means the customer picked it.
   const a = { ...INITIAL_ANSWERS, includeInstall: true, ...(over.raid ? { raidAuto: false } : {}), ...over };
   const d = derive(a, P);
   return { a, d, b: d.build, price: priceFor(d.build, a, P) };
@@ -30,8 +27,6 @@ test('public payload carries no floor prices', async () => {
   assert.ok(!/minPrice/.test(json));
 });
 
-// Expected figures below are from the drive price list of 14 Oct 2026 (catalogue.json).
-// 10 TB IronWolf and 10 TB WD Ultrastar now cost the same; the engine takes WD Ultrastar.
 test('20 TB RAID 5 → TS-433-4G + 3 × 10 TB WD Ultrastar, ₹1,97,397 hw, ₹2,03,297 total', () => {
   const { b, price } = run({ targetTB: 20, raid: 'RAID5' });
   assert.equal(describe(b), 'TS-433-4G 3x10 WD Ultrastar 20TB');
@@ -81,7 +76,6 @@ test('budget ₹50,000 → no build, least is ₹69,548', () => {
 
 test('§7.6 worked quotations with install + AMC, including floors', () => {
   const cases = [
-    // DGB India spec §7.6 cases; quote prices and floors of 26 Oct 2026 (floors from floors.local.json)
     [{ targetTB: 10, raid: 'RAID5' }, 'TS-433-4G 4x4 IronWolf 12TB', 153529, 140491],
     [{ targetTB: 20, raid: 'RAID5' }, 'TS-433-4G 3x10 WD Ultrastar 20TB', 223037, 204883],
     [{ targetTB: 20, raid: 'RAID6' }, 'TS-433-4G 4x10 WD Ultrastar 20TB', 278916, 256650],
@@ -116,8 +110,6 @@ test('invariants: RAID 0 never 1 drive, RAID 1 always 2, per-brand drive ceiling
   }
 });
 
-// "Let us choose": the level follows the drive count (2 → RAID 1, 3–5 → RAID 5, 6+ → RAID 6),
-// as QNAP and Synology advise; RAID 0 and RAID 10 are never chosen for the customer.
 test('Let us choose: the RAID level always matches the drive count', () => {
   const advised = (n) => (n <= 2 ? 'RAID1' : n <= 5 ? 'RAID5' : 'RAID6');
   for (const targetTB of [4, 8, 10, 12, 16, 20, 24, 30, 40, 50, 60, 80, 100]) {
@@ -145,8 +137,6 @@ test('Let us choose: a 2-bay filter gives a RAID 1 mirror', () => {
   assert.equal(b.model.bays, 2);
 });
 
-// One customer, one NAS: never several boxes. A size one NAS can't hold is an error with fixes,
-// never a smaller quote and never more units.
 test('every recommendation is a single NAS', () => {
   for (const over of [{ targetTB: 24, driveCap: 6 }, { targetTB: 24, bays: 2 }, { targetTB: 100 }, { targetTB: 168 }, { targetTB: 30, raid: 'RAID1' }, { storageMode: 'budget', budget: 2000000 }]) {
     const { d } = run(over);
@@ -163,7 +153,7 @@ test('24 TB on 6 TB drives fits one NAS (not four 2-bay units)', () => {
 test('too big for one NAS with these choices: an error with fixes, no smaller quote', () => {
   const { d } = run({ targetTB: 50, bays: 2 });
   assert.equal(d.build, null);
-  assert.equal(d.tooBig.max, 30); // 2-bay QNAP with a pair of 30 TB Exos
+  assert.equal(d.tooBig.max, 30);
   assert.ok(d.tooBig.fixes.some((f) => f.label === 'Any number of bays'));
 });
 
@@ -173,8 +163,6 @@ test('bigger than any single NAS listed: points to expansion units', () => {
   assert.equal(d.tooBig.expansion, true);
 });
 
-// The rule, across every kind of choice: sizes, budgets, each RAID choice, bay count, brand,
-// "room to expand" and installation. Not one suggestion may be more than one NAS.
 test('sweep: no choice ever produces more than one NAS', () => {
   const raids = [{ raidAuto: true }, ...RAID_LEVELS.map((raid) => ({ raidAuto: false, raid }))];
   const bays = [null, ...new Set(P.models.map((m) => m.bays))];

@@ -1,4 +1,3 @@
-// Build-time renderer (scripts/prerender.mjs): one public page to HTML.
 import { prerenderToNodeStream } from 'react-dom/static';
 import { renderToString } from 'react-dom/server';
 import { StaticRouter } from 'react-router';
@@ -10,15 +9,11 @@ const page = (url) => (
   </StaticRouter>
 );
 
-/** Waits until every lazily loaded part of the page has its code loaded. */
 async function warm(url) {
   const { prelude } = await prerenderToNodeStream(page(url));
-  for await (const chunk of prelude) void chunk; // drain; only the loading matters
+  for await (const chunk of prelude) void chunk;
 }
 
-// Anything still loading would come out as a placeholder ($!) or as a hidden block swapped in by
-// an inline script, which never runs without JavaScript. Once warm, renderToString draws the
-// whole page in one go; the prerender output itself keeps those swap blocks, so it isn't used.
 const incomplete = (html) => html.includes('<!--$!-->') || html.includes('<!--$?-->') || html.includes('<template');
 
 export async function render(url) {

@@ -1,25 +1,17 @@
-// SEO for every page, in one place: titles, descriptions, social cards and structured data.
-// Used in two ways:
-//   - in the browser, by <Seo /> (components/Seo.jsx), which updates <head> on each page;
-//   - at build time, by scripts/seo-plugin.mjs, which writes each page's <head> into its own
-//     HTML file so search engines and link previews (WhatsApp, LinkedIn…) see it without JavaScript.
-// Keep this file plain JS with no browser-only or Vite-only code, so Node can import it.
 import { brands, capacityPages, digibuggy, faqs, resources, services, solutions } from '../data/site.js';
 import { productPhoto } from '../data/productImages.js';
 import { parentCompany } from '../config/siteContent.js';
 
 export const SITE_NAME = 'NASTOWN';
-export const DEFAULT_IMAGE = '/og-image.jpg'; // 1200×630 social card
+export const DEFAULT_IMAGE = '/og-image.jpg';
 const MAX_DESC = 158;
 
-/** Trim to a search-snippet length, ending on a whole word. */
 export function clip(text = '', max = MAX_DESC) {
   const t = String(text).replace(/\s+/g, ' ').trim();
   if (t.length <= max) return t;
   return `${t.slice(0, t.lastIndexOf(' ', max - 1)).replace(/[,;:.\s]+$/, '')}…`;
 }
 
-/** Absolute URL for a path or already-absolute link. */
 export const abs = (url, siteUrl) => (!url ? url : /^https?:\/\//.test(url) ? url : `${siteUrl.replace(/\/+$/, '')}${url.startsWith('/') ? '' : '/'}${url}`);
 
 const crumbs = (siteUrl, items) => ({
@@ -28,7 +20,6 @@ const crumbs = (siteUrl, items) => ({
   itemListElement: [['Home', '/'], ...items].map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: abs(path, siteUrl) })),
 });
 
-/** The business, on every page: who NASTOWN is and where its Experience Zone is. */
 export function siteJsonLd(siteUrl) {
   return {
     '@context': 'https://schema.org',
@@ -74,9 +65,6 @@ export function siteJsonLd(siteUrl) {
   };
 }
 
-/* ---------------- fixed pages ---------------- */
-
-/** Every page whose content lives in the code (not the database), keyed by path. */
 export function staticPages(siteUrl) {
   const pages = {
     '/': {
@@ -175,13 +163,10 @@ export function staticPages(siteUrl) {
         mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
       });
     }
-    // Guides, comparisons, reviews and how-tos are "coming soon" lists for now. Thin pages like
-    // that drag the whole site down in Google, so they stay out of search until they have articles.
     if (r.upcoming) page.noindex = true;
     pages[`/resources/${r.slug}`] = page;
   }
 
-  // "nas for 50tb", "50tb nas", "50tb nas storage", "50tb nas price", "50tb nas setup"
   pages['/nas'] = {
     title: 'NAS Storage by Capacity: 5TB to 100TB NAS Price | NASTOWN',
     description: 'How much NAS storage do you need? Compare 5TB, 10TB, 20TB, 50TB and 100TB NAS builds with drives, RAID and GST-inclusive prices in India.',
@@ -199,83 +184,63 @@ export function staticPages(siteUrl) {
   return pages;
 }
 
-/**
- * What each page is written to rank for: the search a buyer actually types (in the comment),
- * worked into the title (≈60 characters show) and the description (≈155 characters show).
- * One main search per page, so pages don't compete with each other.
- */
 const KEYWORDS = {
-  // "nas", "nas storage", "nas server", "network attached storage", "nas system", "nas storage device", "nas storage india"
   '/': {
     title: 'NAS Storage & NAS Servers in India | NASTOWN',
     description: 'Buy network attached storage (NAS) in India: Synology and QNAP NAS systems with drives, GST-inclusive prices, installation and support in Delhi.',
   },
-  // "nas price india", "nas server price india"
   '/products': {
     title: 'NAS Price in India: NAS Server & Storage Price List | NASTOWN',
     description: 'NAS and NAS server prices in India: 2-bay to 8-bay and rackmount Synology and QNAP NAS with specs and GST-inclusive prices. Configure yours with drives.',
   },
-  // "nas solutions", "which nas for"
   '/solutions': {
     title: 'NAS Solutions for Home, Business & Creators | NASTOWN',
     description: 'The right NAS for photographers, video editors, creators, small businesses, homes, CCTV and enterprise, with recommended models and drive setups for each.',
   },
-  // "best nas for photographers india"
   '/solutions/photographers': {
     title: 'Best NAS for Photographers in India | NASTOWN',
     description: 'NAS storage for photographers: a RAID-protected RAW archive, automatic backup from cards and laptops, Lightroom-friendly, with remote client galleries.',
   },
-  // "nas for video editing"
   '/solutions/videographers': {
     title: 'Best NAS for Video Editing in India | NASTOWN',
     description: 'Edit 4K and 8K footage straight off a NAS with 2.5GbE or 10GbE and NVMe cache. Shared projects for editing teams and a safe archive for finished work.',
   },
-  // "nas for content creators", "nas for youtubers"
   '/solutions/creators': {
     title: 'NAS for Content Creators & YouTubers | NASTOWN',
     description: 'One NAS for your footage, design files, client assets and backups. Synced across devices, protected by RAID, reachable from anywhere. Built for creators.',
   },
-  // "best nas for business", "nas for small business"
   '/solutions/business': {
     title: 'Best NAS for Business in India: Office File Server | NASTOWN',
     description: 'A business NAS gives your office one secure file server with user permissions, automatic backups and remote access. Set up and supported by our team.',
   },
-  // "best nas for home", "best home nas india"
   '/solutions/home': {
     title: 'Best NAS for Home in India: Private Cloud & Backup | NASTOWN',
     description: 'Replace cloud subscriptions with your own home NAS: back up every phone and laptop, keep family photos safe and stream your media to any screen.',
   },
-  // "nas for cctv", "surveillance nas"
   '/solutions/surveillance': {
     title: 'NAS for CCTV & Surveillance Recording | NASTOWN',
     description: 'Surveillance NAS for 24/7 CCTV recording: surveillance-grade drives, multiple camera streams and footage kept safe and searchable.',
   },
-  // "enterprise nas storage"
   '/solutions/enterprise': {
     title: 'Enterprise NAS Storage Solutions in India | NASTOWN',
     description: 'Enterprise NAS with high availability, expansion units, iSCSI and virtualisation support, plus dedicated support and AMC for critical workloads.',
   },
-  // "synology nas price in india", "synology dealer delhi"
   '/brands/synology': {
     title: 'Synology NAS Price in India | Authorized Dealer | NASTOWN',
     description: 'Buy genuine Synology NAS in India from an authorized dealer. DS225+, DS425+, DS925+ and more with GST-inclusive prices, installation and support in Delhi.',
   },
-  // "qnap nas price in india", "qnap dealer delhi"
   '/brands/qnap': {
     title: 'QNAP NAS Price in India | Authorized Dealer | NASTOWN',
     description: 'Buy genuine QNAP NAS in India from an authorized dealer. 2-bay to 8-bay QNAP models with GST-inclusive prices, installation and support in Delhi.',
   },
-  // "asustor nas india", "asustor nas price"
   '/brands/asustor': {
     title: 'Asustor NAS Price in India | NASTOWN',
     description: 'Asustor NAS in India with the easy ADM operating system: compare it with Synology and QNAP on features and price, and get it configured and installed by our team in Delhi.',
   },
-  // "nas on rent", "rent nas delhi"
   '/rent': {
     title: 'NAS on Rent in Delhi: Short-Term Storage Rental | NASTOWN',
     description: 'Rent a NAS for a shoot, event, data migration or trial. Configured before delivery, full performance, support included and no big upfront cost.',
   },
-  // "nas service", "nas installation", "nas support delhi"
   '/services': {
     title: 'NAS Service in Delhi: Installation, Repair & AMC | NASTOWN',
     description: 'NAS installation, data migration, RAID setup, upgrades, repair, data recovery and AMC for Synology and QNAP, remote or on-site, from our Delhi team.',
@@ -316,23 +281,18 @@ const KEYWORDS = {
     title: 'NAS Data Recovery: Synology, QNAP & RAID | NASTOWN',
     description: 'Recover data from a crashed NAS volume, failed drives, a broken RAID or accidental deletion, with a clear assessment before any work begins.',
   },
-  // "nas configuration", "nas setup price"
   '/tools/configurator': {
     title: 'NAS Configuration & Setup Price, with Drives | NASTOWN',
     description: 'Configure your NAS: choose capacity, RAID, bays and brand, and get the full setup price with hard drives, installation and AMC, instantly with GST.',
   },
-  // "best nas", "which nas should i buy", "nas storage calculator", "nas vs cloud cost"
-  // (/tools/calculator was merged into this page and redirects here)
   '/finder': {
     title: 'Which NAS to Buy? NAS Finder & NAS vs Cloud Cost | NASTOWN',
     description: 'Answer three questions for a NAS recommendation, estimate how much storage you need, and see what a NAS saves over cloud storage and external drives.',
   },
-  // "nas dealer nehru place", "nastown contact"
   '/about': {
     title: 'NAS Dealer in Nehru Place, Delhi: About & Contact | NASTOWN',
     description: `NASTOWN by Digibuggy: NAS sales, setup and support, and a live NAS Experience Zone in Nehru Place, New Delhi. Call or WhatsApp ${digibuggy.whatsapp}.`,
   },
-  // "nas faq", "how many drive bays nas", "nas usable storage raid", "synology third party drives"
   '/resources/faq': {
     title: 'NAS FAQ: Drive Bays, RAID, Drives & Backup | NASTOWN',
     description: 'How many bays you need, usable storage after RAID, which drives work, Synology drive rules, ransomware protection, backups and more: 18 NAS questions answered.',
@@ -343,8 +303,6 @@ const KEYWORDS = {
   },
 };
 
-/* ---------------- database pages ---------------- */
-
 const BRAND = { synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' };
 
 export function productMeta(p, siteUrl) {
@@ -352,7 +310,6 @@ export function productMeta(p, siteUrl) {
   const price = p.price_inr != null ? `₹${Number(p.price_inr).toLocaleString('en-IN')} diskless, GST incl.` : '';
   const path = `/products/${p.slug}`;
   return {
-    // People search a model plus "price": "ds925+ price in india".
     title: `${p.model} Price in India & Specs (${p.bays}-Bay NAS) | NASTOWN`,
     description: clip([p.summary, [p.cpu, p.memory?.replace(/\s*\(.*?\)/g, ''), p.network].filter(Boolean).join(', ') + '.', price, 'Configure with drives and installation.'].filter(Boolean).join(' ')),
     path,
@@ -366,10 +323,9 @@ export function productMeta(p, siteUrl) {
         description: p.summary,
         brand: { '@type': 'Brand', name: brand },
         category: 'Network Attached Storage',
-        image: abs(productPhoto(p.shortModel ?? p.model)?.src ?? DEFAULT_IMAGE, siteUrl), // the official product photo
+        image: abs(productPhoto(p.shortModel ?? p.model)?.src ?? DEFAULT_IMAGE, siteUrl),
         url: abs(path, siteUrl),
         ...(p.price_inr != null && {
-          // Prices on the site include GST. No `availability`: stock isn't tracked, so it isn't claimed.
           offers: {
             '@type': 'Offer',
             price: p.price_inr,
@@ -384,8 +340,6 @@ export function productMeta(p, siteUrl) {
   };
 }
 
-/** `cover` is the post's cover image as an absolute URL, or empty. */
-/** Extra JSON-LD saved with a post (validated by the server); bad data is skipped, never shown. */
 function customSchema(json) {
   if (!json) return [];
   try { const d = JSON.parse(json); return (Array.isArray(d) ? d : [d]).filter((x) => x && x['@type']); } catch { return []; }
@@ -395,7 +349,6 @@ export function postMeta(post, siteUrl, cover) {
   const path = `/blog/${post.slug}`;
   const faqs = (post.faqs ?? []).filter((f) => f.q && f.a);
   return {
-    // Meta title/description from the editor win; otherwise the post's own title and excerpt.
     title: post.metaTitle || `${post.title} | NASTOWN Blog`,
     description: clip(post.metaDescription || post.excerpt || post.title),
     keywords: post.metaKeywords || undefined,
@@ -418,7 +371,6 @@ export function postMeta(post, siteUrl, cover) {
         publisher: { '@id': `${siteUrl}/#org` },
         mainEntityOfPage: abs(path, siteUrl),
       },
-      // The FAQs are also printed on the post, as Google requires for FAQ markup.
       faqs.length > 0 && {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -429,13 +381,9 @@ export function postMeta(post, siteUrl, cover) {
   };
 }
 
-/* ---------------- rendering ---------------- */
-
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-// JSON inside <script>: stop "</script>" in content from closing the tag early.
 export const jsonForScript = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-/** Resolve a page's meta into the exact values written to <head>. */
 export function headValues(meta, siteUrl) {
   const url = meta.noindex ? null : abs(meta.path ?? '/', siteUrl);
   return {
@@ -451,7 +399,6 @@ export function headValues(meta, siteUrl) {
   };
 }
 
-/** The managed <head> tags as HTML, for the build. Same tags <Seo /> updates in the browser. */
 export function headHtml(meta, siteUrl) {
   const v = headValues(meta, siteUrl);
   return [

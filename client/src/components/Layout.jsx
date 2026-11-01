@@ -10,7 +10,6 @@ export default function Layout() {
   const { pathname, hash } = useLocation();
   const main = useRef(null);
 
-  // The phones' floating "Build your NAS" button appears after the first screen.
   const [scrolledPast, setScrolledPast] = useState(false);
   useEffect(() => {
     const on = () => setScrolledPast(window.scrollY > 560);
@@ -20,14 +19,10 @@ export default function Layout() {
   }, []);
   const showBuild = scrolledPast && !pathname.startsWith('/tools/configurator');
 
-  // On route change: go to the top (or the #hash), fade the new page in, re-measure scroll triggers.
   useGSAP(() => {
     let frame;
     let settle;
     if (hash) {
-      // The page may still be loading its code, so look for the target for up to ~2s.
-      // Content above it (photos, prices) can still be arriving and push it down, which also
-      // cuts a smooth scroll short, so check again once the page has settled.
       let tries = 120;
       const find = () => {
         const el = document.getElementById(hash.slice(1));
@@ -51,14 +46,11 @@ export default function Layout() {
       </a>
       <Navbar />
       <main id="main" ref={main} className="overflow-x-clip">
-        {/* Pages load on first visit; hold their space meanwhile so the footer doesn't jump up. */}
         <Suspense fallback={<div className="min-h-svh" />}>
           <Outlet />
         </Suspense>
       </main>
       <Footer />
-      {/* Phones: once the hero's buttons have scrolled away, "Build your NAS" stays one tap away
-          (not on the configurator itself, which has its own price bar). */}
       {showBuild && (
         <Link
           to="/tools/configurator"
@@ -67,7 +59,6 @@ export default function Layout() {
           <SlidersHorizontal className="size-4" aria-hidden /> Build your NAS
         </Link>
       )}
-      {/* Floating WhatsApp, always one tap from a person. */}
       <a
         href={digibuggy.whatsappHref}
         target="_blank"

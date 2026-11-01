@@ -27,7 +27,6 @@ export default function Brand() {
           </div>
         )}
       >
-        {/* Pre-set to this brand when we list its units; otherwise the open configurator. */}
         {data?.length
           ? <Link to={`/tools/configurator?brand=${b.filter}`} className="btn btn-primary">Configure your {b.name} NAS</Link>
           : <Link to="/tools/configurator" className="btn btn-primary">Build your NAS</Link>}

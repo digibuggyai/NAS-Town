@@ -6,7 +6,7 @@ import { Dialog } from '../configurator/parts.jsx';
 
 const COLUMNS = {
   models: ['model', 'brand', 'bays', 'quotePrice', 'minPrice', 'featured', 'rentable'],
-  drives: ['drive', 'partNumber', 'quotePrice', 'minPrice'], // 'drive' = name + specs, see DriveCell
+  drives: ['drive', 'partNumber', 'quotePrice', 'minPrice'],
   driveLines: ['name', 'brand', 'driveClass', 'workloadTbYear', 'warrantyYears'],
   upgrades: ['sku', 'category', 'name', 'quotePrice', 'minPrice'],
 };
@@ -27,11 +27,8 @@ function cell(k, v) {
   return String(v);
 }
 
-/** A price in the table that edits in place: click, type, Enter (or click away) saves, Esc cancels.
- * An empty floor shows as "Set floor" so missing floors stand out. Saves go through the same
- * admin API as the edit form, so every change lands in the change log. */
 function MoneyCell({ k, row, collection, onChanged }) {
-  const [draft, setDraft] = useState(null); // null = not editing
+  const [draft, setDraft] = useState(null);
   const [busy, setBusy] = useState(false);
   const floor = k === 'minPrice';
 
@@ -76,8 +73,6 @@ function MoneyCell({ k, row, collection, onChanged }) {
   );
 }
 
-/** A drive row: full name plus the specs that identify it. Exact per-drive RPM/cache win
- * over the line's ranges from Drive specs. */
 function DriveCell({ row, line }) {
   if (!line) {
     return (
@@ -106,7 +101,7 @@ function DriveCell({ row, line }) {
 }
 
 export default function CatalogueTable({ collection, rows, schema, onChanged, lines = [] }) {
-  const [editing, setEditing] = useState(null); // row, or {} for new
+  const [editing, setEditing] = useState(null);
   const cols = COLUMNS[collection];
   const hasActive = 'active' in schema.fields;
   const missingFloors = rows.filter((r) => r.minPrice == null && (!hasActive || r.active)).length;
@@ -180,7 +175,6 @@ export default function CatalogueTable({ collection, rows, schema, onChanged, li
   );
 }
 
-/** Add/edit form for one catalogue item. Shared by the price manager and Product pages. */
 export function ItemEditor({ collection, schema, editing, onClose, onSaved, lines = [] }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -191,12 +185,11 @@ export function ItemEditor({ collection, schema, editing, onClose, onSaved, line
     const form = new FormData(e.currentTarget);
     const data = {};
     for (const [k, type] of Object.entries(schema.fields)) {
-      if (k === 'active' || k === 'pages') continue; // pages are managed in Product pages
+      if (k === 'active' || k === 'pages') continue;
       if (type === 'bool') data[k] = form.get(k) === 'on';
       else if (k === 'raid') data[k] = form.getAll('raid');
       else data[k] = form.get(k) ?? '';
     }
-    // Only send what changed on edit.
     const changes = editing.id
       ? Object.fromEntries(Object.entries(data).filter(([k, v]) => String(v ?? '') !== String(Array.isArray(editing[k]) ? editing[k] : editing[k] ?? '')))
       : data;
@@ -242,7 +235,6 @@ export function ItemEditor({ collection, schema, editing, onClose, onSaved, line
                 </label>
               );
             }
-            // A drive's line must match a row in Drive specs, so pick it from a list.
             if (collection === 'drives' && k === 'line' && lines.length) {
               const names = lines.map((l) => l.name);
               if (editing.line && !names.includes(editing.line)) names.push(editing.line);

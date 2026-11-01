@@ -13,7 +13,6 @@ import { waLink } from '../data/site.js';
 import Seo from '../components/Seo.jsx';
 import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
-/** One group of single-choice chips; choosing the active one again clears it. */
 function Group({ group, value, onPick }) {
   return (
     <fieldset>
@@ -30,8 +29,8 @@ function Group({ group, value, onPick }) {
 }
 
 export default function Products() {
-  const { data, error, loading } = useProducts({ page: 'products' }); // placement set in Admin → Product pages
-  const { pricing } = usePricing('public'); // largest drive we sell, for "storage you need"
+  const { data, error, loading } = useProducts({ page: 'products' });
+  const { pricing } = usePricing('public');
   const [params, setParams] = useSearchParams();
   const [sheet, setSheet] = useState(false);
   useEffect(() => {
@@ -46,11 +45,11 @@ export default function Products() {
   const products = data ?? [];
   const groups = useMemo(() => filterGroups(products), [products]);
   const largestDrive = pricing ? Math.max(...pricing.capacities) : null;
-  const list = useMemo(() => applyFilters(products, f, largestDrive), [products, params, largestDrive]); // eslint-disable-line react-hooks/exhaustive-deps
+  const list = useMemo(() => applyFilters(products, f, largestDrive), [products, params, largestDrive]);
 
   const set = (key, value) => {
     const next = new URLSearchParams(params);
-    next.delete('type'); // the old rackmount link becomes ?bays=rackmount once anything changes
+    next.delete('type');
     if (f.bays === 'rackmount' && key !== 'bays') next.set('bays', 'rackmount');
     if (value) next.set(key, value); else next.delete(key);
     setParams(next, { replace: true, preventScrollReset: true });
@@ -70,13 +69,11 @@ export default function Products() {
       />
       <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[15rem_1fr] xl:grid-cols-[16.5rem_1fr]">
-          {/* Desktop: filters in a sidebar */}
           <aside aria-label="Filters" className="hidden lg:block">
             <div className="sticky top-24 grid max-h-[calc(100svh-7rem)] gap-6 overflow-y-auto overscroll-contain rounded-2xl border border-line bg-raised p-5">{panel}</div>
           </aside>
 
           <div className="min-w-0">
-            {/* Results bar: count, active filters, sort, and the phone's filter button */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-muted" aria-live="polite">
                 {data ? <><span className="font-medium text-fg">{list.length}</span> of {products.length} NAS units</> : ' '}
@@ -105,7 +102,6 @@ export default function Products() {
               </div>
             )}
 
-            {/* Capacity pages have full builds with drives and prices: point there. */}
             {f.cap && (
               <Link to={`/nas/${f.cap}tb`} className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3 text-sm ring-1 ring-line hover:ring-accent/40">
                 <span>See complete <strong>{f.cap} TB</strong> builds with drives, RAID and prices</span>
@@ -141,7 +137,6 @@ export default function Products() {
         </div>
       </section>
 
-      {/* Phone: filters in a bottom sheet */}
       {sheet && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
           <button type="button" aria-label="Close filters" onClick={() => setSheet(false)} className="absolute inset-0 bg-fg/40" />

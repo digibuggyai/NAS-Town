@@ -7,7 +7,6 @@ const LAYOUTS = {
   access: { center: Cloud, around: [Smartphone, Laptop, Globe, Laptop] },
 };
 
-// Satellite positions, as % of the card.
 const SPOTS = [[18, 22], [82, 22], [18, 78], [82, 78]];
 
 export default function MiniDiagram({ kind }) {

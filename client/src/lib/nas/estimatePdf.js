@@ -1,8 +1,3 @@
-/* "Download estimate (PDF)": opens a print-ready estimate in a new tab and starts the
- * browser's print dialog, where "Save as PDF" produces the file. Printing from the browser
- * keeps the ₹ sign, the fonts and the layout exact without shipping a PDF library.
- * Public estimates only: floor prices are never part of what this receives. */
-
 import { RAID_INFO, inr } from './logic.js';
 import { digibuggy } from '../../data/site.js';
 
@@ -10,7 +5,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 
 export function openEstimatePdf({ ref, build, price, lines, raid, speed, mode, targetTB, budget }) {
   const win = window.open('', '_blank');
-  if (!win) return false; // pop-up blocked: the caller tells the visitor
+  if (!win) return false;
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   const origin = window.location.origin;
   const rows = lines.filter((l) => !l.total).map((l) => (l.subtotal

@@ -6,7 +6,7 @@ export function getToken() {
   try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
 }
 export function setToken(token) {
-  try { token ? localStorage.setItem(TOKEN_KEY, token) : localStorage.removeItem(TOKEN_KEY); } catch { /* storage unavailable */ }
+  try { token ? localStorage.setItem(TOKEN_KEY, token) : localStorage.removeItem(TOKEN_KEY); } catch { }
 }
 
 export class ApiError extends Error {
@@ -23,7 +23,7 @@ async function request(path, { auth = false, ...options } = {}) {
   const data = await res.json().catch(() => ({}));
   if (res.status === 401 && auth) {
     setToken(null);
-    window.dispatchEvent(new Event(SESSION_EXPIRED)); // useAuth sends staff back to sign-in
+    window.dispatchEvent(new Event(SESSION_EXPIRED));
   }
   if (!res.ok) throw new ApiError(data.error || 'Something went wrong. Please try again.', res.status);
   return data;
@@ -37,7 +37,6 @@ export const api = {
   nasPricing: () => request('/nas-pricing'),
   logFinder: (data) => request('/finder', body('POST', data)),
   enquire: (data) => request('/enquiries', body('POST', data)),
-  /** Configurator popups: returns this customer's unique coupon { code, valueInr, isNew }. */
   offer: (data) => request('/offers', body('POST', data)),
 
   login: (email, password) => request('/auth/login', body('POST', { email, password })),
@@ -49,7 +48,6 @@ export const api = {
   updateItem: (collection, id, data) => request(`/admin/nas/${collection}/${id}`, { auth: true, ...body('PATCH', data) }),
   deleteItem: (collection, id) => request(`/admin/nas/${collection}/${id}`, { auth: true, method: 'DELETE' }),
   updateSettings: (data) => request('/admin/nas/settings', { auth: true, ...body('PATCH', data) }),
-  /** One page of the permanent change log: { entries, more }. */
   changeLog: ({ before, areas } = {}) => request(`/admin/change-log?${new URLSearchParams({ ...(before && { before }), ...(areas && { areas }) })}`, { auth: true }),
   users: () => request('/admin/users', { auth: true }),
   createUser: (data) => request('/admin/users', { auth: true, ...body('POST', data) }),
@@ -73,7 +71,6 @@ export const api = {
   updatePost: (id, data) => request(`/admin/blog/${id}`, { auth: true, ...body('PATCH', data) }),
   deletePost: (id) => request(`/admin/blog/${id}`, { auth: true, method: 'DELETE' }),
 
-  /** Uploads a cover image as raw bytes; returns { url }. */
   async uploadBlogImage(file) {
     const res = await fetch(`${BASE}/api/admin/blog/images`, {
       method: 'POST',
@@ -85,7 +82,6 @@ export const api = {
     return data;
   },
 
-  /** Downloads the internal price sheet (needs the auth header, so not a plain link). */
   async downloadPriceSheet() {
     const res = await fetch(`${BASE}/api/admin/price-sheet.csv`, { headers: { Authorization: `Bearer ${getToken()}` } });
     if (!res.ok) throw new ApiError('Could not download the price sheet.', res.status);
@@ -99,7 +95,6 @@ export const api = {
   },
 };
 
-/** Uploaded images are served by the API, which may be on another host (Vercel + Railway). */
 export const mediaUrl = (u) => (u && u.startsWith('/api/') ? `${BASE}${u}` : u);
 
 export const formatPostDate = (iso) =>

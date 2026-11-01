@@ -1,9 +1,3 @@
-/* Configurator answers → configuration. Same engine as the DGB India configurator
- * (docs: nas-configurator-spec.md): one Answers object in, one Derived object out,
- * re-derived on every change. No wizard state; the answers are never mutated —
- * derive() returns the effective values (nearest buildable size, chosen RAID level,
- * the unit actually picked) instead. */
-
 import {
   MAX_UNITS,
   RAID_INFO,
@@ -23,22 +17,19 @@ import {
   topSpeed,
 } from './logic.js';
 
-/** Where every visitor starts: nothing chosen. Once a size or budget is picked, everything
- *  else is suggested (RAID level by drive count, bays, brand, unit and drives) and can then be changed.
- *  Installation and AMC stay unticked until the customer adds them. */
 export const INITIAL_ANSWERS = {
-  storageMode: 'capacity', // 'capacity' | 'budget'
-  targetTB: null, // null = not chosen yet
-  budget: null, // null = not chosen yet
+  storageMode: 'capacity',
+  targetTB: null,
+  budget: null,
   brand: 'any',
   bays: null,
   raid: 'RAID5',
-  raidAuto: true, // "Let us choose": the level follows the drive count (logic.js advisedRaid)
+  raidAuto: true,
   expandable: false,
   modelId: null,
-  autoPick: true, // false once a unit is chosen by hand
-  driveCap: null, // null = Auto
-  driveLine: null, // null = Auto
+  autoPick: true,
+  driveCap: null,
+  driveLine: null,
   ramSku: null,
   nicSku: null,
   includeInstall: false,
@@ -48,8 +39,6 @@ export const INITIAL_ANSWERS = {
 export const BUDGET_PRESETS = [100000, 150000, 200000, 300000, 500000];
 export const CAPACITY_PRESETS = [10, 20, 50, 100];
 
-/** Narrow by drive size first, then line, each falling back on its own; then settle on a unit.
- *  Filtering on both at once let an impossible size swallow a perfectly good line. */
 export function pickBuild(a, builds) {
   const byCap = a.driveCap == null ? builds : builds.filter((b) => b.driveCap === a.driveCap);
   const capPool = byCap.length ? byCap : builds;
@@ -64,7 +53,6 @@ function unbuilt(a, mode, error, raid = a.raid) {
   return { mode, error, pending: false, auto: false, sizes: [], targetTB: a.targetTB, movedFrom: null, raid, redundant: true, builds: [], options: [], build: null, autoPick: a.autoPick };
 }
 
-/** What the customer pays on top of hardware: a budget covers the whole quote. */
 export function extraCostFor(a, P) {
   return (hardware, units) =>
     (a.includeInstall ? P.install.quote * units : 0) + (a.includeAMC ? hardware * P.amcRate.quote : 0);
@@ -80,18 +68,12 @@ const catalogueFor = (a, P) => ({
   maxUnits: MAX_UNITS,
 });
 
-/** The most usable space ONE NAS can give with these answers (capacity mode), 0 if none. */
 export function singleBoxMax(a, P) {
   const catalogue = catalogueFor(a, P);
   const sizes = a.raidAuto ? autoBuildableSizes(catalogue) : buildableSizes({ raid: a.raid, ...catalogue });
   return sizes.length ? sizes[sizes.length - 1] : 0;
 }
 
-/**
- * The asked-for size doesn't fit in one NAS with these choices. We never split it across
- * several boxes, and never quietly quote a smaller one: say so, and offer the changes that
- * would make it fit (each a patch to the answers), or the largest size that does.
- */
 function tooBig(a, P, sizes, max) {
   const asked = a.targetTB;
   const fits = (patch) => singleBoxMax({ ...a, ...patch }, P) >= asked;
@@ -115,7 +97,7 @@ export function derive(a, P) {
 
   if (a.storageMode === 'budget') {
     const budget = a.budget;
-    if (budget == null) return { ...unbuilt(a, 'budget', null), pending: true }; // waiting for a budget
+    if (budget == null) return { ...unbuilt(a, 'budget', null), pending: true };
     if (!(budget > 0)) return unbuilt(a, 'budget', 'Enter a budget to size against.');
     const extraCost = extraCostFor(a, P);
 
@@ -152,7 +134,6 @@ export function derive(a, P) {
     }
 
     const picked = pickBuild(a, builds);
-    // With "Let us choose" the builds mix levels, so the level is whatever the chosen build runs.
     if (a.raidAuto && picked.build) raid = picked.build.raid;
     return { mode: 'budget', error: null, auto: a.raidAuto, sizes: [], targetTB: picked.build ? picked.build.totalUsable : a.targetTB, movedFrom: null, raid, redundant, builds, ...picked };
   }
@@ -160,7 +141,7 @@ export function derive(a, P) {
   if (a.raidAuto) {
     const sizes = autoBuildableSizes(catalogue);
     if (!sizes.length) return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand or bays.'), sizes };
-    if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, auto: true, pending: true }; // waiting for a size
+    if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, auto: true, pending: true };
     if (a.targetTB > sizes[sizes.length - 1]) return tooBig(a, P, sizes, sizes[sizes.length - 1]);
     const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
     const builds = suggestAutoBuilds({ targetTB, ...catalogue });
@@ -183,7 +164,7 @@ export function derive(a, P) {
   if (!sizes.length) {
     return { ...unbuilt(a, 'capacity', 'Nothing on our price list can be built with these choices. Widen the brand, bays or RAID level.'), sizes };
   }
-  if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, pending: true }; // waiting for a size
+  if (a.targetTB == null) return { ...unbuilt(a, 'capacity', null), sizes, pending: true };
   if (a.targetTB > sizes[sizes.length - 1]) return tooBig(a, P, sizes, sizes[sizes.length - 1]);
   const targetTB = sizes.includes(a.targetTB) ? a.targetTB : (nearestBuildable(a.targetTB, sizes) ?? a.targetTB);
   const builds = suggestBuilds({ targetTB, raid: a.raid, ...catalogue });
@@ -201,15 +182,6 @@ export function derive(a, P) {
   };
 }
 
-/* ---------------- which options can actually be built ---------------- */
-
-/**
- * The options worth offering, read off the same build pool the recommendation uses, so the
- * pickers can't drift from the catalogue. Grey out what can't be built; never hide it.
- * Bays are judged as if no size were pinned (or there'd be no way back), and only sizes the
- * array actually fills are offered; where nothing fits exactly, the least wasteful ones are.
- * Drive sizes are judged against the whole pool, lines against the chosen size.
- */
 export function feasibleOptions(a, P, d) {
   const bayPool = a.bays == null ? d.builds : derive({ ...a, bays: null }, P).builds;
   const byCap = a.driveCap == null ? d.builds : d.builds.filter((b) => b.driveCap === a.driveCap);
@@ -222,8 +194,6 @@ export function feasibleOptions(a, P, d) {
   }
   const tightest = spare.size ? Math.min(...spare.values()) : 0;
 
-  // How much one NAS can hold for each choice, so the pickers can grey out what can't reach the
-  // size asked for and say "Up to N TB" (capacity mode, once a size is chosen).
   const limits = a.storageMode === 'capacity' && a.targetTB != null ? {
     max: singleBoxMax(a, P),
     bays: Object.fromEntries([...new Set(P.models.map((m) => m.bays))].map((t) => [t, singleBoxMax({ ...a, bays: t }, P)])),
@@ -234,9 +204,6 @@ export function feasibleOptions(a, P, d) {
   const reaches = (limit) => !limits || limit >= a.targetTB;
 
   return {
-    // "Let us choose" mixes levels (a 2-bay mirror, a 4-bay RAID 5…), so every tier that can be
-    // built is a fair offer; with a fixed level, only the tiers the array fills most tightly.
-    // When the size doesn't fit at all, offer every tier that could hold it.
     bays: d.tooBig
       ? new Set(Object.entries(limits?.bays ?? {}).filter(([, max]) => max >= a.targetTB).map(([t]) => Number(t)))
       : d.auto
@@ -250,17 +217,8 @@ export function feasibleOptions(a, P, d) {
   };
 }
 
-/* ---------------- pricing ---------------- */
-
-/** The RAM / network card chosen, or null once it stops existing in the price list. */
 export const selectedUpgrade = (P, category, sku) => (sku ? P.upgrades.find((u) => u.sku === sku && u.category === category) ?? null : null);
 
-/**
- * The money for a build. Everything is GST inclusive. Installation is per chassis; AMC is a
- * percentage of hardware only. The floor is computed only when both the unit and the drive
- * carry a minimum (a partial floor misleads); upgrades and installation fall back to their
- * quote when they have none. Floors only exist on the staff payload.
- */
 export function priceFor(build, a, P) {
   if (!build) return null;
   const { units, drivesPerUnit, model, drive } = build;
@@ -296,7 +254,6 @@ export function priceFor(build, a, P) {
   };
 }
 
-/** What the build can do on the network, and the speed to quote (a network card can raise it). */
 export function speedFor(build, nic) {
   const net = networkFor(build?.model);
   const nicTopGb = nic ? topSpeed(`${nic.name} ${nic.spec ?? ''}`) : 0;
@@ -305,9 +262,6 @@ export function speedFor(build, nic) {
   return { net, nicTopGb, topGb, speed: label === '—' ? (net?.quotable ?? null) : label };
 }
 
-/* ---------------- estimate & lead ---------------- */
-
-/** Estimate rows for display, PDF and the lead, with the floor beside each when present. */
 export function estimateLines(build, price, a, P) {
   if (!build || !price) return [];
   const f = price.floor;
@@ -325,13 +279,11 @@ export function estimateLines(build, price, a, P) {
   return rows;
 }
 
-/** A reference for the estimate and the lead, e.g. NT-NAS-20261008-K3F9. */
 export function estimateRef(now = new Date()) {
   const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
   return `NT-NAS-${stamp}-${now.getTime().toString(36).slice(-4).toUpperCase()}`;
 }
 
-/** The configuration as plain text, filed with the lead so sales sees exactly what was configured. */
 export function leadSummary(d, build, price, speed, a, P, ref) {
   if (!build || !price) return '';
   const addons = [a.includeInstall ? 'Installation & setup (Delhi NCR)' : null, a.includeAMC ? `AMC (${Math.round(P.amcRate.quote * 100)}%)` : null].filter(Boolean).join(', ');

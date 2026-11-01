@@ -1,7 +1,6 @@
 import { Globe, Lock, ShieldCheck, Wallet } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 
-// Why a NAS, in four short lines, straight after the hero.
 const ADVANTAGES = [
   { icon: Wallet, title: 'No monthly fees', body: 'Pay once, unlike cloud plans' },
   { icon: ShieldCheck, title: 'Protected', body: 'RAID survives a drive failure' },

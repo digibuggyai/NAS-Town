@@ -1,15 +1,3 @@
-// Last build step: puts each public page's content into its HTML file.
-//
-// Before this, every page was an empty <div id="root"> until JavaScript ran, so search engines
-// that don't run scripts (Bing, most AI assistants, link previews) saw nothing. Now the page
-// content, links and prices are in the HTML itself.
-//
-// Visitors with JavaScript see no change: an inline script in index.html hides the pre-rendered
-// copy, React draws the page exactly as before and then shows it. Without JavaScript the
-// pre-rendered copy is the page.
-//
-// Runs after `vite build` (pages list and per-page <head> from scripts/seo-plugin.mjs) and
-// `vite build --ssr` (src/entry-prerender.jsx). Data comes from the live API, like the sitemap.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -28,7 +16,7 @@ try {
 
 const { render } = await import(pathToFileURL(path.join(work, 'ssr', 'entry-prerender.js')).href);
 const api = (job.apiUrl || '').replace(/\/+$/, '');
-const cache = new Map(); // API path -> response, shared by every page
+const cache = new Map();
 
 async function fetchApi(p) {
   if (cache.has(p)) return cache.get(p);
@@ -43,7 +31,6 @@ async function fetchApi(p) {
   return data;
 }
 
-/** Render, fetch whatever the page asked for, render again (pages that list then link need two rounds). */
 async function renderPage(url) {
   for (let round = 0; round < 4; round++) {
     const data = {};

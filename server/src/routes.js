@@ -13,7 +13,6 @@ router.get('/health', (_req, res) => {
   res.json({ ok: true, database: store.usingDatabase ? 'postgres' : 'memory' });
 });
 
-/** The public price list for the configurator. Never contains a floor price. */
 router.get('/nas-pricing', async (_req, res) => {
   try {
     res.set('Cache-Control', 'public, max-age=60');
@@ -36,7 +35,7 @@ async function products() {
 router.get('/products', async (req, res) => {
   const { brand, featured, rentable, page } = req.query;
   const b = clean(brand, 40)?.toLowerCase();
-  const pg = clean(page, 60); // a page key from placements.js, e.g. 'products' or 'solution:home'
+  const pg = clean(page, 60);
   res.json((await products()).filter((p) =>
     (!b || p.brand === b) && (featured !== 'true' || p.featured) && (rentable !== 'true' || p.rentable)
     && (!pg || p.pages.includes(pg))));
@@ -48,7 +47,6 @@ router.get('/products/:slug', async (req, res) => {
   res.json(product);
 });
 
-/** The finder runs the engine in the browser; this only records what was asked and shown. */
 router.post('/finder', async (req, res) => {
   const storing = clean(req.body?.storing, 40);
   const capacity = clean(req.body?.capacity, 40);
@@ -59,8 +57,6 @@ router.post('/finder', async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-// 8 enquiries per IP per 10 minutes: plenty for a person, and it stops the form (which sends
-// emails) being used to mail people in bulk.
 const enquiryHits = new Map();
 function enquiryAllowed(ip) {
   const now = Date.now();
@@ -88,14 +84,11 @@ router.post('/enquiries', async (req, res) => {
   const message = clean(b.message, 5000);
   const row = await store.createEnquiry({ type, name, email, phone, message, payload });
   res.status(201).json({ ok: true, id: row.id });
-  emailLead({ type, name, email, phone, message, payload }); // after replying: never slows or fails the form
+  emailLead({ type, name, email, phone, message, payload });
 });
-
-/* ---------------- offer coupons (configurator popups) ---------------- */
 
 export const COUPON_VALUE_INR = 2000;
 
-// 6 coupon requests per IP per 10 minutes: enough for a real customer, not for farming codes.
 const offerHits = new Map();
 function offerAllowed(ip) {
   const now = Date.now();
@@ -113,9 +106,9 @@ router.post('/offers', async (req, res) => {
   const email = clean(b.email, 200);
   const phone = clean(b.phone, 40) || null;
   const source = ['intro', 'quote'].includes(b.source) ? b.source : 'intro';
-  const summary = clean(b.summary, 4000) || null; // the configured quote, from the second popup
+  const summary = clean(b.summary, 4000) || null;
   const quoteTotal = Number.isFinite(Number(b.quoteTotal)) && Number(b.quoteTotal) > 0 ? Math.round(Number(b.quoteTotal)) : null;
-  const message = clean(b.message, 1000) || null; // e.g. a lower price they found elsewhere
+  const message = clean(b.message, 1000) || null;
   if (!name) return res.status(400).json({ error: 'Please tell us your name.' });
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
 
@@ -142,11 +135,8 @@ router.post('/offers', async (req, res) => {
   };
   await store.createEnquiry(lead);
   res.status(201).json({ code: coupon.code, valueInr: coupon.valueInr, isNew: coupon.isNew });
-  // The coupon email goes only the first time a code is issued to this address.
   emailLead({ ...lead, payload: { ...lead.payload, isNewCoupon: coupon.isNew } });
 });
-
-/* ---------------- staff sign-in ---------------- */
 
 router.post('/auth/login', async (req, res) => {
   if (!loginAllowed(req.ip)) return res.status(429).json({ error: 'Too many attempts. Try again in a few minutes.' });
@@ -154,7 +144,6 @@ router.post('/auth/login', async (req, res) => {
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   const user = email ? await store.findUserByEmail(email) : null;
   if (!user || !verifyPassword(password, user.passwordHash)) {
-    // A wrong password for a real staff account is worth knowing about (unknown emails are just noise).
     if (user) await store.logChanges([{ editor: user.email, collection: 'sign-ins', itemLabel: user.email, field: '(failed sign-in)', after: `wrong password · ${req.ip}` }]);
     return res.status(401).json({ error: 'Email or password is incorrect.' });
   }

@@ -1,5 +1,3 @@
-// Applies internal floor prices from floors.local.json to the database.
-// Usage (e.g. against Railway): DATABASE_URL=postgres://... npm run import-floors
 import 'dotenv/config';
 import * as store from './store.js';
 

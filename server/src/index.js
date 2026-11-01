@@ -15,15 +15,11 @@ const app = express();
 const port = process.env.PORT || 4000;
 const clientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
 
-// Allowed site addresses, comma-separated. Spaces and trailing slashes are ignored,
-// because browsers send the origin as e.g. "https://nastown.com" with neither.
 const origins = (process.env.CORS_ORIGIN ?? '').split(',').map((o) => o.trim().replace(/\/+$/, '')).filter(Boolean);
 app.use(cors({ origin: origins.length ? origins : true }));
-// Blog articles can be long (up to 200,000 characters of HTML), so the blog admin routes get a
-// larger limit; it must come first, as the general parser below skips an already-parsed body.
 app.use('/api/admin/blog', express.json({ limit: '1mb' }));
 app.use(express.json({ limit: '100kb' }));
-app.set('trust proxy', 1); // Railway sits behind a proxy; needed for per-IP login throttling
+app.set('trust proxy', 1);
 app.use('/api/admin', adminBlog);
 app.use('/api/admin', adminReviews);
 app.use('/api/admin', admin);
@@ -32,11 +28,8 @@ app.use('/api', publicReviews);
 app.use('/api', api);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found.' }));
 
-// In production the built React app is served from the same Railway service.
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist, { maxAge: '1h', index: false, redirect: false }));
-  // Each page has its own pre-rendered HTML (title, description, social card) from the build;
-  // anything else falls back to the app shell.
   app.get(/^\/(?!api\/).*/, (req, res) => {
     const page = path.join(clientDist, req.path, 'index.html');
     const own = page.startsWith(clientDist + path.sep) && fs.existsSync(page);

@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, getToken, setToken, SESSION_EXPIRED } from './api.js';
 
-// Staff session. The server re-checks the role on every request; this only
-// decides what to render.
 export function useAuth() {
   const [state, setState] = useState({ user: null, loading: Boolean(getToken()), expired: false });
 
-  // Any staff request answered with 401 (expired or revoked session) drops back to sign-in.
   useEffect(() => {
     const onExpired = () => setState((s) => (s.user ? { user: null, loading: false, expired: true } : s));
     window.addEventListener(SESSION_EXPIRED, onExpired);

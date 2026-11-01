@@ -10,7 +10,6 @@ import { usePricing } from '../lib/nas/usePricing.js';
 import { cheapestFor } from '../lib/nas/capacity.js';
 import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
-// Hub for the capacity pages: "NAS storage by capacity", one row per size with a live starting price.
 export default function CapacityIndex() {
   const { pricing: P } = usePricing('public');
   return (

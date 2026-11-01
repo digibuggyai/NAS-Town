@@ -5,7 +5,6 @@ import { finalCta } from '../data/home.js';
 import { waLink } from '../data/site.js';
 import { quoteText } from '../config/siteContent.js';
 
-// Closing call to action on inner pages, in the blue banner style.
 export default function FinalCta({ title = finalCta.title, body = finalCta.body }) {
   const lines = Array.isArray(body) ? body : [body];
   return (

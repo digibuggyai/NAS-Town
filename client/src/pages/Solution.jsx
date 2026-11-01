@@ -13,7 +13,7 @@ import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 export default function Solution() {
   const { slug } = useParams();
   const s = solutions.find((x) => x.slug === slug);
-  const { data } = useProducts({ page: `solution:${slug}` }); // chosen in Admin → Product pages
+  const { data } = useProducts({ page: `solution:${slug}` });
   if (!s) return <NotFound />;
   const Icon = s.icon;
   const picks = data ?? [];

@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { api } from '../lib/api.js';
 
-// Shared lead form. `type` maps to enquiries.type on the server; `payload` carries
-// context (selected service, configuration, rental details) and `extra` renders
-// additional fields whose values are merged into the payload.
 export default function EnquiryForm({ type = 'contact', payload = {}, extra, submitLabel = 'Send Enquiry', title, className = '' }) {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');

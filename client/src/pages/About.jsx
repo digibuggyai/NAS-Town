@@ -33,7 +33,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Part of DigiBuggy, and where to see NAS running live */}
       <section className="mx-auto grid max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-2">
         <Reveal className="glass rounded-xl p-8">
           <p className="eyebrow mb-4">Part of {parentCompany.name}</p>

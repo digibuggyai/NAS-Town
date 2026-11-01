@@ -31,12 +31,6 @@ const ReadLink = ({ small }) => (
   </span>
 );
 
-/**
- * Blog post card. Variants:
- *  - default: cover, meta, title, excerpt (grids)
- *  - feature: the highlighted newest post, large cover and headline
- *  - row: compact horizontal item beside the featured post
- */
 export default function PostCard({ post, variant = 'default' }) {
   const href = `/blog/${post.slug}`;
 

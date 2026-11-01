@@ -1,23 +1,14 @@
-// Clean-up for text pasted into the blog editor, so formatting copied from Google Docs,
-// Word, web pages or ChatGPT arrives looking the same. The editor then keeps only the
-// formatting it supports (headings, bold, italic, links, lists, quotes, code), and the
-// server sanitises again on save.
-
-/** Pasted HTML: fix the quirks of Word and Google Docs before the editor parses it. */
 export function cleanPastedHtml(html) {
   let out = html
-    .replace(/<!--[\s\S]*?-->/g, '') // Word conditional comments
+    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<\/?o:p[^>]*>/gi, '')
-    .replace(/<(\/?)h1(\s|>)/gi, '<$1h2$2') // the post title is the page's h1
+    .replace(/<(\/?)h1(\s|>)/gi, '<$1h2$2')
     .replace(/<(\/?)h[56](\s|>)/gi, '<$1h4$2')
-    // Pictures pasted from other sites or from Word (data: / file:) aren't kept: upload them
-    // with the Image button (or paste the image file itself) so they're stored with the post.
     .replace(/<img(?![^>]*\ssrc="(?:[^"]*\/api\/blog\/images\/\d+|\/images\/)[^"]*")[^>]*>/gi, '');
   if (/mso-list/i.test(out)) out = wordLists(out);
   return out;
 }
 
-/** Word pastes list items as styled paragraphs with a fake bullet; rebuild real lists. */
 function wordLists(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const items = [...doc.body.querySelectorAll('p')].filter((p) => /mso-list/i.test(p.getAttribute('style') ?? ''));
@@ -27,7 +18,6 @@ function wordLists(html) {
     const ordered = /^\s*(\d+|[a-z]|[ivx]+)[.)]/i.test(marker?.textContent ?? '');
     marker?.remove();
     const tag = ordered ? 'OL' : 'UL';
-    // Continue the list only if this item directly follows the previous one.
     if (!list || list.tagName !== tag || list.nextElementSibling !== p) {
       list = doc.createElement(tag);
       p.before(list);
@@ -40,11 +30,8 @@ function wordLists(html) {
   return doc.body.innerHTML;
 }
 
-/* ---------------- Markdown (e.g. ChatGPT's copy button) ---------------- */
-
 const MD_HINT = /^(#{1,6}\s|\s*[-*+]\s+\S|\s*\d+[.)]\s+\S|>\s?|```)|\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\s]+\)/m;
 
-/** Plain text that is clearly Markdown, not just prose. */
 export const looksLikeMarkdown = (text) => MD_HINT.test(text);
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -58,12 +45,11 @@ function inline(s) {
     .replace(/~~(?=\S)(.+?)(?<=\S)~~/g, '<s>$1</s>');
 }
 
-/** A small Markdown → HTML converter covering what articles use. */
 export function markdownToHtml(md) {
   const lines = md.replace(/\r\n?/g, '\n').split('\n');
   const out = [];
   let para = [];
-  let list = null; // { tag, items }
+  let list = null;
   let quote = [];
   const flushPara = () => { if (para.length) out.push(`<p>${inline(para.join(' '))}</p>`); para = []; };
   const flushList = () => { if (list) out.push(`<${list.tag}>${list.items.map((i) => `<li>${inline(i)}</li>`).join('')}</${list.tag}>`); list = null; };
@@ -96,7 +82,7 @@ export function markdownToHtml(md) {
       flushPara(); flushList();
       quote.push(m[1]);
     } else if (list && /^\s{2,}\S/.test(line)) {
-      list.items[list.items.length - 1] += ` ${line.trim()}`; // wrapped list item
+      list.items[list.items.length - 1] += ` ${line.trim()}`;
     } else {
       flushList(); flushQuote();
       para.push(line.trim());

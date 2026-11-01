@@ -3,7 +3,6 @@ import { ArrowLeft, ExternalLink, ImagePlus, Loader2, Pencil, Plus, Trash2, X } 
 import { api, formatPostDate, mediaUrl } from '../../lib/api.js';
 import { SITE_URL } from '../Seo.jsx';
 import PostSeoFields, { schemaProblem } from './PostSeoFields.jsx';
-// The editor is large (tables, images…), so it loads only when a post is opened.
 const RichEditor = lazy(() => import('./RichEditor.jsx'));
 
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -15,11 +14,10 @@ const EMPTY = {
   metaTitle: '', metaDescription: '', metaKeywords: '', faqs: [], schemaJson: '',
 };
 
-/** Admin → Blog: list, create, edit, publish/unpublish and delete posts. */
 export default function BlogManager() {
   const [posts, setPosts] = useState(null);
   const [error, setError] = useState('');
-  const [editing, setEditing] = useState(null); // null = list view; {} = new post; post = edit
+  const [editing, setEditing] = useState(null);
 
   const load = () => api.adminPosts().then(setPosts).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
@@ -91,7 +89,6 @@ export default function BlogManager() {
 
 function PostEditor({ post, onDone }) {
   const isNew = !post.id;
-  // Saved schema is compact JSON; show it indented so it's easy to edit.
   const pretty = (j) => { try { if (!j) return ''; const d = JSON.parse(j); return JSON.stringify(Array.isArray(d) && d.length === 1 ? d[0] : d, null, 2); } catch { return j; } };
   const [f, setF] = useState({ ...EMPTY, ...post, publishedAt: post.publishedAt ?? today(), faqs: post.faqs ?? [], schemaJson: pretty(post.schemaJson) });
   const [slugTouched, setSlugTouched] = useState(!isNew);
@@ -192,7 +189,6 @@ function PostEditor({ post, onDone }) {
         </div>
 
         <aside className="grid content-start gap-4">
-          {/* Cover image ("wallpaper") */}
           <div>
             <span className="mb-1 block text-sm text-muted">Cover image</span>
             <div

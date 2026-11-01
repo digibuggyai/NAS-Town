@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { headValues, jsonForScript, staticPages } from '../lib/seo.js';
 
-// Live site address for canonical links (set in vite.config.js); falls back to wherever the site is open.
 export const SITE_URL = (import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/+$/, '');
 
 function setTag(selector, create, attr, value) {
@@ -21,12 +20,6 @@ function newMeta(key, name) {
 }
 const setMeta = (key, name, value) => setTag(`meta[${key}="${name}"]`, () => newMeta(key, name), 'content', value);
 
-/**
- * Page title, description, canonical link, social card and structured data.
- * With no props it uses the fixed copy for the current path (lib/seo.js);
- * pages built from the database pass their own `title`, `description`, `jsonLd`…
- * The build writes the same tags into each page's HTML (scripts/seo-plugin.mjs); this keeps them right as people navigate.
- */
 export default function Seo(props) {
   const { pathname } = useLocation();
   const page = props.title ? props : staticPages(SITE_URL)[pathname.replace(/\/+$/, '') || '/'] ?? {};

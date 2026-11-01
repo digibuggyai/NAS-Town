@@ -1,20 +1,4 @@
-/* NAS sizing maths and build search. Pure functions: no DOM, no I/O, no React.
- *
- * A "build" is a complete proposal:
- *   { model, raid, driveCap, driveLine, drive: { quote, min? }, drivesPerUnit,
- *     units, totalUsable, spareBays, totalQuote }
- * where totalQuote is hardware only (the unit + drives), GST inclusive.
- *
- * ONE NAS, ALWAYS. A build is exactly one unit: never two, three or four boxes added together.
- * The search only ever fills the bays of a single chassis; `units` is always 1 and stays in
- * the build only so prices and summaries read it the same way everywhere. A need bigger than
- * one box can hold is reported (configure.js tooBig), never split across boxes.
- *
- * Nothing here reads a floor price; floors travel inside `drive` and `model`
- * only when the staff payload supplied them, and only priceFor() uses them. */
-
 export const MAX_BAYS = 8;
-// Kept for code that reads it; there is no multi-unit search left to switch on.
 export const MAX_UNITS = 1;
 export const STORAGE_MIN = 2;
 export const STORAGE_MAX = 200;
@@ -29,7 +13,6 @@ export const RAID_INFO = {
   RAID10: { title: 'RAID 10', sub: 'Mirror + stripe · fast rebuild', min: 4, step: 2, tolerance: 1, blurb: 'Mirrored pairs, striped. Fast rebuilds and good write speed; half the raw space is usable.' },
 };
 
-/** Usable TB from n drives of c TB at a RAID level. */
 export function usableForN(raid, n, c) {
   switch (raid) {
     case 'RAID0': return n * c;
@@ -41,7 +24,6 @@ export function usableForN(raid, n, c) {
   }
 }
 
-/** Drive counts a chassis of `bays` can run at this level. RAID 1 is always one pair. */
 export function driveCounts(raid, bays) {
   const { min, step } = RAID_INFO[raid];
   if (bays < min) return [];
@@ -51,8 +33,6 @@ export function driveCounts(raid, bays) {
   return out;
 }
 
-/** The fewest drives of `driveTB` that reach `targetTB` in ONE chassis of `maxBays`, or null
- *  if this chassis can't get there at this level. RAID 1 is always one mirrored pair. */
 export function computeDrives(raid, driveTB, targetTB, maxBays) {
   for (const n of driveCounts(raid, maxBays)) {
     const usable = usableForN(raid, n, driveTB);
@@ -71,7 +51,6 @@ export function modelMatches(m, { raid, brand = 'any', bays = null, expandableOn
   );
 }
 
-/** Drive capacities this chassis accepts (maxDriveTb is a hard per-bay ceiling). */
 export function capsFor(model, capacities) {
   return capacities.filter((c) => !model.maxDriveTb || c <= model.maxDriveTb);
 }
@@ -84,7 +63,7 @@ function makeBuild(model, raid, cap, line, drive, drivesPerUnit, totalUsable) {
     driveLine: line,
     drive,
     drivesPerUnit,
-    units: 1, // always one NAS
+    units: 1,
     totalUsable,
     spareBays: model.bays - drivesPerUnit,
     totalQuote: model.quote + drive.quote * drivesPerUnit,
@@ -93,14 +72,13 @@ function makeBuild(model, raid, cap, line, drive, drivesPerUnit, totalUsable) {
 
 const byPriceThenFit = (a, b) => a.totalQuote - b.totalQuote || a.totalUsable - b.totalUsable;
 
-/** Every single-NAS build that reaches targetTB, cheapest first. */
 export function suggestBuilds({ targetTB, raid, models, hddPricing, capacities, brand, bays, expandableOnly }) {
   const out = [];
   for (const model of models) {
     if (!modelMatches(model, { raid, brand, bays, expandableOnly })) continue;
     for (const cap of capsFor(model, capacities)) {
       const calc = computeDrives(raid, cap, targetTB, model.bays);
-      if (!calc) continue; // this chassis can't hold it with these drives
+      if (!calc) continue;
       for (const [line, drive] of Object.entries(hddPricing[cap] ?? {})) {
         out.push(makeBuild(model, raid, cap, line, drive, calc.drivesPerUnit, calc.totalUsable));
       }
@@ -109,13 +87,11 @@ export function suggestBuilds({ targetTB, raid, models, hddPricing, capacities, 
   return out.sort(byPriceThenFit);
 }
 
-/** Keep the first (best) build per model, preserving order. */
 export function bestBuildPerModel(builds) {
   const seen = new Set();
   return builds.filter((b) => (seen.has(b.model.id) ? false : (seen.add(b.model.id), true)));
 }
 
-/** Usable capacities that whole drives can deliver at this level in ONE NAS. */
 export function buildableSizes({ raid, models, capacities, hddPricing, brand, bays, expandableOnly }) {
   const sizes = new Set();
   for (const model of models) {
@@ -131,7 +107,6 @@ export function buildableSizes({ raid, models, capacities, hddPricing, brand, ba
   return [...sizes].sort((a, b) => a - b);
 }
 
-/** Closest buildable size; on a tie, the larger one (never under-deliver). */
 export function nearestBuildable(target, sizes) {
   let best = null;
   for (const s of sizes) {
@@ -143,7 +118,6 @@ export function nearestBuildable(target, sizes) {
   return best;
 }
 
-/** Every single-NAS build whose complete quote (hardware + extraCost) fits the budget, most usable space first. */
 export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, models, hddPricing, capacities, brand, bays, expandableOnly }) {
   const out = [];
   for (const model of models) {
@@ -152,7 +126,7 @@ export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, mode
       for (const [line, drive] of Object.entries(hddPricing[cap] ?? {})) {
         for (const n of driveCounts(raid, model.bays)) {
           const hardware = model.quote + drive.quote * n;
-          if (hardware + extraCost(hardware, 1) > budget) break; // more drives only cost more
+          if (hardware + extraCost(hardware, 1) > budget) break;
           out.push(makeBuild(model, raid, cap, line, drive, n, usableForN(raid, n, cap)));
         }
       }
@@ -161,19 +135,6 @@ export function suggestBuildsForBudget({ budget, raid, extraCost = () => 0, mode
   return out.sort((a, b) => b.totalUsable - a.totalUsable || a.totalQuote - b.totalQuote);
 }
 
-/* ---------------- "Let us choose": the RAID level follows the drive count ---------------- */
-
-/*
- * The level QNAP and Synology advise for a number of drives in one unit:
- *   2 drives    RAID 1  (QNAP: "recommended for NAS devices with two disks")
- *   3–5 drives  RAID 5  (one drive of parity; QNAP: "a good balance between data protection,
- *                        capacity, and speed"; Synology's SHR-1 is the same protection)
- *   6+ drives   RAID 6  (two drives of parity; Synology's SHR-2 advice. With more and larger
- *                        drives, a RAID 5 rebuild reads so much data that one unreadable
- *                        sector or a second failure loses the array; RAID 6 survives both)
- * RAID 10 is for databases and heavy random I/O, and RAID 0 has no protection, so neither
- * is ever chosen for the customer; both stay one click away.
- */
 export const AUTO_RAID_LEVELS = ['RAID1', 'RAID5', 'RAID6'];
 
 export function advisedRaid(drives) {
@@ -184,29 +145,20 @@ export function advisedRaid(drives) {
 
 export const followsRaidAdvice = (b) => advisedRaid(b.drivesPerUnit) === b.raid;
 
-/** Keep the builds that follow the advice (all of them if none can). */
 function preferAdvised(builds) {
   const advised = builds.filter(followsRaidAdvice);
   return advised.length ? advised : builds;
 }
 
-/** Sizes buildable at any level "Let us choose" may pick. */
 export function autoBuildableSizes(opts) {
   return [...new Set(AUTO_RAID_LEVELS.flatMap((raid) => buildableSizes({ ...opts, raid })))].sort((a, b) => a - b);
 }
 
-/** Capacity mode, "Let us choose": every advised build that reaches the target, at whichever
- *  level suits its drive count, cheapest first. Each build carries its own `raid`. */
 export function suggestAutoBuilds(opts) {
   const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuilds({ ...opts, raid }));
   return preferAdvised(all).sort(byPriceThenFit);
 }
 
-/**
- * Budget mode, "Let us choose": the advised build that turns the budget into the most usable
- * space, at whichever level suits its drive count. Only if nothing protected is affordable
- * does it fall back to RAID 0.
- */
 export function suggestBudgetPlan(opts) {
   const all = AUTO_RAID_LEVELS.flatMap((raid) => suggestBuildsForBudget({ ...opts, raid }));
   if (all.length) {
@@ -217,7 +169,6 @@ export function suggestBudgetPlan(opts) {
   return raid0.length ? { raid: 'RAID0', builds: raid0, redundant: false } : null;
 }
 
-/** The least a complete configuration can cost with these filters, or null if nothing can be built. */
 export function cheapestOutlay({ raidPool = RAID_LEVELS, extraCost = () => 0, models, hddPricing, capacities, brand, bays, expandableOnly }) {
   let least = null;
   for (const raid of raidPool) {
@@ -237,9 +188,6 @@ export function cheapestOutlay({ raidPool = RAID_LEVELS, extraCost = () => 0, mo
   return least;
 }
 
-/* ---------------- network ---------------- */
-
-/** Fastest port speed in Gb/s parsed from a port string like "10GbE SFP+ ×2 + 2.5GbE ×2". */
 export function topSpeed(ports = '') {
   let top = 0;
   for (const m of String(ports).matchAll(/(\d+(?:\.\d+)?)\s*GbE/gi)) top = Math.max(top, Number(m[1]));
@@ -253,7 +201,6 @@ export function labelForSpeed(gbps) {
   return '—';
 }
 
-/** Network is derived and displayed, never asked. */
 export function networkFor(model) {
   if (!model) return null;
   const topGb = topSpeed(model.network);
@@ -261,7 +208,6 @@ export function networkFor(model) {
   return { speed, quotable: speed === '—' ? null : speed, topGb, ports: model.network, builtIn: model.network || null, upgrade: model.networkUpgrade || null };
 }
 
-/** The fastest built-in network among a shortlist, e.g. for "need more throughput?" hints. */
 export function bestNetworkAmong(builds) {
   let best = null;
   for (const b of builds) {

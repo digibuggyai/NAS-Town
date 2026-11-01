@@ -1,16 +1,8 @@
-// Product filters for /products. Every filter lives in the URL (?bays=4&brand=synology&use=creators)
-// so links from the footer, capacity pages and old navbar (?bays=2, ?type=rackmount) keep working.
-// One value per filter keeps those links short and readable.
 import { brandName, capacityPages } from '../data/site.js';
 
-/** Fastest built-in port in Gb/s, from a network string like "10GbE SFP+ ×2 + 2.5GbE ×2". */
 export const topGbe = (network = '') =>
   Math.max(0, ...[...String(network).matchAll(/(\d+(?:\.\d+)?)\s*GbE/gi)].map((m) => Number(m[1])));
 
-/**
- * The most usable space a unit can reach on its own with protection: one drive of parity on
- * 3+ bays (RAID 5), a mirror on 2 bays (RAID 1), using the largest drive we sell that it takes.
- */
 export function maxProtectedTb(p, largestDrive) {
   const drive = Math.min(p.max_drive_tb || Infinity, largestDrive || p.max_drive_tb || 0);
   if (!drive || !Number.isFinite(drive)) return 0;
@@ -30,12 +22,11 @@ const BAYS = {
   4: { label: '4-Bay', test: (p) => p.bays === 4 },
   5: { label: '5-Bay', test: (p) => p.bays === 5 },
   '6-8': { label: '6/8-Bay', test: (p) => p.bays >= 6 },
-  // No rackmount units are listed yet: these are specified per deployment (see the empty state).
   rackmount: { label: 'Rackmount', test: (p) => p.form_factor === 'rackmount' },
 };
 
 const NET = {
-  1: { label: '1GbE', test: (p) => topGbe(p.network) === 1 }, // entry units: 1GbE only
+  1: { label: '1GbE', test: (p) => topGbe(p.network) === 1 },
   2.5: { label: '2.5GbE+', test: (p) => topGbe(p.network) >= 2.5 },
   10: { label: '10GbE', test: (p) => topGbe(p.network) >= 10 },
 };
@@ -53,7 +44,6 @@ export const SORTS = [
   ['bays', 'Drive bays: fewest first'],
 ];
 
-/** The filter groups for these products (brands come from the data, not a fixed list). */
 export function filterGroups(products) {
   const brands = [...new Set(products.map((p) => p.brand))].sort();
   return [
@@ -66,7 +56,6 @@ export function filterGroups(products) {
   ];
 }
 
-/** Current filters from the URL, including the old ?type=rackmount link. */
 export function readFilters(params) {
   const f = {};
   for (const key of ['bays', 'brand', 'cap', 'use', 'net', 'price', 'sort']) {

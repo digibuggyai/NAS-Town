@@ -15,26 +15,18 @@ import { Dialog } from './parts.jsx';
 import { Badge, CheckTile, InfoHover, SpecList, StepCard, Tile } from './ui.jsx';
 import { IntroPopup, QuoteOfferPopup } from './OfferPopups.jsx';
 
-/* The NAS configurator: the same engine and question order as the DGB India configurator,
- * in NASTOWN's design. One Answers object in, everything else derived on every change.
- * `source="public"` reads the public price list; `source="sales"` (admin) reads the staff
- * payload and shows the floor beside every line. */
-
 const SHORTLIST = 5;
 
-/** Why "Let us choose" landed on a level (the advice in logic.js advisedRaid, from QNAP and Synology). */
 const AUTO_REASON = {
   RAID1: 'two drives are mirrored, the setup QNAP and Synology advise for a 2-drive NAS.',
   RAID5: 'one drive of parity, the usual balance of space and protection for 3 to 5 drives.',
   RAID6: 'two drives of parity. With 6 or more drives a rebuild takes long enough that a second failure is a real risk, so RAID 6 survives two.',
 };
 
-/** Answers seeded from the URL: ?model=slug&target=20&raid=RAID5 */
 function initialAnswers(P, params) {
   const a = { ...INITIAL_ANSWERS };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
-  // ?brand=synology from a brand page: recommend only that brand's units.
   const brand = P.models.find((m) => m.brand.toLowerCase() === params?.get('brand')?.toLowerCase())?.brand;
   if (brand) a.brand = brand;
   const raid = params?.get('raid');
@@ -50,7 +42,7 @@ function initialAnswers(P, params) {
 
 export default function Configurator({ source = 'public', params }) {
   const { pricing, error, loading, reload } = usePricing(source);
-  const [openedAt] = useState(() => Date.now()); // popup timings count from page open
+  const [openedAt] = useState(() => Date.now());
 
   if (loading) {
     return (
@@ -85,10 +77,10 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const { net, speed } = useMemo(() => speedFor(d.build, price?.nicItem), [d.build, price]);
   const [ref] = useState(() => estimateRef());
   const build = d.build;
-  const started = !d.pending; // nothing is selected or priced until a size or budget is chosen
+  const started = !d.pending;
   const summary = build && price ? leadSummary(d, build, price, speed, a, P, ref) : '';
 
-  const [dialog, setDialog] = useState(null); // { kind: 'model' | 'line' | 'compare', item }
+  const [dialog, setDialog] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const [quoteSent, setQuoteSent] = useState(false);
   const [pdfBlocked, setPdfBlocked] = useState(false);
@@ -117,7 +109,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
     return best && net && best.topGb > net.topGb ? best : null;
   }, [d.options, net]);
 
-  // Mobile: a bar with the running total appears once the estimate panel is out of view.
   const panelRef = useRef(null);
   const [panelVisible, setPanelVisible] = useState(true);
   useEffect(() => {
@@ -128,7 +119,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
     return () => io.disconnect();
   }, []);
 
-  const [quoteOpen, setQuoteOpen] = useState(false); // the formal-quotation form, in a popup
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const downloadPdf = () => {
     if (!build || !price) return;
     setPdfBlocked(!openEstimatePdf({ ref, build, price, lines, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
@@ -137,12 +128,11 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, interacted, quoteReady: Boolean(build && price), quoteSent, openedAt });
   const hasFloor = sales && price?.floor;
   const room = hasFloor ? price.total - price.floor.total : null;
-  let n = 0; // step numbers, so a hidden step doesn't leave a gap
+  let n = 0;
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="grid gap-4 xl:grid-cols-2">
-        {/* 1 Storage */}
         <StepCard
           n={++n}
           title="How much storage do you need?"
@@ -194,7 +184,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           )}
         </StepCard>
 
-        {/* 2 RAID */}
         <StepCard n={++n} locked={!started} title="RAID Protection" hint="How drives are arranged: how much raw capacity is usable, and how many drive failures the array survives.">
           <div className="grid gap-2">
             <Tile active={started && a.raidAuto} disabled={started && !can.reaches(can.limits?.auto)} onClick={() => set({ raidAuto: true })} title={<span className="inline-flex items-center gap-1.5"><Sparkles className="size-3.5" /> Let us choose</span>} aside={<span className="shrink-0 pt-0.5 text-xs text-subtle">Matched to the drive count</span>} />
@@ -217,7 +206,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           )}
         </StepCard>
 
-        {/* 3 Bays */}
         <StepCard n={++n} locked={!started} title="Drive bays" hint="How many drives the unit holds. Auto picks the size that fits best.">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             <Tile active={started && a.bays == null} onClick={() => set({ bays: null })} title="Auto" sub="Best fit" />
@@ -227,7 +215,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           </div>
         </StepCard>
 
-        {/* 4 Brand */}
         <StepCard n={++n} locked={!started} title="Brand" hint="Leave it open unless you have a preference: it widens what we can recommend.">
           <div className="grid grid-cols-3 gap-2">
             <Tile active={started && a.brand === 'any'} onClick={() => set({ brand: 'any' })} title="Any" sub="Recommend from all" />
@@ -238,7 +225,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           </div>
         </StepCard>
 
-        {/* 5 Room to expand */}
         <StepCard n={++n} wide locked={!started} title="Room to expand" hint="Optional. Some units take an expansion enclosure for more drives later.">
           <div className="grid items-center gap-3 sm:grid-cols-2">
             <CheckTile checked={a.expandable} onChange={(v) => set({ expandable: v })} title="I want room to expand later" sub="Only recommend units that take an expansion unit" />
@@ -265,7 +251,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
           </div>
         ) : build && (
           <>
-            {/* 6 Recommended unit */}
             <StepCard n={++n} wide title="Recommended NAS" hint="Worked out from your choices: unit, drives and drive count together, best value first.">
               <p className="mb-3 text-sm text-muted">
                 {d.mode === 'budget'
@@ -327,7 +312,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </div>
             </StepCard>
 
-            {/* 7 Network: shown, never asked */}
             <StepCard n={++n} title="Network speed" hint="What the recommended unit connects at out of the box.">
               <p className="text-sm"><span className="font-medium">{build.model.model}</span> ships with <span className="font-medium">{build.model.network || 'no network ports on record'}</span>.</p>
               {better && <p className="mt-1 text-sm text-muted">Need more throughput? The {better.model.model} has {better.builtIn} built in.</p>}
@@ -339,7 +323,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </div>
             </StepCard>
 
-            {/* 8 Drives */}
             <StepCard n={++n} title="Drives" hint="We pick these for you. Choose a size or drive line and the recommendation updates.">
               <p className="text-sm">Recommended: <span className="font-medium">{price.totalDrives}× {build.driveCap} TB {build.driveLine}</span> <span className="text-muted">· {inr(build.drive.quote)} each</span></p>
               <p className="mt-4 mb-2 text-xs font-semibold tracking-wide text-subtle uppercase">Drive size</p>
@@ -380,7 +363,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </ul>
             </StepCard>
 
-            {/* 9 Upgrades: hidden entirely when nothing is priced */}
             {P.upgrades.length > 0 && (
               <StepCard n={++n} title="RAM & network upgrades" hint="Charged per unit.">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -397,7 +379,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
               </StepCard>
             )}
 
-            {/* 10 Installation & support */}
             <StepCard n={++n} wide={P.upgrades.length === 0} title="Installation & support" hint="Both optional.">
               <div className="grid gap-2 sm:grid-cols-2">
                 <CheckTile checked={a.includeInstall} onChange={(v) => set({ includeInstall: v })} title="On-site installation & setup" sub="Delhi NCR only. Racking, RAID configuration and network setup. Charged per NAS unit." price={inr(P.install.quote)} priceSub="per unit" />
@@ -409,7 +390,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         )}
       </div>
 
-      {/* Estimate: sticky on desktop */}
       <aside ref={panelRef} className="lg:sticky lg:top-24" aria-label="Your estimate">
         <div className="overflow-hidden rounded-2xl border border-line bg-raised shadow-[0_18px_40px_-24px_rgb(15_23_42/0.35)]">
           <div className="bg-fg px-5 py-5 text-white">
@@ -482,7 +462,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </div>
       </aside>
 
-      {/* Mobile bar when the estimate panel is off screen */}
       {build && price && !panelVisible && (
         <div className="fixed bottom-3 left-3 right-[5.25rem] z-40 flex items-center justify-between gap-3 rounded-2xl bg-fg py-2.5 pr-2.5 pl-4 text-white shadow-2xl lg:hidden">
           <div className="min-w-0 text-sm">
@@ -493,7 +472,6 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </div>
       )}
 
-      {/* Specifications and comparison */}
       <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.model.brand} ${dialog.item.model.model}` : ''}>
         {dialog?.kind === 'model' && (
           <>
@@ -575,7 +553,6 @@ function CompareTable({ builds, selectedId, onPick }) {
   );
 }
 
-/** The inline formal-quotation request: files a lead with the full configuration. */
 function QuoteForm({ refCode, summary, build, price, a, d, sent, onSent, onDone }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -653,10 +630,6 @@ function CopySummary({ text }) {
   );
 }
 
-/* Offer popups, at most two per visit:
- *   'intro': 10 s after the configurator opens, if the visitor hasn't touched anything yet.
- *   'quote': 10 s after they start configuring (it shows their own quote).
- * Neither opens once they've requested the formal quotation. */
 const OFFER_DELAY_MS = 10000;
 
 function useOfferPopups({ enabled, interacted, quoteReady, quoteSent, openedAt }) {
@@ -676,14 +649,12 @@ function useOfferPopups({ enabled, interacted, quoteReady, quoteSent, openedAt }
     if (!enabled) return;
     const t = setTimeout(() => !now.current.interacted && show('intro'), Math.max(0, OFFER_DELAY_MS - (Date.now() - openedAt)));
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   useEffect(() => {
     if (!enabled || !interacted) return;
     const t = setTimeout(() => now.current.quoteReady && show('quote'), OFFER_DELAY_MS);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, interacted]);
 
   return { popup, closePopup: () => setPopup(null), offer, setOffer };

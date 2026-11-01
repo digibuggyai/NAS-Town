@@ -19,10 +19,6 @@ import Seo from '../components/Seo.jsx';
 import { waLink } from '../data/site.js';
 import { quoteText } from '../config/siteContent.js';
 
-// Order: what you get (hero, NAS advantages, numbers), the configurator, who it's for, what it is, why it beats
-// the alternatives, how buying works. Trust follows (brands, customers, reviews, the group),
-// then reading, questions and one last ask. Sections with no real content yet (numbers,
-// customers, reels) hide themselves.
 export default function Home() {
   return (
     <>
@@ -30,7 +26,6 @@ export default function Home() {
       <Hero />
       <NasAdvantages />
       <StatsStrip />
-      {/* The configurator is the main way to buy, so it comes straight after the hero. */}
       <BuildYourNas />
       <Solutions />
       <FeatureRows />

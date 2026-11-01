@@ -4,9 +4,6 @@ import PageHero from '../components/PageHero.jsx';
 import Savings from '../sections/Savings.jsx';
 import Seo from '../components/Seo.jsx';
 
-// Two connected parts: the Finder recommends a NAS, and the savings section below starts from
-// that answer (size and top pick) to compare it with cloud storage and external drives.
-// /tools/calculator now lands on #roi here.
 export default function FinderPage() {
   const [preset, setPreset] = useState(null);
   return (

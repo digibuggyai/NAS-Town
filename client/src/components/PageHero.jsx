@@ -1,7 +1,6 @@
 import Reveal from './Reveal.jsx';
 import { Accented } from './SplitHeading.jsx';
 
-// Top of every inner page: label, the SEO H1 and the intro, left-aligned on a rule.
 export default function PageHero({ eyebrow, title, intro, children, aside }) {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-28 pb-12 sm:px-6 md:pt-36 md:pb-16">

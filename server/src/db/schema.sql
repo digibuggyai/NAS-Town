@@ -1,7 +1,3 @@
--- NASTOWN schema. Safe to run repeatedly (applied on every server start).
--- All prices are INR, GST inclusive. min_price columns are internal floors:
--- they are only ever read by staff routes.
-
 CREATE TABLE IF NOT EXISTS nas_models (
   id                   SERIAL PRIMARY KEY,
   model                TEXT UNIQUE NOT NULL,
@@ -70,7 +66,7 @@ CREATE TABLE IF NOT EXISTS nas_drive_lines (
 CREATE TABLE IF NOT EXISTS nas_upgrades (
   id           SERIAL PRIMARY KEY,
   sku          TEXT UNIQUE NOT NULL,
-  category     TEXT NOT NULL,              -- RAM | NIC
+  category     TEXT NOT NULL,
   name         TEXT NOT NULL,
   brand        TEXT,
   spec         TEXT,
@@ -80,7 +76,6 @@ CREATE TABLE IF NOT EXISTS nas_upgrades (
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Singleton row (id = 1).
 CREATE TABLE IF NOT EXISTS nas_settings (
   id                  INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   install_quote       INTEGER NOT NULL,
@@ -111,7 +106,6 @@ CREATE TABLE IF NOT EXISTS users (
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Every form on the site (contact, rental, service, configurator, expert call) lands here.
 CREATE TABLE IF NOT EXISTS enquiries (
   id            SERIAL PRIMARY KEY,
   type          TEXT NOT NULL,
@@ -133,23 +127,18 @@ CREATE TABLE IF NOT EXISTS finder_submissions (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Columns added after first release (safe on existing databases).
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS best_for TEXT;
--- Site pages that list this model (Admin → Product pages). NULL = not yet assigned.
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS pages TEXT[];
--- Per-drive identification: manufacturer part number and specs for that capacity.
 ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS part_number TEXT;
 ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS rpm TEXT;
 ALTER TABLE nas_drives ADD COLUMN IF NOT EXISTS cache TEXT;
 
--- Blog-only staff accounts (added after first release).
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
 ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'sales', 'blog'));
 
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries (type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_change_log_created ON nas_change_log (created_at DESC);
 
--- Blog. Body is plain text: blank line = new paragraph, a line starting "## " = subheading.
 CREATE TABLE IF NOT EXISTS blog_posts (
   id            SERIAL PRIMARY KEY,
   slug          TEXT UNIQUE NOT NULL,
@@ -165,7 +154,6 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Uploaded cover images live in the database so they survive redeploys.
 CREATE TABLE IF NOT EXISTS blog_images (
   id          SERIAL PRIMARY KEY,
   mime        TEXT NOT NULL,
@@ -174,15 +162,12 @@ CREATE TABLE IF NOT EXISTS blog_images (
 );
 
 CREATE INDEX IF NOT EXISTS idx_blog_published ON blog_posts (published, published_at DESC);
--- SEO fields per post: search-result title/description, keywords, FAQs (shown on the post and
--- sent as FAQPage schema) and extra JSON-LD written by the editor. All optional.
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_title TEXT;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_description TEXT;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS meta_keywords TEXT;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS faqs TEXT;
 ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS schema_json TEXT;
 
--- Offer coupons (configurator popups). One per customer email; every code is unique.
 CREATE TABLE IF NOT EXISTS coupons (
   id           SERIAL PRIMARY KEY,
   code         TEXT UNIQUE NOT NULL,
@@ -195,19 +180,16 @@ CREATE TABLE IF NOT EXISTS coupons (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_email ON coupons (lower(email));
--- Coupon details shown in Admin → Coupons: the latest quote and the customer's message.
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS quote_total INTEGER;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS quote_summary TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS source TEXT;
 ALTER TABLE coupons ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
--- Customer reviews: written on the site (start as 'pending') or added by staff from
--- Google / WhatsApp / in person. Only 'published' ones are shown publicly.
 CREATE TABLE IF NOT EXISTS reviews (
   id          SERIAL PRIMARY KEY,
   name        TEXT NOT NULL,
-  email       TEXT,                 -- never shown publicly
+  email       TEXT,
   city        TEXT,
   product     TEXT,
   rating      INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
@@ -218,11 +200,8 @@ CREATE TABLE IF NOT EXISTS reviews (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews (status, created_at DESC);
--- What the reviewer does ("Photographer", "CA firm"): shown publicly instead of their name.
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS role TEXT;
 
--- The change log is permanent. Entries can only be added: any UPDATE, DELETE or TRUNCATE on
--- the table is refused by the database itself, whatever code or tool sends it.
 CREATE OR REPLACE FUNCTION nas_change_log_is_permanent() RETURNS trigger AS $$
 BEGIN
   RAISE EXCEPTION 'The change log is permanent: entries cannot be changed or deleted.';
@@ -235,12 +214,9 @@ DROP TRIGGER IF EXISTS change_log_no_truncate ON nas_change_log;
 CREATE TRIGGER change_log_no_truncate BEFORE TRUNCATE ON nas_change_log
   FOR EACH STATEMENT EXECUTE FUNCTION nas_change_log_is_permanent();
 
--- Catalogue shared with DGB India (catalogue.json): cores are described in words
--- ("4 cores / 8 threads, 2.2 GHz"), and units note how they expand.
 ALTER TABLE nas_models ALTER COLUMN cpu_cores TYPE TEXT USING cpu_cores::text;
 ALTER TABLE nas_models ADD COLUMN IF NOT EXISTS expansion_note TEXT;
 
--- Small key/value notes the server keeps about itself, e.g. which catalogue file it applied.
 CREATE TABLE IF NOT EXISTS app_meta (
   key    TEXT PRIMARY KEY,
   value  TEXT

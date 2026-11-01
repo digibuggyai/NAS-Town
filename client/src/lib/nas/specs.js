@@ -1,22 +1,12 @@
-/* Specifications of a unit, and of the configuration built on it, as label/value pairs:
- * one source for the hover card, the specifications dialog and the comparison table, so
- * the three can't disagree. Same rules as the DGB India configurator.
- *
- * Only what the price list records, which is what the maker's own spec page says. A
- * specification nobody filled in is left out rather than guessed: these go to customers. */
-
 import { RAID_INFO, inr } from './logic.js';
 
 const raidList = (model) => (model.raid ?? []).map((r) => RAID_INFO[r]?.title ?? r).join(', ');
 
-/** How far a unit grows with expansion attached: bays × largest drive, which is how the
- *  makers arrive at their own raw figures. Null when it doesn't expand or the bay total isn't on record. */
 export function expansion(model) {
   if (!model.expandable || !model.baysWithExpansion || model.baysWithExpansion <= model.bays) return null;
   return { bays: model.baysWithExpansion, rawTb: model.maxDriveTb ? model.baysWithExpansion * model.maxDriveTb : null };
 }
 
-/** The same as a phrase, "9 bays · up to 216 TB raw", or the maker's note where no total is published. */
 export function expansionLabel(model) {
   const grown = expansion(model);
   if (grown) return `${grown.bays} bays${grown.rawTb ? ` · up to ${grown.rawTb} TB raw` : ''}`;
@@ -25,7 +15,6 @@ export function expansionLabel(model) {
 
 export const expansionIsMeasured = (model) => expansion(model) !== null;
 
-/** A short badge for the shortlist: "Expandable to 12 bays · 384 TB raw" or "Expandable via USB enclosure". */
 export function expansionBadge(model) {
   if (!model.expandable) return null;
   const grown = expansion(model);
@@ -42,7 +31,6 @@ function expansionText(model) {
   return expansionLabel(model) ? `Supported: ${expansionLabel(model)}` : 'Supported';
 }
 
-/** The unit itself, independent of what's configured on it. */
 export function modelSpecs(model) {
   return [
     row('Brand', model.brand),
@@ -67,15 +55,12 @@ export function modelSpecs(model) {
   ].filter(Boolean);
 }
 
-/** The few that decide a shortlist: for the hover card. */
 const KEY_LABELS = ['Drive bays', 'Processor', 'Memory', 'Network ports', 'Expansion unit'];
 export function keySpecs(model) {
   const all = modelSpecs(model);
   const picked = KEY_LABELS.map((label) => all.find((s) => s.label === label)).filter(Boolean);
   return picked.length >= 3 ? picked : all.filter((s) => s.label !== 'Brand').slice(0, 5);
 }
-
-/* ---------------- drives ---------------- */
 
 export const findLine = (lines, name) => lines.find((l) => l.name.toLowerCase() === String(name).trim().toLowerCase());
 
@@ -105,14 +90,11 @@ export function keyDriveSpecs(line) {
   return picked.length >= 3 ? picked : all.slice(0, 5);
 }
 
-/** The workload rating in TB/year ("Up to 180 TB/year" → 180), or null if it can't be read. */
 function workloadTb(line) {
   const m = String(line.workloadTbYear ?? '').match(/(\d[\d,]*)\s*TB/i);
   return m ? Number(m[1].replace(/,/g, '')) : null;
 }
 
-/** What's worth saying about this drive family in this unit. Advisory only: every priced
- *  combination runs; these are the things a customer would otherwise find out after buying. */
 export function driveNotes(model, line, drivesPerUnit) {
   const notes = [];
   if (!line) return notes;
@@ -139,7 +121,6 @@ export function driveNotes(model, line, drivesPerUnit) {
   return notes;
 }
 
-/** This configuration on that unit. */
 export function buildSpecs(build, raid = build.raid) {
   return [
     { label: 'Usable capacity', value: `${build.totalUsable} TB` },
@@ -151,8 +132,6 @@ export function buildSpecs(build, raid = build.raid) {
   ];
 }
 
-/** One row per specification, one column per shortlisted unit. Every cell is filled:
- *  a blank would read as a missing feature. */
 export function compareRows(builds) {
   const rows = [
     ['Brand', (b) => b.model.brand],
@@ -166,7 +145,7 @@ export function compareRows(builds) {
     ['Usable capacity', (b) => `${b.totalUsable} TB`],
     ['Drives', (b) => `${b.drivesPerUnit} × ${b.driveCap} TB ${b.driveLine}`],
     ['Spare bays', (b) => `${b.spareBays}`],
-    ['RAID level', (b) => RAID_INFO[b.raid].title], // each build carries its own level ("Let us choose" mixes them)
+    ['RAID level', (b) => RAID_INFO[b.raid].title],
     ['RAID supported', (b) => raidList(b.model) || '—'],
     ['Network ports', (b) => b.model.network || 'Not recorded'],
     ['Network upgrade', (b) => b.model.networkUpgrade || 'None'],

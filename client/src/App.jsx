@@ -2,7 +2,6 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
-// Every other page loads on first visit, so phones download the home page first and fast.
 const Products = lazy(() => import('./pages/Products.jsx'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail.jsx'));
 const Solution = lazy(() => import('./pages/Solution.jsx'));
@@ -22,12 +21,9 @@ const ResourcesIndex = lazy(() => import('./pages/ResourcesIndex.jsx'));
 const CapacityIndex = lazy(() => import('./pages/CapacityIndex.jsx'));
 const CapacityPage = lazy(() => import('./pages/CapacityPage.jsx'));
 
-// Staff area: loaded only when visited (linked quietly from the footer).
 const AdminApp = lazy(() => import('./pages/admin/AdminApp.jsx'));
 
 export default function App() {
-  // The page's HTML may hold a pre-rendered copy (scripts/prerender.mjs), hidden while the app
-  // loads. React has now replaced it, so show the page.
   useEffect(() => document.getElementById('root')?.removeAttribute('data-prerendered'), []);
   return (
     <Routes>
@@ -40,12 +36,11 @@ export default function App() {
         <Route path="nas/:size" element={<CapacityPage />} />
         <Route path="solutions" element={<SolutionsIndex />} />
         <Route path="solutions/:slug" element={<Solution />} />
-        <Route path="brands/other" element={<Navigate to="/brands/asustor" replace />} />{/* old address */}
+        <Route path="brands/other" element={<Navigate to="/brands/asustor" replace />} />
         <Route path="brands/:slug" element={<Brand />} />
         <Route path="rent" element={<Rent />} />
         <Route path="services" element={<ServicesIndex />} />
         <Route path="services/:slug" element={<Service />} />
-        {/* Merged into the Finder (the server also answers 301, vercel.json). */}
         <Route path="tools/calculator" element={<Navigate to={{ pathname: '/finder', hash: '#roi' }} replace />} />
         <Route path="tools/configurator" element={<Configurator />} />
         <Route path="finder" element={<FinderPage />} />

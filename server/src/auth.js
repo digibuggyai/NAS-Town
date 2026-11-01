@@ -1,5 +1,3 @@
-// Staff authentication: scrypt password hashes and HMAC-signed bearer tokens.
-// Role checks happen here, on the server, never only in the UI.
 import crypto from 'node:crypto';
 import * as store from './db/store.js';
 
@@ -41,7 +39,6 @@ function readToken(token) {
   return claims.exp > Date.now() ? claims : null;
 }
 
-/** Express middleware: require a signed-in user with one of the given roles. */
 export const requireRole = (...roles) => (req, res, next) => {
   const token = req.get('authorization')?.replace(/^Bearer\s+/i, '');
   let claims = null;
@@ -51,14 +48,12 @@ export const requireRole = (...roles) => (req, res, next) => {
   req.user = claims;
   next();
 };
-// admin: everything · sales: configurator (with floors) + leads · blog: the blog only.
 export const ROLES = ['admin', 'sales', 'blog'];
 export const requireAdmin = requireRole('admin');
 export const requireStaff = requireRole('admin', 'sales');
 export const requireBlog = requireRole('admin', 'blog');
 export const requireSignedIn = requireRole(...ROLES);
 
-// Simple login throttle: 8 attempts per IP per 10 minutes.
 const attempts = new Map();
 export function loginAllowed(ip) {
   const now = Date.now();
@@ -68,7 +63,6 @@ export function loginAllowed(ip) {
   return recent.length <= 8;
 }
 
-/** Create the first admin from ADMIN_EMAIL / ADMIN_PASSWORD when no admin exists yet. */
 export async function bootstrapAdmin() {
   if ((await store.countAdmins()) > 0) return;
   let email = process.env.ADMIN_EMAIL;
@@ -78,7 +72,6 @@ export async function bootstrapAdmin() {
       console.warn('[auth] No admin exists. Set ADMIN_EMAIL and ADMIN_PASSWORD and restart to create one.');
       return;
     }
-    // Local in-memory development only.
     email = 'admin@nastown.local';
     password = crypto.randomBytes(9).toString('base64url');
     console.warn(`[auth] Dev admin created: ${email} / ${password}`);

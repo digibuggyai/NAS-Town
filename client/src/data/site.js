@@ -1,4 +1,3 @@
-// All site copy and navigation in one place so content edits don't touch components.
 import {
   Camera, Clapperboard, Sparkles, Briefcase, Home, Cctv, Building2,
   Wrench, ArrowRightLeft, Stethoscope, ArrowUpCircle, Layers, ShieldCheck, Headset, Truck, LifeBuoy,
@@ -175,13 +174,10 @@ export const resources = [
     slug: 'blog', name: 'Blog',
     h1: 'The NASTOWN Blog',
     intro: 'Storage tips, industry news, and practical insights to help you get more out of your NAS, updated regularly.',
-    // Posts are managed in Admin → Blog.
   },
   { slug: 'faq', name: 'FAQ', h1: 'Frequently Asked Questions', intro: 'Got questions about NAS storage, rentals, or our services? Find quick answers here, or reach out to our team directly.' },
 ];
 
-// NASTOWN FAQs, supplied 12 Oct 2026. The first five also appear on the homepage; all of them
-// are on /resources/faq with FAQPage structured data (lib/seo.js).
 export const faqs = [
   { q: 'How many drive bays do I need in a NAS?', a: 'For most homes, a 2-bay NAS is enough: two mirrored drives (RAID 1) keep a copy of every file if one drive fails. Creators and small businesses usually do better with 4 bays or more, which allow RAID 5 or RAID 6, more usable capacity and room to add drives later. Choose for the storage you expect to need in the next few years, not just today, because running out of bays means buying a new NAS or an expansion unit.' },
   { q: 'How much usable storage do I get after RAID?', a: 'Usable storage is always less than the total capacity of your drives, because RAID sets space aside for protection. For example, four 8 TB drives give 32 TB of raw capacity: RAID 5 leaves about 24 TB, while RAID 6 or RAID 10 leaves about 16 TB. Two drives in RAID 1 give the capacity of one drive. The operating system and file system use a little more. Use the NASTOWN NAS Configurator to see the usable space for any setup before you buy.' },
@@ -203,8 +199,6 @@ export const faqs = [
   { q: 'How do I choose a NAS for a small business?', a: 'Start with the number of users, how much data you store and how fast it grows, and the types of files you work with. Choose at least 4 bays so you can use RAID 5 or RAID 6 and expand later. For several users or large files, look for a stronger processor, more memory and 2.5GbE or 10GbE ports. Check support for user permissions and Active Directory, and decide who will manage updates and backups.' },
 ];
 
-// "NAS for 50TB" landing pages (/nas/50tb). Builds and prices on each page come live from
-// the configurator engine; this is the copy that makes each size its own page.
 export const capacityPages = [
   {
     tb: 5,
@@ -248,7 +242,6 @@ export const capacityPages = [
   },
 ];
 
-// Product shortcuts by size, used by the navbar and footer.
 export const productLinks = [
   { label: 'All NAS Products', to: '/products' },
   { label: '2-Bay NAS', to: '/products?bays=2' },
@@ -258,9 +251,6 @@ export const productLinks = [
   { label: 'NAS by Capacity', to: '/nas' },
 ];
 
-// Main navigation: flat links, no dropdowns. The Configurator is the main conversion tool,
-// so the navbar draws it as a highlighted pill. Brands stay out of the nav on purpose: their
-// pages remain live and are linked from the footer and product pages.
 export const nav = [
   { label: 'Products', to: '/products' },
   { label: 'Solutions', to: '/solutions' },
@@ -271,7 +261,6 @@ export const nav = [
   { label: 'Resources', to: '/resources' },
 ];
 
-// The full site map: footer columns and the /sitemap page.
 export const siteMap = [
   ['Products', productLinks.map(({ label, to }) => [label === 'All NAS Products' ? 'NAS Products' : label, to])],
   ['Solutions', solutions.map((s) => [`NAS for ${s.name}`, `/solutions/${s.slug}`])],
@@ -282,34 +271,23 @@ export const siteMap = [
   ['Company', [['About NASTOWN', '/about'], ['Contact Us', '/about#contact'], ['Sitemap', '/sitemap']]],
 ];
 
-/** A WhatsApp chat with NASTOWN, message pre-filled. */
 export const waLink = (text) => `https://wa.me/919560111954?text=${encodeURIComponent(text)}`;
 
 export const brandName = (slug) =>
   ({ synology: 'Synology', qnap: 'QNAP', asustor: 'Asustor' })[slug] ?? slug;
 
-// Instagram reels on the homepage. Two ways to add one:
-//  1. Just the link: { url: 'https://www.instagram.com/reel/XXXXXXXXX/' } shows Instagram's own player.
-//  2. Your own copy: { video: '/reels/raid.mp4', poster: '/reels/raid.jpg', url: '…', caption: '…' }
-//     plays silently on the page (MP4 under 10 MB in client/public/reels/); tapping opens Instagram.
-// With no reels the section still shows the follow link. 4 or 8 reels fill the desktop rows neatly.
 export const reels = [];
 export const instagramHandle = 'digibuggy';
-export const instagramFollowers = '20K+'; // supplied 27 Oct 2026
+export const instagramFollowers = '20K+';
 
-// Track-record numbers now live in config/siteContent.js (stats), shown on the homepage.
-
-// Parent company. Links taken from digibuggy.com (checked 25 Sep 2026).
 export const digibuggy = {
   site: 'https://digibuggy.com/',
   email: 'sales@digibuggy.com',
   whatsapp: '+91 95601 11954',
   whatsappHref: 'https://wa.me/919560111954?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.',
-  // From digibuggy.com/contact-us (checked 26 Sep 2026).
   address: '207, Second Floor, Mansarovar Building, 90 Nehru Place, New Delhi 110019',
   addressShort: 'Nehru Place, New Delhi',
   mapsHref: 'https://www.google.com/maps/search/?api=1&query=Digibuggy+Mansarovar+Building+90+Nehru+Place+New+Delhi',
-  // Customer reviews live in the database (Admin → Reviews), not here.
   socials: [
     { label: 'WhatsApp', href: 'https://wa.me/919560111954?text=Hi%20NASTOWN%2C%20I%27d%20like%20help%20choosing%20a%20NAS.' },
     { label: 'Instagram', href: 'https://www.instagram.com/digibuggy/' },

@@ -4,16 +4,8 @@ import { api } from '../../lib/api.js';
 import { RAID_INFO, inr } from '../../lib/nas/logic.js';
 import { Dialog } from './parts.jsx';
 
-/* The two configurator popups. Both offer a ₹2,000 coupon; every customer gets their own
- * code, issued by the server (POST /api/offers) and saved with their lead in Admin → Leads.
- *   IntroPopup:      10 s after opening, when the visitor hasn't built a configuration yet.
- *   QuoteOfferPopup: 10 s after their quote is complete, showing that quote.
- * Timing lives in Configurator.jsx (useOfferPopups). */
-
 export const COUPON_INR = 2000;
 
-/** The ₹2,000 as the first thing anyone sees: a coupon ticket with notched edges and a light
- *  that sweeps across it (styles: .coupon-ticket in index.css; still for reduced motion). */
 function CouponHero({ caption }) {
   return (
     <div className="coupon-ticket relative overflow-hidden rounded-2xl px-6 py-5 text-white">
@@ -55,7 +47,6 @@ function FinePrint() {
   );
 }
 
-/** Name / company / email / phone. On success calls onDone with the coupon and the details. */
 function OfferForm({ source, summary, quoteTotal, submitLabel, onDone, onCancel }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -111,7 +102,6 @@ function OfferForm({ source, summary, quoteTotal, submitLabel, onDone, onCancel 
   );
 }
 
-/** The issued code, big, with a copy button. */
 function CouponCode({ offer, note }) {
   const [copied, setCopied] = useState(false);
   const copy = () => navigator.clipboard?.writeText(offer.code).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
@@ -156,7 +146,6 @@ export function QuoteOfferPopup({ open, onClose, build, price, summary, offer, o
   const [error, setError] = useState('');
   if (!build || !price) return null;
 
-  // Already has a coupon (from the first popup): one click sends this quote with it.
   async function sendWithCoupon() {
     setBusy(true);
     setError('');

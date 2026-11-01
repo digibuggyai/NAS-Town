@@ -1,8 +1,6 @@
 import Reveal from '../components/Reveal.jsx';
 import { customers } from '../config/siteContent.js';
 
-/** Customer logo wall: grey until hovered, each linking to the customer's site.
- *  Hidden until real customers are listed in config/siteContent.js. */
 export default function TrustedBy() {
   if (!customers.length) return null;
   return (

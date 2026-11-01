@@ -12,9 +12,6 @@ import { api } from '../../lib/api.js';
 import { useAuth } from '../../lib/useAuth.js';
 import Seo from '../../components/Seo.jsx';
 
-/* Staff area. Nothing here is linked from the public site, and every API call it
- * makes is role-checked on the server; the UI only decides what to draw. */
-
 export default function AdminApp() {
   const auth = useAuth();
 
@@ -77,7 +74,6 @@ function Login({ onLogin, expired }) {
   );
 }
 
-// What each staff role can open. The server enforces the same rules on every request.
 const ROLE_INFO = {
   admin: { label: 'Admin', help: 'Everything: prices, products, leads, blog, users.' },
   sales: { label: 'Sales admin', help: 'Sales configurator (with floor prices) and leads.' },
@@ -253,7 +249,6 @@ function Leads({ canDelete }) {
   );
 }
 
-// Each filter is one or more log areas, filtered on the server so older entries are reachable too.
 const LOG_VIEWS = [
   ['all', 'All changes', null],
   ['catalogue', 'Prices & products', 'models,drives,driveLines,upgrades,settings,exports'],
@@ -264,8 +259,6 @@ const LOG_VIEWS = [
   ['users', 'Users & sign-ins', 'users,sign-ins'],
 ];
 
-/* The change log is permanent: the database refuses to edit or delete any entry (schema.sql),
- * so this page has no delete either. Pages of 200, newest first; "Load older" goes back to the start. */
 function ChangeLog() {
   const [params, setParams] = useSearchParams();
   const view = LOG_VIEWS.find(([k]) => k === params.get('view')) ?? LOG_VIEWS[0];

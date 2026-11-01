@@ -4,15 +4,11 @@ import { ExternalLink, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { api, formatInr } from '../../lib/api.js';
 import { ItemEditor } from './CatalogueTable.jsx';
 
-/* Which product is listed on which page. One row per NAS model, one column per page;
- * every tick saves immediately and is recorded in the change log. "On site" hides the
- * model everywhere (including its own page), and "Rent" is the model's rentable flag. */
-
 const short = (label) => label.replace(/^For /, '');
 
 export default function ProductPages() {
   const [state, setState] = useState({ models: null, pages: [], schema: null, error: null });
-  const [editing, setEditing] = useState(null); // a model, or {} to add one
+  const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(null);
   const [msg, setMsg] = useState('');
 

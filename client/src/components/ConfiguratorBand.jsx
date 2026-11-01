@@ -1,10 +1,6 @@
 import { ArrowRight, SlidersHorizontal } from 'lucide-react';
 import Button from './Button.jsx';
 
-/**
- * The configurator is the main way to get a price, so inner pages carry this strip.
- * `query` pre-fills it (e.g. "?target=20" on the 20 TB page, "?model=…" on a product).
- */
 export default function ConfiguratorBand({ title = 'Price your exact NAS', body = 'Pick a size or a budget: the unit, drives, RAID level and a GST-inclusive total follow instantly.', query = '', cta = 'Build your NAS', className = '' }) {
   return (
     <section className={`mx-auto max-w-7xl px-4 sm:px-6 ${className}`}>

@@ -4,9 +4,6 @@ import Reveal from '../components/Reveal.jsx';
 import { useProducts } from '../lib/hooks.js';
 import { usePricing } from '../lib/nas/usePricing.js';
 
-// The brands inside a NASTOWN build, as a logo wall in two groups: the box (NAS systems) and
-// the drives. Official logos in their own colours (images/brands/CREDITS.md). Model counts and
-// drive sizes come live from the catalogue.
 const GROUPS = [
   {
     title: 'The box',
@@ -46,7 +43,6 @@ export default function BrandsBand() {
   const { data } = useProducts();
   const { pricing } = usePricing('public');
   const models = (brand) => data?.filter((p) => p.brand === brand).length;
-  // Capacity range for a drive maker, from the lines we actually price.
   const capRange = (brand) => {
     if (!pricing) return null;
     const lines = new Set(pricing.driveLines.filter((l) => l.brand === brand).map((l) => l.name));
@@ -70,7 +66,6 @@ export default function BrandsBand() {
           </p>
         </Reveal>
 
-        {/* Logo wall: two rows (box, drives), two logos each, split by hairlines. */}
         <Reveal delay={100} className="overflow-hidden rounded-3xl border border-line bg-raised">
           {GROUPS.map((g, i) => (
             <div key={g.title} className={i ? 'border-t border-line' : ''}>

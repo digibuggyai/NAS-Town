@@ -1,7 +1,3 @@
-// Which site pages list which NAS models. Staff manage this in Admin → Product pages;
-// each model stores its page keys in `pages`. The Rent page is driven by the model's
-// `rentable` flag, so it isn't a key here.
-
 const SOLUTIONS = [
   ['photographers', 'Photographers', 'photos'],
   ['videographers', 'Videographers', 'videos'],
@@ -20,7 +16,6 @@ export const PRODUCT_PAGES = [
 
 export const PAGE_KEYS = new Set(PRODUCT_PAGES.map((p) => p.key));
 
-/** New models go on the products list and their brand page until staff change it. */
 export const NEW_MODEL_PAGES = ['products', 'brand'];
 
 const speed = (ports = '') => Math.max(0, ...[...String(ports).matchAll(/(\d+(?:\.\d+)?)\s*GbE/gi)].map((m) => Number(m[1])));
@@ -36,11 +31,6 @@ export function useCasesOf(m) {
   return out;
 }
 
-/**
- * The placements the site used before they were editable: every model on the products
- * list and its brand page, plus the first four use-case matches on each solution page.
- * `models` must be in catalogue order (bays, then price). Returns Map(id → page keys).
- */
 export function defaultPlacements(models) {
   const out = new Map(models.map((m) => [m.id, [...NEW_MODEL_PAGES]]));
   for (const [slug, , useCase] of SOLUTIONS) {

@@ -4,17 +4,12 @@ import Reveal from '../components/Reveal.jsx';
 import { instagramFollowers, instagramHandle, reels } from '../data/site.js';
 import { reducedMotion } from '../lib/motion.js';
 
-/* Our Instagram reels about NAS. Each video plays silently and on loop while it's on screen
- * (paused off screen to save data); tapping a reel opens it on Instagram, where the sound
- * and comments are. Reels are listed in data/site.js; with none listed the section is hidden. */
-
 const InstagramIcon = ({ className }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
     <rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
   </svg>
 );
 
-/** A reel given only as a link: Instagram's own embedded player. */
 function EmbeddedReel({ reel, index }) {
   const id = reel.url.match(/instagram\.com\/(?:reel|p)\/([\w-]+)/)?.[1];
   if (!id) return null;
@@ -33,7 +28,7 @@ function EmbeddedReel({ reel, index }) {
 
 function Reel({ reel, index }) {
   const video = useRef(null);
-  const still = reducedMotion(); // people who prefer less motion see the poster, no autoplay
+  const still = reducedMotion();
 
   useEffect(() => {
     const v = video.current;
@@ -62,7 +57,6 @@ function Reel({ reel, index }) {
           preload={still ? 'none' : 'metadata'}
           className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
         />
-        {/* Readable caption over any video */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-16 text-white">
           {reel.caption && <p className="line-clamp-2 text-sm font-medium">{reel.caption}</p>}
           <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-white/85">
@@ -95,7 +89,6 @@ export default function InstaReels() {
           </a>
         </Reveal>
       </div>
-      {/* Phones: swipe sideways like a reels tray. Desktop: a row of four. */}
       {reels.length > 0 && <ul className="mx-auto mt-10 flex max-w-7xl snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:scroll-px-6 sm:px-6 lg:grid lg:grid-cols-4 lg:overflow-visible">
         {reels.map((r, i) => (r.video ? <Reel key={r.url} reel={r} index={i} /> : <EmbeddedReel key={r.url} reel={r} index={i} />))}
       </ul>}

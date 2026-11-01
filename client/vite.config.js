@@ -8,7 +8,6 @@ export default defineConfig(({ mode }) => {
   const siteUrl = resolveSiteUrl(env);
   return {
     plugins: [react(), tailwindcss(), seo({ siteUrl, apiUrl: env.VITE_API_URL })],
-    // Canonical links use the live address (components/Seo.jsx).
     define: { 'import.meta.env.VITE_SITE_URL': JSON.stringify(siteUrl) },
     server: {
       port: 5173,

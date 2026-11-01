@@ -1,4 +1,3 @@
-// Staff-only routes. Every route checks the role server side.
 import { Router } from 'express';
 import * as store from './db/store.js';
 import { COLLECTIONS, SETTINGS_FIELDS, clean } from './db/collections.js';
@@ -22,21 +21,18 @@ const labelOf = (key, row) =>
 
 const show = (v) => (v == null ? null : Array.isArray(v) ? v.join(', ') : String(v));
 
-/** Rejects page keys the site doesn't have, so a typo can't silently hide a product. */
 function badPages(data) {
   const bad = (data.pages ?? []).filter((k) => !PAGE_KEYS.has(k));
   return bad.length ? `Unknown page: ${bad.join(', ')}` : null;
 }
 
 const PAGE_LABELS = Object.fromEntries(PRODUCT_PAGES.map((p) => [p.key, p.label]));
-/** Page keys read as page names in the change log. */
 const logValue = (field, v) => (field === 'pages' ? (v?.length ? v.map((k) => PAGE_LABELS[k] ?? k).join(', ') : 'none') : show(v));
 
 function diff(before, after, keys) {
   return keys.filter((k) => show(before?.[k]) !== show(after?.[k]));
 }
 
-/** The whole catalogue including inactive items and floors, for the price manager. */
 router.get('/nas', requireAdmin, async (_req, res) => {
   const [models, drives, driveLines, upgrades, settings] = await Promise.all([
     store.list('models'), store.list('drives'), store.list('driveLines'), store.list('upgrades'), store.getSettings(),
@@ -45,7 +41,6 @@ router.get('/nas', requireAdmin, async (_req, res) => {
   res.json({ models, drives, driveLines, upgrades, settings, schema, settingsFields: SETTINGS_FIELDS, pages: PRODUCT_PAGES });
 });
 
-/** The staff pricing payload: same shape as the public one, every figure with its floor. */
 router.get('/nas/pricing', requireStaff, async (_req, res) => {
   try {
     res.set('Cache-Control', 'no-store');
@@ -94,7 +89,7 @@ router.patch('/nas/:collection/:id', requireAdmin, async (req, res) => {
   if (!key) return;
   let data;
   try { data = clean(COLLECTIONS[key].fields, req.body ?? {}); } catch (e) { return res.status(400).json({ error: e.message }); }
-  if (key === 'models' && 'pages' in data && data.pages == null) data.pages = []; // cleared = on no pages
+  if (key === 'models' && 'pages' in data && data.pages == null) data.pages = [];
   if (key === 'models' && badPages(data)) return res.status(400).json({ error: badPages(data) });
   const result = await store.update(key, Number(req.params.id), data);
   if (!result) return res.status(404).json({ error: 'Not found.' });
@@ -116,7 +111,6 @@ router.delete('/nas/:collection/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Pages of 200, newest first: ?before=<oldest id shown> loads older ones, ?areas=coupons,reviews filters.
 router.get('/change-log', requireAdmin, async (req, res) => {
   const before = Number(req.query.before) > 0 ? Number(req.query.before) : null;
   const collections = typeof req.query.areas === 'string' && req.query.areas ? req.query.areas.split(',').slice(0, 20) : null;
@@ -125,10 +119,8 @@ router.get('/change-log', requireAdmin, async (req, res) => {
   res.json({ entries: rows.slice(0, limit), more: rows.length > limit });
 });
 
-/** Internal price sheet with floors. Marked internal in the file itself. */
 router.get('/price-sheet.csv', requireAdmin, async (req, res) => {
   const [models, drives, upgrades, settings] = await Promise.all([store.list('models'), store.list('drives'), store.list('upgrades'), store.getSettings()]);
-  // It contains every floor price, so each download is on record.
   await store.logChanges([{ editor: req.user.email, collection: 'exports', itemLabel: 'Internal price sheet (CSV)', field: '(downloaded)', after: 'downloaded' }]);
   const esc = (v) => (v == null ? '' : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
   const rows = [
@@ -146,8 +138,6 @@ router.get('/price-sheet.csv', requireAdmin, async (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.send('﻿' + rows.map((r) => r.map(esc).join(',')).join('\r\n'));
 });
-
-/* ---------------- users ---------------- */
 
 router.get('/users', requireAdmin, async (_req, res) => res.json(await store.listUsers()));
 
@@ -174,15 +164,11 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-/* ---------------- coupons ---------------- */
-
-// Which customer has which code, with their quote and message. Admin and sales.
 router.get('/coupons', requireStaff, async (_req, res) => res.json(await store.listCoupons()));
 
 export const COUPON_STATUS = { issued: 'Open', deal_done: 'Deal done', not_interested: 'Not interested' };
 const couponLabel = (c) => `${c.code} · ${c.name ?? c.email}`;
 
-// Mark the outcome (admin and sales). Every change is recorded in the change log.
 router.patch('/coupons/:id', requireStaff, async (req, res) => {
   const status = req.body?.status;
   if (!Object.hasOwn(COUPON_STATUS, status)) return res.status(400).json({ error: 'Status must be issued, deal_done or not_interested.' });
@@ -198,7 +184,6 @@ router.patch('/coupons/:id', requireStaff, async (req, res) => {
   res.json(after);
 });
 
-// Admins only. A copy of the coupon goes into the change log, so it can be recovered.
 router.delete('/coupons/:id', requireAdmin, async (req, res) => {
   const c = await store.deleteCoupon(Number(req.params.id));
   if (!c) return res.status(404).json({ error: 'Coupon not found.' });
@@ -215,12 +200,8 @@ router.delete('/coupons/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-/* ---------------- leads ---------------- */
-
 router.get('/enquiries', requireStaff, async (_req, res) => res.json(await store.listEnquiries(200)));
 
-// Admins only. The lead's details are copied into the change log, so a deletion
-// always shows who removed what and the contact can still be recovered.
 router.delete('/enquiries/:id', requireAdmin, async (req, res) => {
   const lead = await store.deleteEnquiry(Number(req.params.id));
   if (!lead) return res.status(404).json({ error: 'Lead not found.' });

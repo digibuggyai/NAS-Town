@@ -1,11 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
 
-/* Admin → Blog → post editor: the SEO and schema fields under the article.
- *  - Meta title / description / keywords: what search engines show. Empty = title / excerpt.
- *  - FAQs: printed at the end of the post and sent as FAQPage schema.
- *  - Custom schema: any extra JSON-LD (HowTo, Product, VideoObject…). Checked here as you type
- *    and again on the server; BlogPosting and breadcrumb schema are always added automatically. */
-
 const TEMPLATES = {
   HowTo: {
     '@type': 'HowTo',
@@ -40,7 +34,6 @@ const TEMPLATES = {
   },
 };
 
-/** Problems with the custom schema, or '' when it's fine (or empty). Mirrors the server check. */
 export function schemaProblem(raw) {
   const t = (raw ?? '').trim();
   if (!t) return '';
@@ -69,7 +62,6 @@ export default function PostSeoFields({ f, set, siteUrl }) {
     set({ schemaJson: JSON.stringify(list.length === 1 ? list[0] : list, null, 2) });
   }
 
-  // What the Google result will roughly look like.
   const shownTitle = f.metaTitle || (f.title ? `${f.title} | NASTOWN Blog` : 'Post title | NASTOWN Blog');
   const shownDesc = f.metaDescription || f.excerpt || 'The excerpt is used until you write a meta description.';
 

@@ -9,7 +9,6 @@ const STEPS = [
   { icon: Wrench, title: 'Installation/AMC', body: 'On-site setup (Delhi NCR) and yearly support, both optional.' },
 ];
 
-/** The configurator is the main way to get a price, so the homepage gives it its own section. */
 export default function BuildYourNas() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20">
@@ -38,7 +37,6 @@ export default function BuildYourNas() {
           <Button to="/tools/configurator" className="mt-9">Build your NAS <ArrowRight className="size-4" /></Button>
         </Reveal>
 
-        {/* A real screenshot of the configurator (20 TB, RAID 5, with installation). */}
         <Reveal delay={120}>
           <Link to="/tools/configurator" className="group block overflow-hidden rounded-[20px] border border-line bg-surface shadow-[0_30px_60px_-34px_rgb(15_23_42/0.45)]" aria-label="Open the NAS configurator">
             <img

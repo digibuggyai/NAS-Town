@@ -8,7 +8,6 @@ const STEPS = [
   { icon: Headset, title: 'We support you', body: 'AMC plans, remote help and on-site visits for as long as you run it.' },
 ];
 
-/** Four steps joined by a line. Used on the homepage and Services page; Rent passes its own `steps`. */
 export default function HowItWorks({ eyebrow = '', title = 'How it works', steps = STEPS, className = '' }) {
   return (
     <section className={`mx-auto max-w-7xl px-4 py-14 sm:px-6 md:py-20 ${className}`}>
@@ -17,7 +16,6 @@ export default function HowItWorks({ eyebrow = '', title = 'How it works', steps
         <h2 className="h-section">{title}</h2>
       </Reveal>
       <div className="relative mt-10">
-        {/* The connecting line: across on desktop, down the side on phones. */}
         <span aria-hidden className="absolute top-6 right-[12.5%] left-[12.5%] hidden h-px bg-gradient-to-r from-accent/50 via-accent/30 to-accent/50 md:block" />
         <span aria-hidden className="absolute top-6 bottom-6 left-6 w-px bg-gradient-to-b from-accent/50 to-accent/20 md:hidden" />
       <ol className="relative grid gap-8 md:grid-cols-4 md:gap-6">

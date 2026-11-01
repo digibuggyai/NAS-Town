@@ -2,15 +2,11 @@ import { Link } from 'react-router';
 import { ArrowRight } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 
-// Blue banner before the footer, in the reference's style: deep blue with soft
-// translucent petal shapes and one white pill button.
-/** `to` for a page on the site, or `href` for an outside link such as a WhatsApp chat. */
 export default function CtaBanner({ title = 'See how NASTOWN fits your life and work', cta = 'Explore NAS Solutions', to = '/solutions', href, children }) {
   const cls = 'btn mt-8 border border-white bg-white text-[#3730e0] hover:bg-white/90';
   return (
     <section className="mx-auto max-w-7xl px-4 pt-8 pb-16 sm:px-6 md:pb-24">
       <Reveal className="relative isolate overflow-hidden rounded-[28px] bg-[#3730e0] px-6 py-14 text-center sm:px-12 md:py-16">
-        {/* Petals: blurred translucent ellipses, purely decorative. */}
         <div aria-hidden className="absolute inset-0 -z-10">
           {[8, 20, 32, 44, 56, 68, 80, 92].map((x, i) => (
             <span

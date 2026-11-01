@@ -52,8 +52,6 @@ export default function BlogPost() {
             <img src={mediaUrl(post.coverImage)} alt={post.coverAlt || ''} className="aspect-[16/9] w-full object-cover" />
           </Reveal>
         )}
-        {/* Sanitised on the server (server/src/blog-html.js): formatting tags only. */}
-        {/* Article images are stored as /api/… paths; they load from the API host. */}
         <div className="prose-blog mt-10" dangerouslySetInnerHTML={{ __html: withMediaHost(post.body) }} />
         {post.faqs?.length > 0 && (
           <section aria-labelledby="post-faq" className="mt-14">

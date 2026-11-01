@@ -1,9 +1,3 @@
-// Builds the NasPricing payload the configurator engine consumes.
-//
-// Two builders, deliberately separate:
-//   toPublicPricing — copies fields one by one. No line in it reads a minimum,
-//                     so a floor price cannot reach a browser even by accident.
-//   toSalesPricing  — the same shape plus every floor. Staff routes only.
 import * as store from './db/store.js';
 import { useCasesOf } from './placements.js';
 
@@ -106,12 +100,9 @@ export async function toSalesPricing() {
   return assemble(await loadActive(), true);
 }
 
-/** Clear cached pricing after any admin write, so a saved price shows at once. */
 export function invalidatePricing() {
   publicCache = null;
 }
-
-/* ---------------- product cards for the rest of the site ---------------- */
 
 const speed = (ports = '') => Math.max(0, ...[...String(ports).matchAll(/(\d+(?:\.\d+)?)\s*GbE/gi)].map((m) => Number(m[1])));
 

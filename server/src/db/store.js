@@ -1,5 +1,3 @@
-// Data access. Uses PostgreSQL when DATABASE_URL is set; otherwise an in-memory
-// store with the same interface, so the site runs locally without a database.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
@@ -19,8 +17,6 @@ const pool = url
 
 export const usingDatabase = Boolean(pool);
 
-/* ---------------- floors (internal) ---------------- */
-
 const FLOORS_FILE = new URL('./floors.local.json', import.meta.url);
 
 export function readFloorsFile() {
@@ -30,8 +26,6 @@ export function readFloorsFile() {
     return null;
   }
 }
-
-/* ---------------- row mapping ---------------- */
 
 function fromRow(fields, row) {
   if (!row) return null;
@@ -43,12 +37,8 @@ function fromRow(fields, row) {
   return out;
 }
 
-/* ---------------- memory backend ---------------- */
-
 const mem = { models: [], drives: [], driveLines: [], upgrades: [], settings: null, changeLog: [], users: [], enquiries: [], finder: [], blog: [], blogImages: new Map(), ids: {} };
 const nextId = (k) => (mem.ids[k] = (mem.ids[k] ?? 0) + 1);
-
-/* ---------------- init + seed ---------------- */
 
 function seedRows(floors) {
   const models = catalogue.models.map((m) => ({ ...m, minPrice: floors?.models?.[m.model] ?? null }));
@@ -98,11 +88,9 @@ export async function init() {
     for (const p of blogSeed) await createPost(p);
     console.log(`[db] seeded ${blogSeed.length} blog posts`);
   }
-  // Fill fields added after first release, without touching anything edited in the admin panel.
   for (const m of catalogue.models) {
     if (m.bestFor) await pool.query('UPDATE nas_models SET best_for = $1 WHERE model = $2 AND best_for IS NULL', [m.bestFor, m.model]);
   }
-  // Models from before page placements existed keep the pages they were already shown on.
   const models = await list('models');
   if (models.some((m) => m.pages == null)) {
     const placed = defaultPlacements(models);
@@ -114,10 +102,6 @@ export async function init() {
   await applyCatalogueOnce(rows[0].n === 0);
 }
 
-/* ---------------- shared catalogue (catalogue.json) ---------------- */
-
-// Specifications that come from the DGB India catalogue. NASTOWN's own fields (summary,
-// best-for, featured, rentable, page placement, floors, active) are never touched here.
 const MODEL_SPEC_FIELDS = [
   'brand', 'bays', 'raid', 'expandable', 'network', 'networkUpgrade', 'cpu', 'cpuCores', 'memory', 'memoryMax',
   'm2Slots', 'maxDriveTb', 'baysWithExpansion', 'expansionNote', 'maxRawTb', 'usbPorts', 'dimensions', 'weightKg',
@@ -126,11 +110,6 @@ const MODEL_SPEC_FIELDS = [
 const LINE_SPEC_FIELDS = ['brand', 'driveClass', 'madeForBrand', 'series', 'rpm', 'cache', 'interface', 'recording', 'workloadTbYear', 'mtbf', 'warrantyYears', 'bestFor', 'extras', 'specsUrl', 'sortOrder'];
 const same = (a, b) => JSON.stringify(Array.isArray(a) ? a : a == null ? null : String(a)) === JSON.stringify(Array.isArray(b) ? b : b == null ? null : String(b));
 
-/**
- * Bring the database in line with catalogue.json, once per version of that file (its
- * exportedAt). Later edits in the admin panel are therefore never overwritten on restart;
- * only a new catalogue file applies again. Every change is written to the change log.
- */
 async function applyCatalogueOnce(freshlySeeded) {
   const version = catalogue.exportedAt;
   if (!version) return;
@@ -138,7 +117,7 @@ async function applyCatalogueOnce(freshlySeeded) {
   const remember = () => pool.query(
     "INSERT INTO app_meta (key, value) VALUES ('catalogue_version', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [version],
   );
-  if (freshlySeeded) { await remember(); return; } // seeded from this very file
+  if (freshlySeeded) { await remember(); return; }
   if (applied === version) return;
 
   const editor = `catalogue sync (${version.slice(0, 10)})`;
@@ -170,7 +149,6 @@ async function applyCatalogueOnce(freshlySeeded) {
       const created = await insertRow('drives', src);
       log.push({ editor, collection: 'drives', itemId: created.id, itemLabel: label, field: '(created)', after: String(src.quotePrice) });
     } else {
-      // Price, and whether it's sold at all ("0 / NA" on the price sheet = active: false).
       const changed = ['quotePrice', 'active'].filter((f) => !same(row[f], src[f]));
       if (changed.length) {
         const { before, after } = await update('drives', row.id, Object.fromEntries(changed.map((f) => [f, src[f]])));
@@ -215,8 +193,6 @@ async function insertRow(key, data) {
   );
   return fromRow(fields, rows[0]);
 }
-
-/* ---------------- catalogue CRUD ---------------- */
 
 export async function list(key, { activeOnly = false } = {}) {
   const { table, fields, order } = COLLECTIONS[key];
@@ -276,8 +252,6 @@ export async function remove(key, id) {
   return before;
 }
 
-/* ---------------- settings ---------------- */
-
 export async function getSettings() {
   if (!pool) return structuredClone(mem.settings);
   const { rows } = await pool.query('SELECT * FROM nas_settings WHERE id = 1');
@@ -302,7 +276,6 @@ export async function updateSettings(data) {
   return { before, after: await getSettings() };
 }
 
-/** Apply floor prices from floors.local.json (used by the import script). */
 export async function applyFloors(floors) {
   let n = 0;
   for (const m of await list('models')) {
@@ -316,10 +289,6 @@ export async function applyFloors(floors) {
   if (floors.settings) await updateSettings(floors.settings);
   return n;
 }
-
-/* ---------------- change log ---------------- */
-// Append-only: entries are only ever added. There is no update or delete function, and in
-// Postgres a trigger (schema.sql) refuses UPDATE / DELETE / TRUNCATE on the table.
 
 export async function logChanges(entries) {
   if (!entries.length) return;
@@ -335,11 +304,6 @@ export async function logChanges(entries) {
   }
 }
 
-/**
- * A page of the log, newest first. `before` = the oldest id already shown, to load older
- * entries; `collections` narrows to some areas (e.g. ['coupons']). Nothing is ever cut off:
- * paging walks back to the very first entry.
- */
 export async function listChangeLog({ limit = 200, before = null, collections = null } = {}) {
   if (!pool) {
     return mem.changeLog
@@ -357,8 +321,6 @@ export async function listChangeLog({ limit = 200, before = null, collections = 
   );
   return rows.map((r) => fromRow({}, r));
 }
-
-/* ---------------- users ---------------- */
 
 export async function findUserByEmail(email) {
   if (!pool) return structuredClone(mem.users.find((u) => u.email === email) ?? null);
@@ -386,7 +348,6 @@ export async function createUser({ email, name, role, passwordHash }) {
   return fromRow({}, rows[0]);
 }
 
-/** Remove a staff account; returns { email, role } of who was removed (for the change log), or null. */
 export async function deleteUser(id) {
   if (!pool) {
     const u = mem.users.find((x) => x.id === id);
@@ -403,18 +364,9 @@ export async function countAdmins() {
   return rows[0].n;
 }
 
-/* ---------------- offer coupons ---------------- */
-
-// No 0/O or 1/I/L, so a code read out over the phone can't be misheard.
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const newCouponCode = () => `NAS-${Array.from({ length: 6 }, () => CODE_ALPHABET[crypto.randomInt(CODE_ALPHABET.length)]).join('')}`;
 
-/**
- * The customer's coupon: the existing one for this email, or a new unique code.
- * Details (quote, message, phone…) are saved on first issue and kept up to date after:
- * a value left empty never wipes one given earlier.
- * Returns { code, valueInr, isNew }.
- */
 export async function issueCoupon({ email, name, company, phone, valueInr, quoteTotal, quoteSummary, message, source }) {
   const key = email.toLowerCase();
   const details = { name, company, phone, quoteTotal, quoteSummary, message, source };
@@ -453,7 +405,7 @@ export async function issueCoupon({ email, name, company, phone, valueInr, quote
       );
       return { code: rows[0].code, valueInr: rows[0].value_inr, isNew: true };
     } catch (e) {
-      if (e.code !== '23505') throw e; // unique clash: the email raced us, or (rarely) the code exists
+      if (e.code !== '23505') throw e;
       const again = await update();
       if (again) return again;
     }
@@ -463,7 +415,6 @@ export async function issueCoupon({ email, name, company, phone, valueInr, quote
 
 const couponFromRow = (r) => r && Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v]));
 
-/** Set a coupon's status. Returns { before, after } or null if it doesn't exist. */
 export async function setCouponStatus(id, status) {
   if (!pool) {
     const c = (mem.coupons ?? []).find((x) => x.id === id);
@@ -478,7 +429,6 @@ export async function setCouponStatus(id, status) {
   return { before: couponFromRow(before), after: couponFromRow(rows[0]) };
 }
 
-/** Remove a coupon and return what was removed (for the change log), or null. */
 export async function deleteCoupon(id) {
   if (!pool) {
     const i = (mem.coupons ?? []).findIndex((x) => x.id === id);
@@ -488,19 +438,15 @@ export async function deleteCoupon(id) {
   return couponFromRow(rows[0]) ?? null;
 }
 
-/** Every issued coupon with its customer details, newest first (Admin → Coupons). */
 export async function listCoupons(limit = 500) {
   if (!pool) return [...(mem.coupons ?? [])].reverse().slice(0, limit).map((c) => structuredClone(c));
   const { rows } = await pool.query('SELECT * FROM coupons ORDER BY created_at DESC LIMIT $1', [limit]);
   return rows.map(couponFromRow);
 }
 
-/* ---------------- customer reviews ---------------- */
-
 const REVIEW_FIELDS = ['name', 'email', 'city', 'role', 'product', 'rating', 'body', 'source', 'status'];
 const rowObj = (r) => r && Object.fromEntries(Object.entries(r).map(([k, v]) => [camel(k), v]));
 
-/** Reviews newest first. `publishedOnly` for the public site. */
 export async function listReviews({ publishedOnly = false, limit = 500 } = {}) {
   if (!pool) {
     return [...(mem.reviews ?? [])].filter((r) => !publishedOnly || r.status === 'published')
@@ -528,7 +474,6 @@ export async function createReview(data) {
   return rowObj(rows[0]);
 }
 
-/** Update some fields. Returns { before, after } or null. */
 export async function updateReview(id, data) {
   const patch = Object.fromEntries(REVIEW_FIELDS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]]));
   if (!pool) {
@@ -549,7 +494,6 @@ export async function updateReview(id, data) {
   return { before: rowObj(before), after: rowObj(rows[0]) };
 }
 
-/** Remove a review and return it (for the change log), or null. */
 export async function deleteReview(id) {
   if (!pool) {
     const i = (mem.reviews ?? []).findIndex((x) => x.id === id);
@@ -558,8 +502,6 @@ export async function deleteReview(id) {
   const { rows } = await pool.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [id]);
   return rowObj(rows[0]) ?? null;
 }
-
-/* ---------------- leads ---------------- */
 
 export async function createEnquiry({ type, name, email, phone, message, payload }) {
   if (!pool) {
@@ -580,7 +522,6 @@ export async function listEnquiries(limit = 200) {
   return rows.map((r) => fromRow({}, r));
 }
 
-/** Removes a lead and returns what was removed (for the change log), or null. */
 export async function deleteEnquiry(id) {
   if (!pool) {
     const i = mem.enquiries.findIndex((e) => e.id === id);
@@ -598,10 +539,7 @@ export async function logFinder({ storing, capacity, work_style, recommended }) 
   );
 }
 
-/* ---------------- blog ---------------- */
-
 const POST_COLS = ['slug', 'title', 'excerpt', 'category', 'body', 'coverImage', 'coverAlt', 'published', 'publishedAt', 'metaTitle', 'metaDescription', 'metaKeywords', 'faqs', 'schemaJson'];
-// FAQs are an array in the app and JSON text in the database.
 const toDb = (k, v) => (k === 'faqs' && v != null ? JSON.stringify(v) : v);
 const parseFaqs = (v) => { if (typeof v !== 'string') return v ?? null; try { return JSON.parse(v); } catch { return null; } };
 const postRow = (r) => r && ({
@@ -674,7 +612,6 @@ export async function deletePost(id) {
   return before;
 }
 
-/* Cover images: stored as bytes; served at /api/blog/images/:id. */
 export async function saveImage(mime, data) {
   if (!pool) {
     const id = nextId('blogImages');
@@ -691,7 +628,6 @@ export async function getImage(id) {
   return rows[0] ?? null;
 }
 
-/** Remove an uploaded cover once no post points at it any more. */
 export async function deleteUnusedImage(url) {
   const m = /^\/api\/blog\/images\/(\d+)$/.exec(url ?? '');
   if (!m) return;

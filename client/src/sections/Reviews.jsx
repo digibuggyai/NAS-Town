@@ -7,7 +7,6 @@ import { api } from '../lib/api.js';
 import { preloaded } from '../lib/preload.js';
 import { digibuggy } from '../data/site.js';
 
-// Google's own colours for the "G", so the link reads as Google reviews at a glance.
 const GoogleG = ({ className }) => (
   <svg viewBox="0 0 24 24" className={className} aria-hidden>
     <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z" />
@@ -16,12 +15,6 @@ const GoogleG = ({ className }) => (
     <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1A11 11 0 0 0 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z" />
   </svg>
 );
-
-/* Customer reviews written on this site (or added by staff from real reviews received
- * elsewhere). Only reviews approved in Admin → Reviews appear here; nothing is invented.
- * With none published yet, the section simply invites the first review.
- * Names are never shown (the API doesn't send them): a review reads as
- * "Photographer, Delhi · Synology DS925+". More than three become a carousel. */
 
 const CAROUSEL_FROM = 4;
 const SOURCE = { google: 'Google review', whatsapp: 'Shared on WhatsApp', 'in-store': 'In person', email: 'By email', website: 'NASTOWN customer' };
@@ -79,7 +72,6 @@ export default function Reviews() {
           </Reveal>
         ) : (
           <>
-            {/* Up to three: a grid. More: a swipeable carousel with arrows. */}
             <ul
               ref={track}
              
@@ -118,7 +110,7 @@ export default function Reviews() {
 
 function WriteReview({ open, onClose }) {
   const [rating, setRating] = useState(0);
-  const [state, setState] = useState('idle'); // idle | sending | sent
+  const [state, setState] = useState('idle');
   const [error, setError] = useState('');
 
   async function submit(e) {
@@ -174,7 +166,6 @@ function WriteReview({ open, onClose }) {
             <span className="mb-1.5 block text-sm text-muted">Email <span className="text-subtle">(optional, never shown)</span></span>
             <input name="email" type="email" maxLength={200} autoComplete="email" className="field !py-2.5" />
           </label>
-          {/* Honeypot: hidden from people, filled in by spam bots. */}
           <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
           {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">

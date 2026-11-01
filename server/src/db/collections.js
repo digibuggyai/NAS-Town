@@ -1,7 +1,3 @@
-// Editable catalogue collections: API (camelCase) field → type. The DB column is
-// the snake_case of the field. Admin writes are validated against these lists,
-// so nothing outside them can be written.
-
 export const COLLECTIONS = {
   models: {
     table: 'nas_models',
@@ -21,7 +17,6 @@ export const COLLECTIONS = {
     label: 'Drives',
     order: 'capacity_tb, line',
     required: ['capacityTb', 'line', 'quotePrice'],
-    // partNumber / rpm / cache: this exact capacity (the line in Drive specs gives ranges).
     fields: { capacityTb: 'int', line: 'text', partNumber: 'text', rpm: 'text', cache: 'text', quotePrice: 'int', minPrice: 'int', active: 'bool' },
   },
   driveLines: {
@@ -49,7 +44,6 @@ export const SETTINGS_FIELDS = { installQuote: 'int', installMin: 'int', amcQuot
 export const snake = (s) => s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
 export const camel = (s) => s.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
 
-/** Coerce and whitelist an incoming object. Unknown fields are dropped; bad values throw. */
 export function clean(fields, input, { partial = false } = {}) {
   const out = {};
   for (const [key, type] of Object.entries(fields)) {

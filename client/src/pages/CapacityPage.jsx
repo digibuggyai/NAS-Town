@@ -16,7 +16,6 @@ const unitName = (m) => `${brandName(m.brand)} ${m.model}`;
 const drivesText = (b) => `${b.drivesPerUnit} × ${b.driveCap} TB ${b.driveLine}`;
 const configureHref = (b, target) => `/tools/configurator?target=${target}&raid=${b.raid}&model=${b.model.slug}`;
 
-// "NAS for 50TB" / "50TB NAS price" landing page: real builds and prices for one capacity.
 export default function CapacityPage() {
   const { size } = useParams();
   const page = capacityPages.find((c) => `${c.tb}tb` === size);
@@ -40,13 +39,11 @@ export default function CapacityPage() {
         <Link to={`/tools/configurator?target=${tb}`} className="btn btn-secondary">Build my {tb}TB NAS</Link>
       </PageHero>
 
-      {/* Sense of scale */}
       <section className="mx-auto max-w-7xl px-4 pb-6 sm:px-6">
         <Reveal>
           <h2 className="h-section">How much is {tb}TB?</h2>
           <dl className="mt-6 grid gap-4 sm:grid-cols-3">
             {whatFits(tb).map(([n, what, note]) => (
-              // Label first in the markup, shown under the number.
               <div key={what} className="glass flex flex-col-reverse justify-end rounded-xl p-6">
                 <dt className="mt-1 text-muted">{what} <span className="text-sm text-subtle">({note})</span></dt>
                 <dd className="mono font-display text-3xl font-semibold text-fg">≈ {n.toLocaleString('en-IN')}</dd>
@@ -56,7 +53,6 @@ export default function CapacityPage() {
         </Reveal>
       </section>
 
-      {/* Recommended builds, live from the price list */}
       <section id="builds" className="mx-auto max-w-7xl scroll-mt-28 px-4 py-16 sm:px-6">
         <Reveal>
           <h2 className="h-section">Recommended {tb}TB NAS builds</h2>
@@ -92,7 +88,6 @@ export default function CapacityPage() {
         {P && !lead && <p className="mt-8 text-muted">This size is specified per project. <Link to="/about#contact" className="link">Talk to our team</Link> for a {tb}TB quote.</p>}
       </section>
 
-      {/* Price by protection level */}
       {options.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
           <Reveal>
@@ -100,7 +95,6 @@ export default function CapacityPage() {
             <p className="measure mt-4 text-muted">
               More protection needs more drives for the same usable space. These are the lowest current prices for at least {tb}TB usable at each level.
             </p>
-            {/* Phones: one card per level. */}
             <ul className="mt-8 grid gap-3 sm:hidden">
               {options.map(({ raid, builds: [b] }) => (
                 <li key={raid} className="glass rounded-xl p-4">
@@ -137,7 +131,6 @@ export default function CapacityPage() {
         </section>
       )}
 
-      {/* Questions people search for at this size */}
       <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6">
         <h2 className="h-section">{tb}TB NAS: common questions</h2>
         <div className="mt-6 grid gap-6">
@@ -158,7 +151,6 @@ export default function CapacityPage() {
             </p>
           </div>
           <div>
-            {/* Small sizes choose between a mirror and RAID 5; big ones between RAID 5 and 6. */}
             {tb <= 10 ? (
               <>
                 <h3 className="text-lg">RAID 1 or RAID 5 for {tb}TB?</h3>
@@ -188,7 +180,6 @@ export default function CapacityPage() {
         </div>
       </section>
 
-      {/* Other sizes: internal links for people and for search engines */}
       <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
         <p className="eyebrow mb-5">Other capacities</p>
         <div className="flex flex-wrap gap-2">

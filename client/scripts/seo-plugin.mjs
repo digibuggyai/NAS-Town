@@ -1,12 +1,3 @@
-// Vite plugin: puts each page's SEO tags into real HTML, so crawlers and link previews
-// (Google's first pass, WhatsApp, LinkedIn, X…) see the right title, description and card
-// without running JavaScript. The tags themselves come from src/lib/seo.js.
-//
-//   dev + build: index.html's <!-- seo --> placeholder gets the home page tags.
-//   build only:  dist/<path>/index.html for every page (fixed pages, plus products and blog
-//                posts fetched from the API), dist/sitemap.xml and dist/robots.txt.
-//                Also dist/app.html (the empty app, for addresses that have no file of their
-//                own) and the page list scripts/prerender.mjs fills with content.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { headHtml, postMeta, productMeta, staticPages, abs } from '../src/lib/seo.js';
@@ -15,7 +6,6 @@ const START = '<!-- seo:start -->';
 const END = '<!-- seo:end -->';
 const block = (meta, siteUrl) => `${START}\n    ${headHtml(meta, siteUrl)}\n    ${END}`;
 
-/** Live address of the site: VITE_SITE_URL, else Vercel's production domain, else local. */
 export function resolveSiteUrl(env) {
   const url = env.VITE_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) || '';
   return url.replace(/\/+$/, '');
@@ -36,7 +26,7 @@ export default function seoPlugin({ siteUrl, apiUrl }) {
     configResolved(config) {
       root = config.root;
       outDir = path.resolve(config.root, config.build.outDir);
-      isBuild = config.command === 'build' && !config.build.ssr; // not the pre-render build
+      isBuild = config.command === 'build' && !config.build.ssr;
     },
     transformIndexHtml(html) {
       const site = siteUrl || 'http://localhost:5173';
@@ -49,13 +39,9 @@ export default function seoPlugin({ siteUrl, apiUrl }) {
         return;
       }
       const template = await fs.readFile(path.join(outDir, 'index.html'), 'utf8');
-      // Addresses with no page file of their own (admin, a product added since this build) get
-      // the empty app, not the home page's pre-rendered content (vercel.json rewrites to it).
       await fs.writeFile(path.join(outDir, 'app.html'), template);
       const pages = Object.entries(staticPages(siteUrl)).map(([p, meta]) => ({ ...meta, path: p }));
 
-      // Database pages. If the API can't be reached the build still succeeds: those pages
-      // then get their tags in the browser only, and are left out of the sitemap.
       const api = (apiUrl || '').replace(/\/+$/, '');
       if (api) {
         const [products, posts] = await Promise.all([

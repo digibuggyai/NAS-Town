@@ -1,7 +1,5 @@
 import { useId } from 'react';
 
-// Stylized NAS drawing, used until real product photography is added.
-// `bays` sets the number of drive sleds; `shadow` adds a contact shadow; `live` makes the LEDs blink.
 export default function NasVisual({ bays = 4, shadow = true, live = false, className = '' }) {
   const id = useId().replace(/:/g, '');
   const cols = Math.min(bays, 5);
@@ -37,7 +35,6 @@ export default function NasVisual({ bays = 4, shadow = true, live = false, class
 
       <rect x="20" y="20" width={w - 40} height="280" rx="26" fill={`url(#body-${id})`} />
       <rect x="20.5" y="20.5" width={w - 41} height="279" rx="25.5" fill="none" stroke={`url(#rim-${id})`} />
-      {/* top sheen */}
       <path d={`M46 21 H${w - 46}`} stroke="#fff" strokeOpacity="0.35" strokeWidth="1" />
 
       {Array.from({ length: cols }).map((_, i) => {

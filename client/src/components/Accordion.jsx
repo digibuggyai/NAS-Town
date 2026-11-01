@@ -2,7 +2,6 @@ import { useId, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { gsap, reducedMotion, useGSAP } from '../lib/motion.js';
 
-/** One question/answer row. The answer's height is animated with GSAP. */
 function Item({ q, a, itemClass, summaryClass, answerClass }) {
   const [open, setOpen] = useState(false);
   const panel = useRef(null);
@@ -11,7 +10,7 @@ function Item({ q, a, itemClass, summaryClass, answerClass }) {
   const first = useRef(true);
 
   useGSAP(() => {
-    if (first.current) { first.current = false; return; } // no animation on mount
+    if (first.current) { first.current = false; return; }
     const dur = reducedMotion() ? 0 : 0.45;
     gsap.to(panel.current, { height: open ? 'auto' : 0, duration: dur, ease: 'power3.inOut' });
     gsap.to(panel.current.firstChild, { autoAlpha: open ? 1 : 0, y: open ? 0 : -6, duration: dur * 0.8, ease: 'power2.out', delay: open ? dur * 0.25 : 0 });

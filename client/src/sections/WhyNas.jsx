@@ -2,8 +2,6 @@ import { Check, ChevronRight, Gauge, HardDriveDownload, History, Lock, Wallet, X
 import Reveal from '../components/Reveal.jsx';
 import Button from '../components/Button.jsx';
 
-// NAS against the two things people use instead. Plain, checkable statements only: the
-// actual rupee comparison is the visitor's own, on /finder#roi.
 const OPTIONS = ['NAS', 'Cloud storage', 'External drives'];
 const ROWS = [
   { label: 'Cost over 3–5 years', cells: [['yes', 'Paid once; you own it'], ['no', 'Monthly fee that grows with your data'], ['mid', 'Cheap to buy, but you need a second copy']] },
@@ -41,7 +39,6 @@ export default function WhyNas() {
           <Button variant="secondary" to="/finder#roi">See your savings <ChevronRight className="size-4" /></Button>
         </Reveal>
 
-        {/* Desktop: one compact table */}
         <Reveal className="mt-10 hidden overflow-hidden rounded-2xl border border-line bg-raised md:block">
           <table className="w-full text-left text-sm">
             <thead>
@@ -67,7 +64,6 @@ export default function WhyNas() {
           </table>
         </Reveal>
 
-        {/* Phones: one card per option */}
         <div className="mt-8 grid gap-4 md:hidden">
           {OPTIONS.map((o, col) => (
             <Reveal key={o} className={`rounded-2xl border bg-raised p-5 ${col === 0 ? 'border-accent/40' : 'border-line'}`}>

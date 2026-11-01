@@ -9,7 +9,6 @@ import ConfiguratorBand from '../components/ConfiguratorBand.jsx';
 
 const ICONS = { guides: BookOpen, comparisons: GitCompareArrows, reviews: Star, 'how-to': ListChecks, blog: Newspaper, faq: FileQuestion };
 
-// Hub for everything that used to sit in the Resources dropdown.
 export default function ResourcesIndex() {
   return (
     <>

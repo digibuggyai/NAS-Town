@@ -1,6 +1,3 @@
-// Customer reviews. Public: read published reviews, submit a new one (it waits for approval).
-// Admin: list all, add (e.g. a real review received on Google/WhatsApp), edit, publish/hide,
-// delete. Every admin change is recorded in the change log.
 import { Router } from 'express';
 import * as store from './db/store.js';
 import { requireAdmin } from './auth.js';
@@ -13,7 +10,6 @@ export const REVIEW_SOURCES = { website: 'Website', google: 'Google', whatsapp: 
 
 const text = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
 
-/** Validate a review. `partial` for edits (only the fields sent). Throws a readable message. */
 function cleanReview(b, { partial = false, staff = false } = {}) {
   const out = {};
   const name = text(b.name, 80);
@@ -52,11 +48,7 @@ function cleanReview(b, { partial = false, staff = false } = {}) {
   return out;
 }
 
-// What the public site may see. Never the email, and not the name either: reviews are shown
-// as "Photographer, Delhi · Synology DS925+". Names stay stored for moderation in admin.
 const publicView = ({ id, role, city, product, rating, body, source, createdAt }) => ({ id, role, city, product, rating, body, source, createdAt });
-
-/* ---------------- public ---------------- */
 
 publicReviews.get('/reviews', async (_req, res) => {
   const reviews = (await store.listReviews({ publishedOnly: true })).map(publicView);
@@ -65,7 +57,6 @@ publicReviews.get('/reviews', async (_req, res) => {
   res.json({ reviews, count: reviews.length, average });
 });
 
-// 3 submissions per IP per hour: enough for real customers, not for spam.
 const hits = new Map();
 function allowed(ip) {
   const now = Date.now();
@@ -77,7 +68,7 @@ function allowed(ip) {
 
 publicReviews.post('/reviews', async (req, res) => {
   const b = req.body ?? {};
-  if (b.website) return res.status(201).json({ ok: true }); // honeypot field: only bots fill it in
+  if (b.website) return res.status(201).json({ ok: true });
   if (!allowed(req.ip)) return res.status(429).json({ error: 'Thanks! You have sent a few reviews already. Please try again later.' });
   let data;
   try { data = cleanReview(b); } catch (e) { return res.status(400).json({ error: e.message }); }
@@ -85,14 +76,11 @@ publicReviews.post('/reviews', async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-/* ---------------- admin ---------------- */
-
 const label = (r) => `${r.name} (${r.rating}★)`;
 const show = (k, v) => (v == null || v === '' ? null : k === 'status' ? REVIEW_STATUS[v] ?? v : k === 'source' ? REVIEW_SOURCES[v] ?? v : String(v));
 
 adminReviews.get('/reviews', requireAdmin, async (_req, res) => res.json(await store.listReviews()));
 
-// Staff add a real review they received elsewhere. Published straight away unless they say otherwise.
 adminReviews.post('/reviews', requireAdmin, async (req, res) => {
   let data;
   try { data = cleanReview(req.body ?? {}, { staff: true }); } catch (e) { return res.status(400).json({ error: e.message }); }

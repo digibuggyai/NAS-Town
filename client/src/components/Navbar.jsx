@@ -5,9 +5,6 @@ import { digibuggy, nav, waLink } from '../data/site.js';
 import { experienceZone, quoteText } from '../config/siteContent.js';
 import { gsap, lockScroll, reducedMotion, useGSAP } from '../lib/motion.js';
 
-/** NASTOWN mark (house of drives) + wordmark. The mark is a transparent PNG; on dark
- * backgrounds (the footer) it sits on a small white tile, because its navy would vanish on black.
- * The full stacked logo with the name underneath is /nastown-logo-full.png (for print, social, etc.). */
 export function Logo({ onDark = false }) {
   return (
     <Link to="/" className={`flex items-center gap-2.5 text-[0.95rem] font-semibold tracking-[0.14em] ${onDark ? 'text-white' : ''}`} aria-label="NASTOWN home">
@@ -26,17 +23,14 @@ export default function Navbar() {
   const header = useRef(null);
   const menu = useRef(null);
 
-  // Desktop dropdowns open on hover or keyboard focus. After a menu link is clicked the
-  // focus stays on it, which would keep the dropdown open on the new page, so drop it.
   const closeDropdowns = () => {
     if (header.current?.contains(document.activeElement)) document.activeElement.blur();
   };
 
   useEffect(() => setOpen(false), [pathname]);
-  useEffect(closeDropdowns, [key]); // every navigation, including ?filter changes
+  useEffect(closeDropdowns, [key]);
   useEffect(() => lockScroll(open), [open]);
 
-  // The bar stays in place while scrolling; it gains a stronger shadow once the page moves.
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
@@ -44,7 +38,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // GSAP: the phone menu drops in, then its rows cascade.
   useGSAP(() => {
     if (!open || !menu.current || reducedMotion()) return;
     gsap.fromTo(menu.current, { autoAlpha: 0, y: -10, scale: 0.98, transformOrigin: 'top center' }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' });
@@ -53,7 +46,6 @@ export default function Navbar() {
 
   return (
     <header ref={header} className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
-      {/* Capsule: a floating rounded-full bar that gains a stronger shadow once the page scrolls. */}
       <div
         className={`mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full border border-line bg-raised pr-2 pl-5 transition-shadow duration-300 ${
           scrolled || open ? 'shadow-[0_10px_30px_-12px_rgb(15_23_42/0.25)]' : 'shadow-[0_4px_16px_-10px_rgb(15_23_42/0.18)]'
@@ -62,7 +54,6 @@ export default function Navbar() {
         <Logo />
 
         <nav aria-label="Main" className="hidden xl:block">
-          {/* Flat links, no dropdowns. The Configurator is drawn as a pill: it's where people get a price. */}
           <ul className="flex items-center gap-0.5">
             {nav.map(({ label, to, highlight }) => (
               <li key={to}>
@@ -84,7 +75,6 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Primary action: a quote from a person, on WhatsApp. */}
           <a href={waLink(quoteText)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp hidden !min-h-10 !py-2 !text-[0.875rem] sm:inline-flex">
             <MessageCircle className="size-4" /> Get a quote
           </a>
@@ -102,7 +92,6 @@ export default function Navbar() {
       
       {open && (
         <div id="mobile-menu" ref={menu} className="mx-auto mt-2 max-h-[calc(100svh-6rem)] max-w-7xl overflow-y-auto rounded-3xl border border-line bg-raised px-5 pb-8 shadow-[0_16px_40px_-16px_rgb(15_23_42/0.3)] xl:hidden">
-          {/* With no dropdowns, the phone menu is one flat list. */}
           <ul className="rule-list">
             {nav.map(({ label, to, highlight }) => (
               <li key={to}>

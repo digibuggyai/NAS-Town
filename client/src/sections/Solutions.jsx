@@ -3,7 +3,6 @@ import { ChevronRight } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import { solutions } from '../data/home.js';
 
-// Use cases as photo cards: rounded image, heading, one line, typical setup, blue link.
 export default function Solutions() {
   return (
     <section className="bg-surface">

@@ -4,8 +4,6 @@ import Reveal from '../components/Reveal.jsx';
 import MiniDiagram from '../components/MiniDiagram.jsx';
 import { whatIsNas } from '../data/home.js';
 
-// "What is NAS?" in one compact row: four cards (store, protect, share, access), each with
-// its small diagram, one headline, two lines and a link. It used to be four large photo rows.
 export default function FeatureRows() {
   return (
     <section id="what-is-nas" className="mx-auto max-w-7xl scroll-mt-20 px-4 py-12 sm:px-6 md:py-16">
@@ -15,7 +13,6 @@ export default function FeatureRows() {
         <p className="mt-3 text-lg leading-relaxed">{whatIsNas.body[0]}</p>
       </Reveal>
 
-      {/* Phones: one swipeable row. Tablets: 2 × 2. Desktop: one row of four. */}
       <ul className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
         {whatIsNas.points.map((pt, i) => (
           <Reveal as="li" key={pt.key} delay={i * 70} className="flex w-[78%] shrink-0 snap-start flex-col rounded-2xl border border-line bg-raised p-5 sm:w-auto">

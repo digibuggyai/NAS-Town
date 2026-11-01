@@ -4,7 +4,6 @@ import ProductPhoto, { useTilt } from './ProductPhoto.jsx';
 import { formatInr } from '../lib/api.js';
 import { brandName } from '../data/site.js';
 
-/** Short, factual spec lines for the entry. */
 function specLines(p) {
   const top = Math.max(0, ...[...String(p.network ?? '').matchAll(/(\d+(?:\.\d+)?)\s*GbE/gi)].map((m) => Number(m[1])));
   return [
@@ -15,10 +14,8 @@ function specLines(p) {
   ].filter((r) => r && r[1]);
 }
 
-/** A catalogue entry, not a card: figure, name, specs, price. The whole entry is one link target. */
 export default function ProductCard({ product: p }) {
   const bestFor = (p.best_for ?? '').split('•').map((s) => s.trim()).filter(Boolean);
-  // The whole entry is a link (it covers the plate), so the entry takes the pointer.
   const { plateRef, handlers } = useTilt();
   return (
     <article className="group relative flex flex-col" {...handlers}>
@@ -51,7 +48,6 @@ export default function ProductCard({ product: p }) {
             <span className="text-lg font-medium">{formatInr(p.price_inr)}</span>
           </p>
         )}
-        {/* Above the card-wide link, so each button is its own target. */}
         <div className="relative z-10 mt-3 grid grid-cols-2 gap-2">
           <Link to={`/tools/configurator?model=${p.slug}`} className="btn btn-primary btn-sm">
             <SlidersHorizontal className="size-3.5" aria-hidden /> Configure
@@ -65,7 +61,6 @@ export default function ProductCard({ product: p }) {
 
 export function ProductGridSkeleton({ count = 4 }) {
   return Array.from({ length: count }).map((_, i) => (
-    // Same height as a real card (photo plate, name, specs, price and buttons), so nothing jumps when products arrive.
     <div key={i} aria-hidden className="flex flex-col">
       <div className="plate h-52 animate-pulse" />
       <div className="mt-4 h-4 w-1/3 animate-pulse rounded bg-surface" />

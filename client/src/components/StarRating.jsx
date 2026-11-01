@@ -1,6 +1,5 @@
 import { Star } from 'lucide-react';
 
-/** Read-only stars, e.g. 4 of 5 filled. */
 export function Stars({ value, size = 'size-4' }) {
   return (
     <span className="flex gap-0.5" role="img" aria-label={`${value} out of 5 stars`}>
@@ -11,7 +10,6 @@ export function Stars({ value, size = 'size-4' }) {
   );
 }
 
-/** Pick 1–5 stars. A real radio group, so it works with the keyboard and screen readers. */
 export function StarInput({ value, onChange, name = 'rating' }) {
   return (
     <div role="radiogroup" aria-label="Your rating" className="flex gap-1">

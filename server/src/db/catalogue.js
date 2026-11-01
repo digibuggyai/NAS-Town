@@ -1,8 +1,3 @@
-// NAS catalogue seed, shared with DGB India: specs and quote prices come from
-// catalogue.json (the DGB India export of 8 Oct 2026, drive prices updated 14 Oct 2026; quote prices only, GST inclusive).
-// Floor prices are NOT here: they live in floors.local.json (gitignored) and are applied
-// by seeding or `npm run import-floors`, or entered in the admin panel.
-// NASTOWN adds its own copy per model (summary, best-for, featured, rentable) below.
 import fs from 'node:fs';
 
 const source = JSON.parse(fs.readFileSync(new URL('./catalogue.json', import.meta.url), 'utf8'));
@@ -45,7 +40,6 @@ export const drives = source.drives.map(({ capacityTb, line, quote, active }) =>
 
 export const driveLines = source.driveLines.map((l) => ({ madeForBrand: null, cache: null, extras: null, ...l }));
 
-// Upgrades: none priced today. The configurator hides the step when this is empty.
 export const upgrades = source.upgrades ?? [];
 
 export const settings = source.settings;

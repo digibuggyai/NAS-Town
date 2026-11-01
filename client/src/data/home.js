@@ -1,6 +1,3 @@
-// Homepage copy. Headings are the approved ones; body copy is tightened so each
-// section says one thing once. Edit words here; layout lives in src/sections/.
-
 export const hero = {
   eyebrow: 'Store · Protect · Share · Grow',
   title: 'Your Data Deserves a *Home*',
@@ -25,7 +22,6 @@ export const whatIsNas = {
   body: [
     'A NAS (Network Attached Storage) is a storage box on your network: one place for every file, backup and photo, reachable from every device.',
   ],
-  // Four compact cards (sections/FeatureRows.jsx): diagram, headline, two lines, link.
   points: [
     {
       key: 'store', title: 'Store', headline: 'Everything in one place',
@@ -55,7 +51,6 @@ export const solutions = {
   eyebrow: 'NAS solutions',
   title: 'NAS for the Way You Work',
   body: ['The right NAS depends on what you do with your data.'],
-  // `setup` is a typical starting configuration: a concrete answer, not a promise.
   cards: [
     { slug: 'photographers', image: '/images/solutions/photographers.webp', alt: 'A photographer with his camera in an old Indian street', title: 'Photographers', body: 'RAW files, client projects and a photo library that keeps growing.', setup: '4-bay · RAID 5 · 2.5GbE', cta: 'Explore Photography NAS' },
     { slug: 'videographers', image: '/images/solutions/videographers.webp', alt: 'A video editor with headphones cutting footage on a desktop', title: 'Videographers', body: 'Large footage, project assets and archives, fast enough to edit from.', setup: '4–8 bay · RAID 5 · 2.5–10GbE', cta: 'Explore Video NAS' },
@@ -78,7 +73,6 @@ export const why = {
   eyebrow: 'Why NASTOWN',
   title: "We Don't Just Sell NAS",
   body: ['Choosing a NAS is only the first step. We help you pick it, set it up and keep it running.'],
-  // `fact` is a concrete, checkable detail for each promise.
   points: [
     { key: 'guidance', title: 'Expert Guidance', body: 'Help choosing a NAS for your storage, workflow and budget.', fact: 'On WhatsApp or at our Experience Zone in Nehru Place' },
     { key: 'install', title: 'Installation & Migration', body: 'Installed, configured, and your existing data moved across properly.', fact: 'Installation · RAID setup · Data migration' },
