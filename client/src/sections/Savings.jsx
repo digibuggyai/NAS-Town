@@ -3,7 +3,7 @@ import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import Button from '../components/Button.jsx';
 import { formatInr } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
-import { RAID_INFO, autoBuildableSizes, suggestAutoBuilds } from '../lib/nas/logic.js';
+import { RAID_INFO, autoBuildableSizes, forUse, suggestAutoBuilds } from '../lib/nas/logic.js';
 
 const videoPresets = [['1080p H.264', 15], ['4K H.265', 45], ['4K H.264', 90], ['4K ProRes 422', 330]];
 
@@ -60,7 +60,7 @@ function Estimator({ onEstimate }) {
 }
 
 export default function Savings({ preset }) {
-  const { pricing: P, error: pricingError } = usePricing('public');
+  const { pricing, error: pricingError } = usePricing('public');
   const [needTb, setNeedTb] = useState(preset?.targetTB ?? 20);
   const [years, setYears] = useState(5);
   const [cloudPerTb, setCloudPerTb] = useState(350);
@@ -69,7 +69,8 @@ export default function Savings({ preset }) {
   useEffect(() => { if (preset?.targetTB) setNeedTb(preset.targetTB); }, [preset]);
 
   const r = useMemo(() => {
-    if (!P) return null;
+    if (!pricing) return null;
+    const P = forUse(pricing);
     const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
     let build = preset?.build && preset.build.totalUsable >= needTb ? preset.build : null;
     if (!build) {
@@ -82,10 +83,10 @@ export default function Savings({ preset }) {
     const cloud = cloudMonthly * 12 * years;
     const nas = build?.totalQuote ?? null;
     return { build, nas, cloud, cloudMonthly, external, perTb, breakEven: nas && cloudMonthly ? Math.ceil(nas / cloudMonthly) : null };
-  }, [P, preset, needTb, years, cloudPerTb]);
+  }, [pricing, preset, needTb, years, cloudPerTb]);
 
   const rows = r ? [
-    { key: 'nas', label: 'NAS + drives', note: r.build ? `$${r.build.model.brand} ${r.build.model.model}, ${r.build.drivesPerUnit} × ${r.build.driveCap} TB, ${RAID_INFO[r.build.raid].title} · one-time, GST incl.` : 'Beyond what we quote online', value: r.nas },
+    { key: 'nas', label: 'NAS + drives', note: r.build ? `${r.build.model.brand} ${r.build.model.model}, ${r.build.drivesPerUnit} × ${r.build.driveCap} TB, ${RAID_INFO[r.build.raid].title} · one-time, GST incl.` : 'Beyond what we quote online', value: r.nas },
     { key: 'cloud', label: 'Cloud subscription', note: `${formatInr(r.cloudMonthly)}/month for ${years} ${years > 1 ? 'years' : 'year'}, at your price per TB`, value: r.cloud },
     { key: 'ext', label: 'External drives', note: `Two copies of ${needTb} TB at ${formatInr(Math.round(r.perTb))}/TB (our drive list); no RAID, no remote access`, value: r.external },
   ] : [];

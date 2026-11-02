@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { ArrowDown, ArrowRight, RotateCcw } from 'lucide-react';
 import { api } from '../lib/api.js';
 import { usePricing } from '../lib/nas/usePricing.js';
-import { RAID_INFO, bestBuildPerModel, inr, networkFor, suggestBuilds } from '../lib/nas/logic.js';
+import { RAID_INFO, bestBuildPerModel, forUse, inr, networkFor, suggestBuilds } from '../lib/nas/logic.js';
 import ProductPhoto from './ProductPhoto.jsx';
 
 const steps = [
@@ -23,7 +23,8 @@ const steps = [
 
 const TARGET = { '10tb': 10, '20tb': 20, '50tb': 50, '50plus': 60 };
 
-function recommend(P, { storing, capacity, work_style }) {
+function recommend(all, { storing, capacity, work_style }) {
+  const P = forUse(all, storing);
   const targetTB = TARGET[capacity] ?? 10;
   const raids = work_style === 'enterprise' ? ['RAID6'] : work_style === 'home' && targetTB <= 20 ? ['RAID1', 'RAID5'] : ['RAID5'];
   const catalogue = { models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false };
@@ -33,7 +34,7 @@ function recommend(P, { storing, capacity, work_style }) {
     if (fast.length) builds = fast;
   }
   builds.sort((a, b) => a.totalQuote - b.totalQuote || a.units - b.units);
-  return { targetTB, builds: bestBuildPerModel(builds).slice(0, 3) };
+  return { targetTB, use: storing === 'surveillance' ? 'surveillance' : null, builds: bestBuildPerModel(builds).slice(0, 3) };
 }
 
 export default function Finder({ onResult }) {
@@ -84,7 +85,7 @@ export default function Finder({ onResult }) {
                 <p className="mt-auto pt-4 text-xl font-medium">{inr(b.totalQuote)}</p>
                 <p className="text-xs text-subtle">Hardware, GST inclusive</p>
                 <div className="mt-4 grid gap-2">
-                  <Link to={`/tools/configurator?model=${b.model.slug}&target=${result.targetTB}&raid=${b.raid}`} className="btn btn-primary btn-sm">Configure this NAS</Link>
+                  <Link to={`/tools/configurator?model=${b.model.slug}&target=${result.targetTB}&raid=${b.raid}${result.use ? `&use=${result.use}` : ''}`} className="btn btn-primary btn-sm">Configure this NAS</Link>
                   <Link to={`/products/${b.model.slug}`} className="btn btn-secondary btn-sm">View details</Link>
                 </div>
               </article>

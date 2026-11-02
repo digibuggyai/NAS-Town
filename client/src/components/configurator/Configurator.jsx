@@ -27,6 +27,7 @@ function initialAnswers(P, params) {
   const a = { ...INITIAL_ANSWERS };
   const target = Number(params?.get('target'));
   if (target > 0) a.targetTB = target;
+  if (params?.get('use') === 'surveillance') a.use = 'surveillance';
   const brand = P.models.find((m) => m.brand.toLowerCase() === params?.get('brand')?.toLowerCase())?.brand;
   if (brand) a.brand = brand;
   const raid = params?.get('raid');

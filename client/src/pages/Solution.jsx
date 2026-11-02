@@ -37,7 +37,7 @@ export default function Solution() {
         }
       >
         <Link to="/finder" className="btn btn-primary">Find My NAS</Link>
-        <Link to="/tools/configurator" className="btn btn-secondary">Build My NAS</Link>
+        <Link to={s.slug === 'surveillance' ? '/tools/configurator?use=surveillance' : '/tools/configurator'} className="btn btn-secondary">Build My NAS</Link>
       </PageHero>
 
       {picks.length > 0 && (

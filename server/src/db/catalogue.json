@@ -1,5 +1,5 @@
 {
-  "exportedAt": "2026-10-26T06:00:00.000Z",
+  "exportedAt": "2026-11-02T06:00:00.000Z",
   "currency": "INR",
   "note": "Quote prices only, as the public site receives them.",
   "models": [
@@ -43,11 +43,21 @@
     { "capacityTb": 20, "line": "Exos", "active": true, "quote": 113988 },
     { "capacityTb": 24, "line": "WD Ultrastar", "active": true, "quote": 136290 },
     { "capacityTb": 18, "line": "Exos", "active": true, "quote": 163548 },
-    { "capacityTb": 30, "line": "Exos", "active": true, "quote": 163548 }
+    { "capacityTb": 30, "line": "Exos", "active": true, "quote": 163548 },
+    { "capacityTb": 1, "line": "SkyHawk", "active": true, "quote": 11151 },
+    { "capacityTb": 2, "line": "SkyHawk", "active": true, "quote": 13010 },
+    { "capacityTb": 4, "line": "SkyHawk", "active": true, "quote": 17346 },
+    { "capacityTb": 6, "line": "SkyHawk", "active": true, "quote": 23100 },
+    { "capacityTb": 8, "line": "SkyHawk", "active": true, "quote": 40887 },
+    { "capacityTb": 10, "line": "SkyHawk", "active": true, "quote": 52658 },
+    { "capacityTb": 12, "line": "SkyHawk", "active": true, "quote": 59850 },
+    { "capacityTb": 16, "line": "SkyHawk", "active": true, "quote": 92925 },
+    { "capacityTb": 20, "line": "SkyHawk", "active": true, "quote": 140007 }
   ],
   "driveLines": [
     { "name": "IronWolf", "brand": "Seagate", "driveClass": "nas", "series": "IronWolf", "rpm": "5,400–7,200 rpm (by capacity)", "cache": "64–256 MB (by capacity)", "interface": "SATA 6 Gb/s", "recording": "CMR", "workloadTbYear": "180 TB/year", "mtbf": "1 million hours", "warrantyYears": 3, "bestFor": "Small NAS units in an office or studio — Seagate rates them for 1- to 8-bay systems and light to moderate daily use.", "extras": "3 years Rescue Data Recovery included", "specsUrl": "https://www.seagate.com/in/en/products/nas-drives/ironwolf-hard-drive/", "sortOrder": 20 },
     { "name": "IronWolf Pro", "brand": "Seagate", "driveClass": "nas", "series": "IronWolf Pro", "rpm": "7,200 rpm", "cache": "256 MB (512 MB on the largest capacities)", "interface": "SATA 6 Gb/s", "recording": "CMR", "workloadTbYear": "300 TB/year (550 TB/year on 24 TB and larger)", "mtbf": "1.2 million hours (2.5 million on 24 TB and larger)", "warrantyYears": 5, "bestFor": "Busy multi-bay NAS units shared by a whole team, and larger arrays.", "extras": "3 years Rescue Data Recovery included", "specsUrl": "https://www.seagate.com/in/en/products/nas-drives/ironwolf-pro-hard-drive/", "sortOrder": 30 },
+    { "name": "SkyHawk", "brand": "Seagate", "driveClass": "surveillance", "series": "SkyHawk (1–8 TB) / SkyHawk AI (10 TB and larger)", "cache": "256 MB", "interface": "SATA 6 Gb/s", "recording": "CMR", "workloadTbYear": "180 TB/year (550 TB/year on SkyHawk AI, 10 TB and larger)", "mtbf": "1 million hours", "warrantyYears": 3, "bestFor": "CCTV and NVR recording: built to write many camera streams around the clock (up to 64 HD cameras).", "extras": "3 years Rescue Data Recovery included; SkyHawk AI (10 TB and larger) carries a 5-year warranty", "specsUrl": "https://www.seagate.com/in/en/products/video-analytics/skyhawk-hard-drive/", "sortOrder": 35 },
     { "name": "Exos", "brand": "Seagate", "driveClass": "enterprise", "series": "Exos X", "rpm": "7,200 rpm", "cache": "256 MB (512 MB on 24 TB)", "interface": "SATA 6 Gb/s (SAS available)", "recording": "CMR", "workloadTbYear": "550 TB/year", "mtbf": "2.5 million hours", "warrantyYears": 5, "bestFor": "Constant, heavy use — the drives data centres run around the clock.", "specsUrl": "https://www.seagate.com/in/en/products/enterprise-drives/exos-x/", "sortOrder": 40 },
     { "name": "WD Ultrastar", "brand": "Western Digital", "driveClass": "enterprise", "series": "Ultrastar DC HC500 series (HC560 / HC580)", "rpm": "7,200 rpm", "cache": "512 MB", "interface": "SATA 6 Gb/s (SAS available)", "recording": "CMR", "workloadTbYear": "550 TB/year", "mtbf": "Up to 2.5 million hours (projected)", "warrantyYears": 5, "bestFor": "Constant, heavy use, and the largest capacities we stock.", "specsUrl": "https://www.westerndigital.com/products/internal-drives/data-center-drives/ultrastar-dc-hc580-hdd", "sortOrder": 50 },
     { "name": "Synology Plus", "brand": "Synology", "driveClass": "nas", "madeForBrand": "Synology", "series": "HAT3300 / HAT3310 / HAT3320", "rpm": "5,400 rpm (2–6 TB), 7,200 rpm (8–20 TB)", "interface": "SATA 6 Gb/s", "recording": "CMR", "workloadTbYear": "180 TB/year (up to 300 TB/year on the larger models)", "mtbf": "Up to 1.2 million hours", "warrantyYears": 3, "bestFor": "Synology DiskStations — tuned by Synology for its own units.", "extras": "Validated by Synology; health data reported in DSM", "specsUrl": "https://www.synology.com/en-us/products/drives/hdd/plus-hat", "sortOrder": 60 },

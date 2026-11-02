@@ -13,6 +13,19 @@ export const RAID_INFO = {
   RAID10: { title: 'RAID 10', sub: 'Mirror + stripe · fast rebuild', min: 4, step: 2, tolerance: 1, blurb: 'Mirrored pairs, striped. Fast rebuilds and good write speed; half the raw space is usable.' },
 };
 
+export const surveillanceLines = (P) => new Set((P.driveLines ?? []).filter((l) => l.driveClass === 'surveillance').map((l) => l.name));
+
+export function forUse(P, use) {
+  const skip = surveillanceLines(P);
+  if (use === 'surveillance' || !skip.size) return P;
+  const hddPricing = Object.fromEntries(
+    Object.entries(P.hddPricing)
+      .map(([cap, lines]) => [cap, Object.fromEntries(Object.entries(lines).filter(([l]) => !skip.has(l)))])
+      .filter(([, lines]) => Object.keys(lines).length),
+  );
+  return { ...P, hddPricing, capacities: Object.keys(hddPricing).map(Number).sort((a, b) => a - b) };
+}
+
 export function usableForN(raid, n, c) {
   switch (raid) {
     case 'RAID0': return n * c;

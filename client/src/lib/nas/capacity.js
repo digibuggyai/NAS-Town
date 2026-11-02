@@ -1,8 +1,8 @@
-import { bestBuildPerModel, buildableSizes, suggestBuilds } from './logic.js';
+import { bestBuildPerModel, buildableSizes, forUse, suggestBuilds } from './logic.js';
 
 export const CAPACITY_RAIDS = ['RAID1', 'RAID5', 'RAID6', 'RAID10'];
 
-const catalogueFor = (P, raid) => ({ raid, models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false });
+const catalogueFor = (all, raid, P = forUse(all)) => ({ raid, models: P.models, hddPricing: P.hddPricing, capacities: P.capacities, brand: 'any', bays: null, expandableOnly: false });
 
 export function capacityOptions(P, tb) {
   const out = [];

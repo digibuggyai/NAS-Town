@@ -6,6 +6,7 @@ import {
   bestBuildPerModel,
   buildableSizes,
   cheapestOutlay,
+  forUse,
   inr,
   labelForSpeed,
   nearestBuildable,
@@ -14,6 +15,7 @@ import {
   suggestBudgetPlan,
   suggestBuilds,
   suggestBuildsForBudget,
+  surveillanceLines,
   topSpeed,
 } from './logic.js';
 
@@ -32,6 +34,7 @@ export const INITIAL_ANSWERS = {
   driveLine: null,
   ramSku: null,
   nicSku: null,
+  use: null,
   includeInstall: false,
   includeAMC: false,
 };
@@ -58,7 +61,9 @@ export function extraCostFor(a, P) {
     (a.includeInstall ? P.install.quote * units : 0) + (a.includeAMC ? hardware * P.amcRate.quote : 0);
 }
 
-const catalogueFor = (a, P) => ({
+const useOf = (a, P) => (a.use === 'surveillance' || surveillanceLines(P).has(a.driveLine) ? 'surveillance' : null);
+
+const catalogueFor = (a, all, P = forUse(all, useOf(a, all))) => ({
   models: P.models,
   hddPricing: P.hddPricing,
   capacities: P.capacities,
@@ -182,6 +187,14 @@ export function derive(a, P) {
   };
 }
 
+function surveillanceBuilds(a, P) {
+  const lines = surveillanceLines(P);
+  if (!lines.size || useOf(a, P)) return [];
+  const builds = derive({ ...a, use: 'surveillance', driveLine: null }, P).builds.filter((b) => lines.has(b.driveLine));
+  const byCap = a.driveCap == null ? builds : builds.filter((b) => b.driveCap === a.driveCap);
+  return byCap.length ? byCap : builds;
+}
+
 export function feasibleOptions(a, P, d) {
   const bayPool = a.bays == null ? d.builds : derive({ ...a, bays: null }, P).builds;
   const byCap = a.driveCap == null ? d.builds : d.builds.filter((b) => b.driveCap === a.driveCap);
@@ -212,7 +225,7 @@ export function feasibleOptions(a, P, d) {
     limits,
     reaches,
     caps: new Set(d.builds.map((b) => b.driveCap)),
-    lines: new Set((byCap.length ? byCap : d.builds).map((b) => b.driveLine)),
+    lines: new Set([...(byCap.length ? byCap : d.builds), ...surveillanceBuilds(a, P)].map((b) => b.driveLine)),
     bayPool,
   };
 }

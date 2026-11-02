@@ -52,7 +52,7 @@ const publicLine = (l) => ({
   id: l.id,
   name: l.name,
   brand: l.brand,
-  driveClass: String(l.driveClass ?? '').toLowerCase() === 'enterprise' ? 'enterprise' : 'nas',
+  driveClass: ['enterprise', 'surveillance'].find((c) => c === String(l.driveClass ?? '').toLowerCase()) ?? 'nas',
   madeForBrand: l.madeForBrand ?? '',
   series: l.series,
   rpm: l.rpm,

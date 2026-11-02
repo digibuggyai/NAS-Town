@@ -64,7 +64,7 @@ export function keySpecs(model) {
 
 export const findLine = (lines, name) => lines.find((l) => l.name.toLowerCase() === String(name).trim().toLowerCase());
 
-const CLASS_LABEL = { nas: 'NAS', enterprise: 'Enterprise' };
+const CLASS_LABEL = { nas: 'NAS', enterprise: 'Enterprise', surveillance: 'Surveillance' };
 export const classLabel = (line) => CLASS_LABEL[line?.driveClass] ?? null;
 
 export function driveLineSpecs(line) {
@@ -114,6 +114,9 @@ export function driveNotes(model, line, drivesPerUnit) {
   }
   if (line.driveClass === 'enterprise' && drivesPerUnit <= 2) {
     notes.push({ tone: 'info', text: 'Enterprise drives spin at 7,200 rpm and are built for constant use. In a desk-side unit they are noticeably louder than a NAS drive, which is worth it if the unit runs around the clock.' });
+  }
+  if (line.driveClass === 'surveillance') {
+    notes.push({ tone: 'info', text: `${line.name} drives are built for CCTV and NVR recording, writing many camera streams around the clock. For file sharing, editing or backups, a NAS drive such as IronWolf is the better fit.` });
   }
   if (model.maxDriveTb) {
     notes.push({ tone: 'info', text: `This unit takes drives up to ${model.maxDriveTb} TB each, so only those sizes are quoted for it.` });
