@@ -3,7 +3,7 @@ import { AlertTriangle, Check, CheckCircle2, Copy, Download, Info, Loader2, Rota
 import { usePricing } from '../../lib/nas/usePricing.js';
 import { RAID_INFO, RAID_LEVELS, bestNetworkAmong, inr } from '../../lib/nas/logic.js';
 import {
-  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, derive, estimateLines, estimateRef, feasibleOptions, leadSummary, priceFor, speedFor,
+  BUDGET_PRESETS, CAPACITY_PRESETS, INITIAL_ANSWERS, derive, estimateLines, estimateRef, feasibleOptions, finalQuote, leadSummary, priceFor, speedFor,
 } from '../../lib/nas/configure.js';
 import {
   buildSpecs, classLabel, compareRows, driveLineSpecs, driveNotes, expansionBadge, findLine, keyDriveSpecs, keySpecs, modelSpecs,
@@ -66,6 +66,8 @@ export default function Configurator({ source = 'public', params }) {
   return <ConfiguratorLoaded P={pricing} sales={source === 'sales'} params={params} openedAt={openedAt} />;
 }
 
+const NO_EDITS = {};
+
 function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const [a, setAnswers] = useState(() => initialAnswers(P, params));
   const [interacted, setInteracted] = useState(false);
@@ -74,12 +76,20 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const d = useMemo(() => derive(a, P), [a, P]);
   const price = useMemo(() => priceFor(d.build, a, P), [d.build, a, P]);
   const can = useMemo(() => feasibleOptions(a, P, d), [a, P, d]);
-  const lines = useMemo(() => estimateLines(d.build, price, a, P), [d.build, price, a, P]);
+  const listLines = useMemo(() => estimateLines(d.build, price, a, P), [d.build, price, a, P]);
+  const editKey = d.build ? [d.build.model.id, d.build.driveCap, d.build.driveLine, d.build.drivesPerUnit, a.ramSku, a.nicSku, a.includeInstall, a.includeAMC].join('|') : '';
+  const [edits, setEdits] = useState({ key: '', v: NO_EDITS });
+  const activeEdits = sales && edits.key === editKey ? edits.v : NO_EDITS;
+  const quote = useMemo(() => finalQuote(listLines, price, activeEdits, P), [listLines, price, activeEdits, P]);
+  const lines = quote.lines;
+  const finalPrice = quote.price;
+  const setEdit = (key, value) => setEdits((prev) => ({ key: editKey, v: { ...(prev.key === editKey ? prev.v : NO_EDITS), [key]: value } }));
+  const blocked = sales && quote.belowFloor.length > 0;
   const { net, speed } = useMemo(() => speedFor(d.build, price?.nicItem), [d.build, price]);
   const [ref] = useState(() => estimateRef());
   const build = d.build;
   const started = !d.pending;
-  const summary = build && price ? leadSummary(d, build, price, speed, a, P, ref) : '';
+  const summary = build && price ? leadSummary(d, build, finalPrice, speed, a, P, ref) : '';
 
   const [dialog, setDialog] = useState(null);
   const [showAll, setShowAll] = useState(false);
@@ -123,12 +133,12 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   const [quoteOpen, setQuoteOpen] = useState(false);
   const downloadPdf = () => {
     if (!build || !price) return;
-    setPdfBlocked(!openEstimatePdf({ ref, build, price, lines, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
+    setPdfBlocked(!openEstimatePdf({ ref, build, price: finalPrice, lines, quotation: sales, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
   };
 
   const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, interacted, quoteReady: Boolean(build && price), quoteSent, openedAt });
   const hasFloor = sales && price?.floor;
-  const room = hasFloor ? price.total - price.floor.total : null;
+  const room = hasFloor ? finalPrice.total - price.floor.total : null;
   let n = 0;
 
   return (
@@ -419,7 +429,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
 
               <table className="mt-4 w-full text-sm">
                 {hasFloor && (
-                  <thead><tr className="text-xs text-subtle"><th /><th className="pb-2 text-right font-normal">Quote</th><th className="pb-2 pl-3 text-right font-normal">Floor</th></tr></thead>
+                  <thead><tr className="text-xs text-subtle"><th /><th className="pb-2 text-right font-normal">Price</th><th className="pb-2 pl-3 text-right font-normal">Floor</th></tr></thead>
                 )}
                 <tbody>
                   {lines.filter((l) => !l.total).map((l) => (
@@ -428,29 +438,35 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
                         <span className={l.subtotal ? 'text-muted' : 'font-medium'}>{l.key === 'nas' ? 'NAS unit' : l.key === 'hdd' ? 'Hard drives' : l.label}</span>
                         {l.basis && <span className="block text-xs text-subtle">{l.basis}</span>}
                       </td>
-                      <td className="py-2 text-right whitespace-nowrap tabular-nums">{inr(l.quote)}</td>
-                      {hasFloor && <td className="py-2 pl-3 text-right whitespace-nowrap text-warning tabular-nums">{inr(l.floor)}</td>}
+                      <td className="py-2 text-right whitespace-nowrap tabular-nums">{sales && !l.subtotal ? <PriceCell line={l} onSave={(v) => setEdit(l.key, v)} /> : inr(l.quote)}</td>
+                      {hasFloor && <td className={`py-2 pl-3 text-right whitespace-nowrap tabular-nums ${quote.belowFloor.includes(l) ? 'font-semibold text-error' : 'text-warning'}`}>{inr(l.floor)}</td>}
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div className="mt-2 flex items-baseline justify-between border-t-2 border-fg pt-3">
                 <span className="text-sm font-semibold">Total <span className="font-normal text-subtle">incl. GST</span></span>
-                <span className="font-display text-2xl font-semibold tabular-nums">{inr(price.total)}</span>
+                <span className="font-display text-2xl font-semibold tabular-nums">{inr(finalPrice.total)}</span>
               </div>
               {hasFloor && <p className="mt-1 text-right text-xs text-warning tabular-nums">Floor {inr(price.floor.total)}</p>}
-              <p className="mt-1 text-xs text-subtle">{inr(price.perTB)} per usable TB</p>
+              <p className="mt-1 text-xs text-subtle">{inr(finalPrice.perTB)} per usable TB</p>
 
               {hasFloor && (
-                <p className="mt-3 rounded-xl bg-warning/10 px-3 py-2 text-sm text-warning">Room to negotiate: <span className="font-semibold">{inr(room)}</span> ({((room / price.total) * 100).toFixed(1)}%)</p>
+                <p className="mt-3 rounded-xl bg-warning/10 px-3 py-2 text-sm text-warning">Room to negotiate: <span className="font-semibold">{inr(room)}</span> ({((room / finalPrice.total) * 100).toFixed(1)}%)</p>
+              )}
+              {sales && (quote.edited || blocked) && (
+                <div className="mt-3 grid gap-2">
+                  {blocked && <p className="rounded-xl bg-error/10 px-3 py-2 text-sm text-error">Below floor: {quote.belowFloor.map((l) => (l.key === 'nas' ? 'NAS unit' : l.key === 'hdd' ? 'Hard drives' : l.label)).join(', ')}. Raise the price to at least the floor before sending the quotation.</p>}
+                  {quote.edited && <button type="button" onClick={() => setEdits({ key: '', v: NO_EDITS })} className="btn btn-secondary !py-1.5 !text-xs"><RotateCcw className="size-3.5" /> Reset to list prices</button>}
+                </div>
               )}
               {sales && !price.floor && <p className="mt-3 text-xs text-warning">No floor on record for this unit or drive, so no floor is shown.</p>}
 
               <div className="mt-5 grid gap-2">
-                {sales ? <CopySummary text={summary} /> : (
+                {sales ? <CopySummary text={summary} disabled={blocked} /> : (
                   <button onClick={() => setQuoteOpen(true)} className="btn btn-primary w-full">{quoteSent ? <><CheckCircle2 className="size-4" /> Quotation requested</> : 'Request formal quotation'}</button>
                 )}
-                <button onClick={downloadPdf} className="btn btn-secondary w-full"><Download className="size-4" /> Download estimate (PDF)</button>
+                <button onClick={downloadPdf} disabled={blocked} className="btn btn-secondary w-full"><Download className="size-4" /> {sales ? 'Download quotation (PDF)' : 'Download estimate (PDF)'}</button>
                 {pdfBlocked && <p className="text-xs text-warning">Your browser blocked the estimate window. Allow pop-ups for this site and try again.</p>}
               </div>
               <p className="mt-4 text-xs leading-relaxed text-subtle">
@@ -467,7 +483,7 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         <div className="fixed bottom-3 left-3 right-[5.25rem] z-40 flex items-center justify-between gap-3 rounded-2xl bg-fg py-2.5 pr-2.5 pl-4 text-white shadow-2xl lg:hidden">
           <div className="min-w-0 text-sm">
             <p className="truncate font-semibold">{build.model.model} · {build.totalUsable} TB</p>
-            <p className="text-xs text-white/70 tabular-nums">{inr(price.total)} incl. GST</p>
+            <p className="text-xs text-white/70 tabular-nums">{inr(finalPrice.total)} incl. GST</p>
           </div>
           <button onClick={() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="btn !bg-white !py-2 !text-xs !text-fg">View estimate</button>
         </div>
@@ -617,14 +633,48 @@ function QuoteForm({ refCode, summary, build, price, a, d, sent, onSent, onDone 
   );
 }
 
-function CopySummary({ text }) {
+function PriceCell({ line, onSave }) {
+  const [draft, setDraft] = useState(null);
+  const perUnit = line.qty != null;
+  function save() {
+    const text = String(draft ?? '').replace(/[^\d]/g, '');
+    setDraft(null);
+    if (text !== '') onSave(Number(text));
+  }
+  if (draft != null) {
+    return (
+      <input
+        autoFocus
+        inputMode="numeric"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setDraft(null); }}
+        aria-label={`${perUnit ? 'Price per unit' : 'Amount'} for ${line.label}`}
+        className="field !w-24 !px-2 !py-1 text-right !text-sm"
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setDraft(String(Math.round(perUnit ? line.rate : line.quote)))}
+      title={perUnit && line.qty > 1 ? 'Click to edit the price per unit' : 'Click to edit the price'}
+      className={`-mx-1.5 rounded-md px-1.5 py-0.5 tabular-nums underline decoration-dotted underline-offset-4 hover:bg-surface ${line.edited ? 'font-semibold text-accent' : ''}`}
+    >
+      {inr(line.quote)}
+    </button>
+  );
+}
+
+function CopySummary({ text, disabled }) {
   const [state, setState] = useState('idle');
   async function copy() {
     try { await navigator.clipboard.writeText(text); setState('done'); } catch { setState('fail'); }
     setTimeout(() => setState('idle'), 2000);
   }
   return (
-    <button onClick={copy} className="btn btn-primary w-full">
+    <button onClick={copy} disabled={disabled} className="btn btn-primary w-full">
       {state === 'done' ? <Check className="size-4" /> : <Copy className="size-4" />}
       {state === 'done' ? 'Copied' : state === 'fail' ? 'Copy failed' : 'Copy summary for the customer'}
     </button>

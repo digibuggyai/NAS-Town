@@ -292,6 +292,37 @@ export function estimateLines(build, price, a, P) {
   return rows;
 }
 
+const HARDWARE_KEYS = ['nas', 'hdd', 'ram', 'nic'];
+
+export function finalQuote(lines, price, edits, P) {
+  if (!price || !lines.length) return { lines, price, edited: false, belowFloor: [] };
+  const out = lines.map((l) => {
+    const rate = edits[l.key];
+    if (rate == null || l.qty == null) return { ...l };
+    return { ...l, rate, quote: rate * l.qty, basis: `${l.qty} × ${inr(rate)}`, edited: rate !== l.rate };
+  });
+  const find = (key) => out.find((l) => l.key === key);
+  const hardware = out.filter((l) => HARDWARE_KEYS.includes(l.key)).reduce((s, l) => s + l.quote, 0);
+  find('hardware').quote = hardware;
+  const amc = find('amc');
+  if (amc) {
+    const listAmc = hardware * P.amcRate.quote;
+    amc.quote = edits.amc ?? listAmc;
+    amc.edited = edits.amc != null && Math.round(edits.amc) !== Math.round(listAmc);
+    if (amc.edited) amc.basis = 'First year';
+  }
+  const value = (key) => find(key)?.quote ?? 0;
+  const total = hardware + value('install') + value('amc');
+  find('total').quote = total;
+  const belowFloor = out.filter((l) => !l.subtotal && !l.total && l.floor != null && Math.round(l.quote) < Math.round(l.floor));
+  return {
+    lines: out,
+    price: { ...price, nas: value('nas'), hdd: value('hdd'), ram: value('ram'), nic: value('nic'), hardware, install: value('install'), amc: value('amc'), total, perTB: price.perTB != null ? total / (price.total / price.perTB) : null },
+    edited: out.some((l) => l.edited),
+    belowFloor,
+  };
+}
+
 export function estimateRef(now = new Date()) {
   const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
   return `NT-NAS-${stamp}-${now.getTime().toString(36).slice(-4).toUpperCase()}`;
