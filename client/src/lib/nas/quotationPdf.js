@@ -41,14 +41,14 @@ export function quotationTerms({ validUntil, install }) {
   ].filter(Boolean);
 }
 
-export function openQuotationPdf({ ref, build, price, lines, raid, speed, customer = {}, validDays = 7, preparedBy = '', terms }) {
+export function openQuotationPdf({ ref, build, price, lines, raid, speed, validDays = 7 }) {
   const win = window.open('', '_blank');
   if (!win) return false;
   const origin = window.location.origin;
   const today = new Date();
   const validUntil = new Date(today.getTime() + validDays * 86400000);
   const install = lines.some((l) => l.key === 'install');
-  const termList = (terms?.length ? terms : quotationTerms({ validUntil, install }));
+  const termList = quotationTerms({ validUntil, install });
 
   let sno = 0;
   const items = lines.filter((l) => !l.subtotal && !l.total).map((l) => {
@@ -71,17 +71,8 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, custom
     ['Annual maintenance (AMC)', find('amc')?.quote],
   ].filter(([, v]) => v != null).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${inr(v)}</td></tr>`).join('');
 
-  const billTo = [
-    customer.name && `<strong>${esc(customer.name)}</strong>`,
-    customer.company && esc(customer.company),
-    customer.address && esc(customer.address).replace(/\n/g, '<br>'),
-    customer.phone && `Phone: ${esc(customer.phone)}`,
-    customer.email && `Email: ${esc(customer.email)}`,
-    customer.gstin && `GSTIN: ${esc(customer.gstin)}`,
-  ].filter(Boolean).join('<br>');
-
   win.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>NASTOWN quotation ${esc(ref)}${customer.name ? ` - ${esc(customer.name)}` : ''}</title>
+<title>NASTOWN quotation ${esc(ref)}</title>
 <style>
   @page { size: A4; margin: 12mm 12mm 14mm; }
   * { box-sizing: border-box; }
@@ -97,7 +88,7 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, custom
   .doc td { padding: 1px 0 1px 12px; font-size: 11px; }
   .doc td:first-child { color: #64748b; }
   .bar { height: 4px; background: linear-gradient(90deg, #1d4ed8, #3a67ff 60%, #93c5fd); border-radius: 4px; }
-  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  .parties { margin: 14px 0; }
   .box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
   .label { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
   .muted { color: #64748b; font-size: 10.5px; }
@@ -143,7 +134,6 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, custom
         <tr><td>Quotation no.</td><td><strong>${esc(ref)}</strong></td></tr>
         <tr><td>Date</td><td>${esc(fmtDate(today))}</td></tr>
         <tr><td>Valid until</td><td>${esc(fmtDate(validUntil))}</td></tr>
-        ${preparedBy ? `<tr><td>Prepared by</td><td>${esc(preparedBy)}</td></tr>` : ''}
       </table>
     </div>
   </div>
@@ -156,10 +146,6 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, custom
       ${esc(digibuggy.address)}<br>
       Phone / WhatsApp: ${esc(digibuggy.whatsapp)}<br>
       Email: ${esc(digibuggy.email)} · ${esc(origin.replace(/^https?:\/\//, ''))}
-    </div>
-    <div class="box">
-      <div class="label">Quotation for</div>
-      ${billTo || '<span class="muted">Customer details</span>'}
     </div>
   </div>
 
