@@ -3,18 +3,17 @@ import { digibuggy } from '../../data/site.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-export function openEstimatePdf({ ref, build, price, lines, quotation = false, raid, speed, mode, targetTB, budget }) {
+export function openEstimatePdf({ ref, build, price, lines, raid, speed, mode, targetTB, budget }) {
   const win = window.open('', '_blank');
   if (!win) return false;
   const date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
   const origin = window.location.origin;
-  const doc = quotation ? 'Quotation' : 'Estimate';
   const rows = lines.filter((l) => !l.total).map((l) => (l.subtotal
     ? `<tr class="sub"><td>${esc(l.label)}</td><td></td><td class="num">${inr(l.quote)}</td></tr>`
     : `<tr><td><strong>${esc(l.label)}</strong>${l.detail ? `<br><span class="muted">${esc(l.detail)}</span>` : ''}</td><td class="muted">${esc(l.basis)}</td><td class="num">${inr(l.quote)}</td></tr>`)).join('');
 
   win.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>NASTOWN ${doc.toLowerCase()} ${esc(ref)}</title>
+<title>NASTOWN estimate ${esc(ref)}</title>
 <style>
   @page { size: A4; margin: 16mm; }
   * { box-sizing: border-box; }
@@ -41,7 +40,7 @@ export function openEstimatePdf({ ref, build, price, lines, quotation = false, r
 </style></head><body>
   <div class="head">
     <img src="${origin}/nastown-logo-full.png" alt="NASTOWN">
-    <div class="meta"><strong>${doc} ${esc(ref)}</strong><br>${esc(date)}<br>Subject to availability</div>
+    <div class="meta"><strong>Estimate ${esc(ref)}</strong><br>${esc(date)}<br>Subject to availability</div>
   </div>
   <h1>${esc(build.model.brand)} ${esc(build.model.model)}</h1>
   <div class="muted">${esc(build.model.bays)}-bay NAS · ${mode === 'budget' ? `sized for a budget of ${inr(budget)}` : `sized for ${esc(targetTB)} TB usable`}</div>
@@ -55,8 +54,8 @@ export function openEstimatePdf({ ref, build, price, lines, quotation = false, r
     <thead><tr><th>Item</th><th>Basis</th><th class="num">Amount</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <div class="total"><span>${quotation ? 'Total (GST inclusive)' : 'Estimated total (GST inclusive)'}</span><strong>${inr(price.total)}</strong></div>
-  <p class="notes">${quotation ? 'Prices include GST. Subject to stock availability at the time of order.' : 'Prices include GST and come from our live price list. This is an estimate: availability and final pricing are confirmed in your formal quotation.'}</p>
+  <div class="total"><span>Estimated total (GST inclusive)</span><strong>${inr(price.total)}</strong></div>
+  <p class="notes">Prices include GST and come from our live price list. This is an estimate: availability and final pricing are confirmed in your formal quotation.</p>
   <div class="foot">NASTOWN by Digibuggy · ${esc(digibuggy.address)}<br>WhatsApp ${esc(digibuggy.whatsapp)} · ${esc(digibuggy.email)} · ${esc(origin.replace(/^https?:\/\//, ''))}</div>
   <script>window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 250); });</script>
 </body></html>`);

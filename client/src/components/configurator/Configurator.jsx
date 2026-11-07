@@ -9,6 +9,7 @@ import {
   buildSpecs, classLabel, compareRows, driveLineSpecs, driveNotes, expansionBadge, findLine, keyDriveSpecs, keySpecs, modelSpecs,
 } from '../../lib/nas/specs.js';
 import { openEstimatePdf } from '../../lib/nas/estimatePdf.js';
+import { openQuotationPdf } from '../../lib/nas/quotationPdf.js';
 import { api } from '../../lib/api.js';
 import { waLink } from '../../data/site.js';
 import { Dialog } from './parts.jsx';
@@ -131,9 +132,15 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
   }, []);
 
   const [quoteOpen, setQuoteOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
   const downloadPdf = () => {
     if (!build || !price) return;
-    setPdfBlocked(!openEstimatePdf({ ref, build, price: finalPrice, lines, quotation: sales, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
+    if (sales) return setCustomerOpen(true);
+    setPdfBlocked(!openEstimatePdf({ ref, build, price, lines, raid: d.raid, speed, mode: d.mode, targetTB: d.targetTB, budget: a.budget }));
+  };
+  const makeQuotation = (details) => {
+    setCustomerOpen(false);
+    setPdfBlocked(!openQuotationPdf({ ref, build, price: finalPrice, lines, raid: d.raid, speed, ...details }));
   };
 
   const { popup, closePopup, offer, setOffer } = useOfferPopups({ enabled: !sales, interacted, quoteReady: Boolean(build && price), quoteSent, openedAt });
@@ -489,6 +496,12 @@ function ConfiguratorLoaded({ P, sales, params, openedAt }) {
         </div>
       )}
 
+      {sales && (
+        <Dialog open={customerOpen} onClose={() => setCustomerOpen(false)} title="Quotation details">
+          <QuotationForm onSubmit={makeQuotation} />
+        </Dialog>
+      )}
+
       <Dialog open={dialog?.kind === 'model'} onClose={() => setDialog(null)} title={dialog?.kind === 'model' ? `${dialog.item.model.brand} ${dialog.item.model.model}` : ''}>
         {dialog?.kind === 'model' && (
           <>
@@ -629,6 +642,42 @@ function QuoteForm({ refCode, summary, build, price, a, d, sent, onSent, onDone 
         <button disabled={busy} className="btn btn-primary">{busy && <Loader2 className="size-4 animate-spin" />}Request formal quotation</button>
         <p className="text-xs text-subtle">Your configuration and estimate ({inr(price.total)}) are sent with the request.</p>
       </div>
+    </form>
+  );
+}
+
+function QuotationForm({ onSubmit }) {
+  const [f, setF] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('nastown.quoteForm')) ?? {}; } catch { return {}; }
+  });
+  const set = (k) => (e) => setF((prev) => ({ ...prev, [k]: e.target.value }));
+  function submit(e) {
+    e.preventDefault();
+    try { sessionStorage.setItem('nastown.quoteForm', JSON.stringify(f)); } catch { }
+    const { preparedBy, validDays, ...customer } = f;
+    onSubmit({ customer, preparedBy: preparedBy?.trim() ?? '', validDays: Math.max(1, Number(validDays) || 7) });
+  }
+  const field = 'field !py-2 text-sm';
+  const input = (k, label, { wide, ...props } = {}) => (
+    <label className={wide ? 'sm:col-span-2' : ''}>
+      <span className="mb-1 block text-sm text-muted">{label}</span>
+      <input value={f[k] ?? ''} onChange={set(k)} className={field} {...props} />
+    </label>
+  );
+  return (
+    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
+      {input('name', 'Customer name *', { required: true, autoFocus: true })}
+      {input('company', 'Company')}
+      {input('phone', 'Phone', { type: 'tel' })}
+      {input('email', 'Email', { type: 'email' })}
+      <label className="sm:col-span-2">
+        <span className="mb-1 block text-sm text-muted">Address</span>
+        <textarea rows={2} value={f.address ?? ''} onChange={set('address')} className="field resize-y text-sm" />
+      </label>
+      {input('gstin', 'Customer GSTIN')}
+      {input('validDays', 'Valid for (days)', { type: 'number', min: 1, max: 90, placeholder: '7' })}
+      {input('preparedBy', 'Prepared by', { wide: true, placeholder: 'Your name' })}
+      <button className="btn btn-primary sm:col-span-2"><Download className="size-4" /> Create quotation PDF</button>
     </form>
   );
 }
