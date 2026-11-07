@@ -65,11 +65,12 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, validD
   }).join('');
 
   const find = (key) => lines.find((l) => l.key === key);
-  const summary = [
+  const parts = [
     ['Hardware', find('hardware')?.quote],
     ['Installation & setup', find('install')?.quote],
     ['Annual maintenance (AMC)', find('amc')?.quote],
-  ].filter(([, v]) => v != null).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${inr(v)}</td></tr>`).join('');
+  ].filter(([, v]) => v != null);
+  const summary = parts.length > 1 ? parts.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${inr(v)}</td></tr>`).join('') : '';
 
   win.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>NASTOWN quotation ${esc(ref)}</title>
@@ -89,7 +90,6 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, validD
   .doc td:first-child { color: #64748b; }
   .bar { height: 4px; background: linear-gradient(90deg, #1d4ed8, #3a67ff 60%, #93c5fd); border-radius: 4px; }
   .parties { margin: 14px 0; }
-  .box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
   .label { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
   .muted { color: #64748b; font-size: 10.5px; }
   .spec { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 14px; }
@@ -113,11 +113,13 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, validD
   .sum tr.grand td { background: #1d4ed8; color: #fff; font-weight: 700; font-size: 14px; padding: 9px 8px; }
   .sum tr.grand td:first-child { border-radius: 6px 0 0 6px; }
   .sum tr.grand td:last-child { border-radius: 0 6px 6px 0; }
-  .lower { display: grid; grid-template-columns: 1fr 220px; gap: 16px; margin-top: 18px; }
+  .lower { display: grid; grid-template-columns: 1fr 250px; gap: 16px; margin-top: 18px; }
   ol { margin: 0; padding-left: 16px; }
   ol li { margin-bottom: 2px; }
-  .sign { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; }
-  .sign .line { border-top: 1px solid #94a3b8; padding-top: 4px; font-size: 10.5px; color: #475569; }
+  .order { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 12px; }
+  .order p { margin: 4px 0 0; }
+  .greet { margin: 0 0 4px; font-weight: 700; font-size: 12.5px; }
+  .intro { margin: 0; color: #334155; }
   .foot { margin-top: 18px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 10px; color: #64748b; }
   .foot img { height: 11px; filter: brightness(0); opacity: .75; }
   @media screen { body { max-width: 860px; margin: 24px auto; padding: 0 20px; } }
@@ -140,13 +142,8 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, validD
   <div class="bar"></div>
 
   <div class="parties">
-    <div class="box">
-      <div class="label">From</div>
-      <strong>NASTOWN</strong> <span class="muted">· a DigiBuggy company</span><br>
-      ${esc(digibuggy.address)}<br>
-      Phone / WhatsApp: ${esc(digibuggy.whatsapp)}<br>
-      Email: ${esc(digibuggy.email)} · ${esc(origin.replace(/^https?:\/\//, ''))}
-    </div>
+    <p class="greet">Dear Customer,</p>
+    <p class="intro">Thank you for your interest in NASTOWN. As discussed, please find below our quotation for your NAS storage setup, with the NAS, drives and services itemised. All prices include GST.</p>
   </div>
 
   <div class="spec">
@@ -179,14 +176,15 @@ export function openQuotationPdf({ ref, build, price, lines, raid, speed, validD
       <div class="label">Terms &amp; conditions</div>
       <ol>${termList.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>
     </div>
-    <div class="sign">
-      <div class="muted">For NASTOWN (DigiBuggy)</div>
-      <div class="line">Authorised signatory</div>
+    <div class="order">
+      <div class="label">Ready to order?</div>
+      <p>Reply to us with quotation no. <strong style="white-space:nowrap">${esc(ref)}</strong> and we will confirm stock and delivery.</p>
+      <p>WhatsApp / Call: <strong>${esc(digibuggy.whatsapp)}</strong><br>Email: <strong>${esc(digibuggy.email)}</strong></p>
     </div>
   </div>
 
   <div class="foot">
-    <span>Thank you for your business. This is a computer-generated quotation.</span>
+    <span>NASTOWN, a DigiBuggy company · ${esc(digibuggy.address)} · nastown.com<br>This is a computer-generated quotation and does not need a signature.</span>
     <span style="display:flex;align-items:center;gap:6px">NASTOWN by <img src="${origin}/digibuggy-logo.svg" alt="DigiBuggy"></span>
   </div>
   <script>
