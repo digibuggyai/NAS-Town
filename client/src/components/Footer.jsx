@@ -22,7 +22,7 @@ const ICONS = { WhatsApp: MessageCircle, Instagram, YouTube: Youtube, LinkedIn: 
 
 export default function Footer() {
   return (
-    <footer className="theme-dark">
+    <footer className="theme-dark relative z-10">
       <div className="mx-auto max-w-7xl px-4 pt-12 pb-24 sm:px-6 lg:pb-6">
         <div className="grid gap-10 border-b border-line pb-10 xl:grid-cols-[minmax(0,15rem)_1fr] xl:gap-12">
           <div>
